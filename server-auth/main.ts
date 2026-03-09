@@ -1,8 +1,23 @@
-export function add(a: number, b: number): number {
-  return a + b;
+import { Application } from "@oak/oak";
+import { oakCors } from "@tajpouria/cors";
+
+// ---------- Application --------------------------------
+
+const PROTOCOL = "http";
+const HOSTNAME = "localhost";
+const PORT = 8000;
+const ADDRESS = `${PROTOCOL}://${HOSTNAME}:${PORT}`;
+
+const app = new Application();
+
+app.use(oakCors());
+
+app.addEventListener("listen", () =>
+  console.log(`Server listening on ${ADDRESS}`)
+);
+
+if (import.meta.main) {
+  await app.listen({ hostname: HOSTNAME, port: PORT });
 }
 
-// Learn more at https://docs.deno.com/runtime/manual/examples/module_metadata#concepts
-if (import.meta.main) {
-  console.log("Add 2 + 3 =", add(2, 3));
-}
+export { app };
