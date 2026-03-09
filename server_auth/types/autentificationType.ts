@@ -1,4 +1,9 @@
-import { User } from "../types/userType.ts";
+export interface User {
+  id: string;
+  username: string;
+  isAdmin: boolean;
+  createdAt: string;
+}
 
 export interface LoginRequest {
     username: string;

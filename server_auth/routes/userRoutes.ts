@@ -3,7 +3,7 @@ import { DatabaseSync } from "node:sqlite";
 import { hashPassword } from "../lib/jwt.ts";
 import { ApiErrorCode, ApiResponse } from "../types/exceptionType.ts";
 import { authMiddleware, AuthContext } from "../middlewares/authMiddleware.ts";
-import { User } from "../types/autentificationType.ts";
+import { User } from "../types/userType.ts";
 import { isUserRow } from "../types/userType.ts";
 import { userRowToApi } from "../mappers/userMapper.ts"
 
@@ -31,7 +31,7 @@ router.post("/register", async (ctx: context) => {
                 email: emailValue,
                 isAdmin: 0,
                 createdAt: new Date().toISOString().split('T')[0]
-            })
+            });
 
         if (!insertResult || insertResult.changes === 0) {
             const response: ApiResponse<User> = {
