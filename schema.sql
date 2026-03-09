@@ -8,19 +8,19 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema mydb
+-- Schema e22206673_db1
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------
--- Schema mydb
+-- Schema e22206673_db1
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
-USE `mydb` ;
+CREATE SCHEMA IF NOT EXISTS `e22206673_db1` DEFAULT CHARACTER SET utf8 ;
+USE `e22206673_db1` ;
 
 -- -----------------------------------------------------
--- Table `mydb`.`User`
+-- Table `e22206673_db1`.`User`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`User` (
+CREATE TABLE IF NOT EXISTS `e22206673_db1`.`User` (
   `user_id` INT NOT NULL AUTO_INCREMENT,
   `pseudo` VARCHAR(50) NOT NULL,
   `name` VARCHAR(50) NOT NULL,
@@ -35,9 +35,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Board`
+-- Table `e22206673_db1`.`Board`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`Board` (
+CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Board` (
   `board_id` INT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(100) NOT NULL,
   PRIMARY KEY (`board_id`),
@@ -46,9 +46,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`KanbanColumn`
+-- Table `e22206673_db1`.`KanbanColumn`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`KanbanColumn` (
+CREATE TABLE IF NOT EXISTS `e22206673_db1`.`KanbanColumn` (
   `kanban_column_id` INT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(45) NOT NULL,
   `position` INT NOT NULL,
@@ -58,16 +58,16 @@ CREATE TABLE IF NOT EXISTS `mydb`.`KanbanColumn` (
   INDEX `fk_KanbanColumn_Board1_idx` (`board_id` ASC) VISIBLE,
   CONSTRAINT `fk_KanbanColumn_Board1`
     FOREIGN KEY (`board_id`)
-    REFERENCES `mydb`.`Board` (`board_id`)
+    REFERENCES `e22206673_db1`.`Board` (`board_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Task`
+-- Table `e22206673_db1`.`Task`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`Task` (
+CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Task` (
   `task_id` INT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(45) NOT NULL,
   `description` TEXT NULL,
@@ -82,21 +82,21 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Task` (
   INDEX `fk_Task_KanbanColumn1_idx` (`kanban_column_id` ASC) VISIBLE,
   CONSTRAINT `fk_Task_User1`
     FOREIGN KEY (`user_id`)
-    REFERENCES `mydb`.`User` (`user_id`)
+    REFERENCES `e22206673_db1`.`User` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_Task_KanbanColumn1`
     FOREIGN KEY (`kanban_column_id`)
-    REFERENCES `mydb`.`KanbanColumn` (`kanban_column_id`)
+    REFERENCES `e22206673_db1`.`KanbanColumn` (`kanban_column_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`BoardMember`
+-- Table `e22206673_db1`.`BoardMember`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`BoardMember` (
+CREATE TABLE IF NOT EXISTS `e22206673_db1`.`BoardMember` (
   `user_id` INT NOT NULL,
   `board_id` INT NOT NULL,
   `role` ENUM("Member", "Owner", "Invited") NULL,
@@ -104,21 +104,21 @@ CREATE TABLE IF NOT EXISTS `mydb`.`BoardMember` (
   INDEX `fk_BoardMember_Board1_idx` (`board_id` ASC) VISIBLE,
   CONSTRAINT `fk_BoardMember_User`
     FOREIGN KEY (`user_id`)
-    REFERENCES `mydb`.`User` (`user_id`)
+    REFERENCES `e22206673_db1`.`User` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_BoardMember_Board1`
     FOREIGN KEY (`board_id`)
-    REFERENCES `mydb`.`Board` (`board_id`)
+    REFERENCES `e22206673_db1`.`Board` (`board_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Invitation`
+-- Table `e22206673_db1`.`Invitation`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`Invitation` (
+CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Invitation` (
   `invitation_id` INT NOT NULL AUTO_INCREMENT,
   `status` ENUM("Pending", "Accepted", "Rejected") NULL,
   `inviter_id` INT NOT NULL,
@@ -129,12 +129,12 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Invitation` (
   INDEX `fk_Invitation_User1_idx` (`inviter_id` ASC) VISIBLE,
   CONSTRAINT `fk_Invitation_Board1`
     FOREIGN KEY (`board_id`)
-    REFERENCES `mydb`.`Board` (`board_id`)
+    REFERENCES `e22206673_db1`.`Board` (`board_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_Invitation_User1`
     FOREIGN KEY (`inviter_id`)
-    REFERENCES `mydb`.`User` (`user_id`)
+    REFERENCES `e22206673_db1`.`User` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
