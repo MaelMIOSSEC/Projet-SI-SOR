@@ -1,5 +1,5 @@
 package server_data.repositories;
 
-public interface UserRepository {
+public interface TaskRepository {
 
 }

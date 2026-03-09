@@ -1,5 +1,5 @@
 package server_data.entities;
 
-public class User {
+public class Task {
 
 }
