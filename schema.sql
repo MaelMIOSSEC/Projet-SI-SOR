@@ -21,12 +21,13 @@ USE `e22206673_db1` ;
 -- Table `e22206673_db1`.`User`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `e22206673_db1`.`User` (
-  `user_id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` CHAR(36) NOT NULL,
   `pseudo` VARCHAR(50) NOT NULL,
   `name` VARCHAR(50) NOT NULL,
   `last_name` VARCHAR(50) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
-  `role` VARCHAR(10) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `isAdmin` BOOLEAN NOT NULL,
   `created_at` DATE NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `user_id_UNIQUE` (`user_id` ASC) VISIBLE,
@@ -38,7 +39,7 @@ ENGINE = InnoDB;
 -- Table `e22206673_db1`.`Board`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Board` (
-  `board_id` INT NOT NULL AUTO_INCREMENT,
+  `board_id` CHAR(36) NOT NULL,
   `title` VARCHAR(100) NOT NULL,
   PRIMARY KEY (`board_id`),
   UNIQUE INDEX `table_id_UNIQUE` (`board_id` ASC) VISIBLE)
@@ -49,10 +50,10 @@ ENGINE = InnoDB;
 -- Table `e22206673_db1`.`KanbanColumn`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `e22206673_db1`.`KanbanColumn` (
-  `kanban_column_id` INT NOT NULL AUTO_INCREMENT,
+  `kanban_column_id` CHAR(36) NOT NULL,
   `title` VARCHAR(45) NOT NULL,
   `position` INT NOT NULL,
-  `board_id` INT NOT NULL,
+  `board_id` CHAR(36) NOT NULL,
   PRIMARY KEY (`kanban_column_id`, `board_id`),
   UNIQUE INDEX `column_id_UNIQUE` (`kanban_column_id` ASC) VISIBLE,
   INDEX `fk_KanbanColumn_Board1_idx` (`board_id` ASC) VISIBLE,
@@ -68,13 +69,13 @@ ENGINE = InnoDB;
 -- Table `e22206673_db1`.`Task`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Task` (
-  `task_id` INT NOT NULL AUTO_INCREMENT,
+  `task_id` CHAR(36) NOT NULL,
   `title` VARCHAR(45) NOT NULL,
   `description` TEXT NULL,
   `deadline` DATE NULL,
   `priority` ENUM("Strong", "Medium", "Low") NULL,
-  `user_id` INT NOT NULL,
-  `kanban_column_id` INT NOT NULL,
+  `user_id` CHAR(36) NOT NULL,
+  `kanban_column_id` CHAR(36) NOT NULL,
   `position` INT NULL,
   PRIMARY KEY (`task_id`, `user_id`, `kanban_column_id`),
   UNIQUE INDEX `task_id_UNIQUE` (`task_id` ASC) VISIBLE,
@@ -97,8 +98,8 @@ ENGINE = InnoDB;
 -- Table `e22206673_db1`.`BoardMember`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `e22206673_db1`.`BoardMember` (
-  `user_id` INT NOT NULL,
-  `board_id` INT NOT NULL,
+  `user_id` CHAR(36) NOT NULL,
+  `board_id` CHAR(36) NOT NULL,
   `role` ENUM("Member", "Owner", "Invited") NULL,
   PRIMARY KEY (`user_id`, `board_id`),
   INDEX `fk_BoardMember_Board1_idx` (`board_id` ASC) VISIBLE,
@@ -119,10 +120,10 @@ ENGINE = InnoDB;
 -- Table `e22206673_db1`.`Invitation`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Invitation` (
-  `invitation_id` INT NOT NULL AUTO_INCREMENT,
+  `invitation_id` CHAR(36) NOT NULL,
   `status` ENUM("Pending", "Accepted", "Rejected") NULL,
-  `inviter_id` INT NOT NULL,
-  `board_id` INT NOT NULL,
+  `inviter_id` CHAR(36) NOT NULL,
+  `board_id` CHAR(36) NOT NULL,
   PRIMARY KEY (`invitation_id`, `inviter_id`, `board_id`),
   UNIQUE INDEX `invitation_id_UNIQUE` (`invitation_id` ASC) VISIBLE,
   INDEX `fk_Invitation_Board1_idx` (`board_id` ASC) VISIBLE,
