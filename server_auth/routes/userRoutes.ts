@@ -1,5 +1,6 @@
 import { Router, context } from "@oak/oak";
-import { DatabaseSync } from "node:sqlite";
+import { mysql } from "mysql";
+import { Deno } from "https://deno.land/std@0.208.0/version.ts";
 import { createJWT, hashPassword, verifyPassword } from "../lib/jwt.ts";
 import {
   ApiErrorCode,
@@ -12,7 +13,13 @@ import { isUserRow } from "../types/userType.ts";
 import { userRowToApi } from "../mappers/userMapper.ts";
 import { AuthResponse } from "../types/autentificationType.ts";
 
-const db = new DatabaseSync("");
+const connection = mysql.createConnection({
+  host: Deno.env.get("MYSQL_HOST") || "localhost",
+  port: Number(Deno.env.get("MYSQL_PORT") || "3306"),
+  user: Deno.env.get("MYSQL_USER") || "e22206673sql",
+  password: Deno.env.get("MYSQL_PASSWORD") || "rDoKnVI6",
+  database: Deno.env.get("MYSQL_DATABASE") || "e22206673_db1",
+});
 
 const router = new Router({ prefix: "/users" });
 
@@ -20,29 +27,44 @@ router.post("/register", async (ctx: context) => {
   try {
     const data = await ctx.request.body.json();
 
+    const existingUsers = await connection.query(
+        `SELECT pseudo FROM User WHERE pseudo = ?`, [data.pseudo]
+    );
+
+    if (existingUsers.length > 0) {
+        const response: ApiResponse<User> = {
+        success: false,
+        error: {
+          code: ApiErrorCode.CONFLICT,
+          message: "Duplicate entry...",
+        },
+      };
+
+      ctx.response.status = 409;
+      ctx.response.body = response;
+
+      return;
+    }
+
     const userIdValue = crypto.randomUUID();
-    const pseudoValue = data.pseudo;
-    const nameValue = data.name;
-    const lastNameValue = data.lastName;
-    const password = await hashPassword(data.password);
-    const emailValue = data.email;
+    const passwordHash = await hashPassword(data.password);
+    const createdAtValue = new Date().toISOString().split("T")[0];
 
-    const insertResult = db
-      .prepare(
-        `INSERT INTO User (user_id, pseudo, name, last_name, password, email, isAdmin, created_at) VALUES (:userId, :pseudo, :name, :lastName, :password, :email, :isAdmin, :createdAt)`,
-      )
-      .run({
-        userId: userIdValue,
-        pseudo: pseudoValue,
-        name: nameValue,
-        lastName: lastNameValue,
-        password: password,
-        email: emailValue,
-        isAdmin: 0,
-        createdAt: new Date().toISOString().split("T")[0],
-      });
+    const insertResult = await connection.query(
+      `INSERT INTO User (user_id, pseudo, name, last_name, password, email, isAdmin, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        userIdValue,
+        data.pseudo,
+        data.name,
+        data.lastName,
+        passwordHash,
+        data.email,
+        0,
+        createdAtValue,
+      ],
+    );
 
-    if (!insertResult || insertResult.changes === 0) {
+    if (!insertResult || (insertResult.affectedRows === 0 && insertResult.changes === undefined)) {
       const response: ApiResponse<User> = {
         success: false,
         error: {
@@ -57,13 +79,12 @@ router.post("/register", async (ctx: context) => {
       return;
     }
 
-    const userRow = db
-      .prepare(
-        `SELECT user_id, pseudo, name, last_name, password, email, isAdmin, created_at FROM User WHERE user_id = ?`,
-      )
-      .get(userIdValue);
+    const userRow = await connection.query(
+      `SELECT user_id, pseudo, name, last_name, password, email, isAdmin, created_at FROM User WHERE user_id = ?`,
+      [userIdValue],
+    );
 
-    if (!userRow || !isUserRow(userRow)) {
+    if (!userRow[0] || !isUserRow(userRow[0])) {
       const response: ApiResponse<User> = {
         success: false,
         error: {
@@ -80,7 +101,7 @@ router.post("/register", async (ctx: context) => {
 
     const response: ApiResponse<User> = {
       success: true,
-      data: userRowToApi(userRow),
+      data: userRowToApi(userRow[0]),
     };
 
     ctx.response.status = 200;
@@ -107,30 +128,29 @@ router.post("/login", async (ctx: context) => {
       );
     }
 
-    const userRow = db
-      .prepare(
-        `SELECT user_id, pseudo, name, last_name, password, isAdmin, created_at FROM User WHERE pseudo = ?`,
-      )
-      .get(pseudoValue);
+    const userRow = await connection.query(
+      `SELECT user_id, pseudo, name, last_name, password, isAdmin, created_at FROM User WHERE pseudo = ?`,
+      [pseudoValue],
+    );
 
-    if (userRow && isUserRow(userRow)) {
-      if (await verifyPassword(data.password, userRow.password)) {
+    if (userRow[0] && isUserRow(userRow[0])) {
+      if (await verifyPassword(data.password, userRow[0].password)) {
         const userPayload = {
-            userId: userRow.user_id,
-            username: userRow.pseudo,
-            isAdmin: userRow.isAdmin,
+          userId: userRow[0].user_id,
+          username: userRow[0].pseudo,
+          isAdmin: userRow[0].isAdmin,
         };
 
         const jwtToken = await createJWT(userPayload);
 
         const loginPayload: AuthResponse = {
-            token: jwtToken,          
-            user: userRowToApi(userRow)
+          token: jwtToken,
+          user: userRowToApi(userRow[0]),
         };
 
         const response: ApiResponse<AuthResponse> = {
-            success: true,
-            data: loginPayload,
+          success: true,
+          data: loginPayload,
         };
 
         ctx.response.status = 200;
@@ -170,7 +190,7 @@ router.post("/login", async (ctx: context) => {
   }
 });
 
-router.get("/me", authMiddleware, (ctx: AuthContext) => {
+router.get("/me", authMiddleware, async (ctx: AuthContext) => {
   try {
     const userId = ctx.state.user?.userId;
 
@@ -182,13 +202,12 @@ router.get("/me", authMiddleware, (ctx: AuthContext) => {
       );
     }
 
-    const userRow = db
-      .prepare(
-        `SELECT user_id, pseudo, name, last_name, password, isAdmin, created_at FROM User WHERE user_id = ?`,
-      )
-      .get(userId);
+    const userRow = await connection.query(
+      `SELECT user_id, pseudo, name, last_name, password, isAdmin, created_at FROM User WHERE user_id = ?`,
+      [userId],
+    );
 
-    if (!userRow || !isUserRow(userRow)) {
+    if (!userRow[0] || !isUserRow(userRow[0])) {
       const response: ApiResponse<User> = {
         success: false,
         error: {
@@ -205,7 +224,7 @@ router.get("/me", authMiddleware, (ctx: AuthContext) => {
 
     const response: ApiResponse<User> = {
       success: true,
-      data: userRowToApi(userRow),
+      data: userRowToApi(userRow[0]),
     };
 
     ctx.response.status = 200;

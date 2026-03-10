@@ -4,6 +4,7 @@ export enum ApiErrorCode {
   BAD_REQUEST = "BAD_REQUEST",
   SERVER_ERROR = "SERVER_ERROR",
   UNAUTHORIZED = "UNAUTHORIZED",
+  CONFLICT = "CONFLICT",
 }
 
 export interface ApiError {
