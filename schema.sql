@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Task` (
   `description` TEXT NULL,
   `deadline` DATE NULL,
   `priority` ENUM("Strong", "Medium", "Low") NULL,
-  `user_id` CHAR(36) NOT NULL,
+  `user_id` CHAR(36) NULL,
   `kanban_column_id` CHAR(36) NOT NULL,
   `position` INT NULL,
   PRIMARY KEY (`task_id`, `user_id`, `kanban_column_id`),
