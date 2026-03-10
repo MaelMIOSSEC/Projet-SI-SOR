@@ -1,10 +1,11 @@
 package server_data.dtos;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Min;
 import lombok.Data;
+import server_data.entities.Comment;
+import server_data.entities.Priority;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -18,9 +19,9 @@ public class TaskDto {
     @NotBlank(message = "The title is required.")
     private String title;
 
-    private String descritpion;
+    private String description;
 
-    private Date deadline;
+    private LocalDate deadline;
 
     private Priority priority;
 
@@ -31,4 +32,6 @@ public class TaskDto {
     private String kanbanColumnId;
 
     private int position;
+
+    private List<Comment> comments;
 }

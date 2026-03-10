@@ -36,8 +36,8 @@ public class TaskController {
         return this.taskService.deleteTask(idTask);
     }
 
-    public Boolean addingUser(@PathVariable String idTask, @PathVariable String idUser) {
-        return this.taskService(idTask, idUser);
+    public Boolean addingUser(@PathVariable String idTask, @PathVariable String idUser, @RequestBody TaskDto taskDto) {
+        return this.taskService.addingUser(idTask, idUser, taskDto);
     }
 
 }
