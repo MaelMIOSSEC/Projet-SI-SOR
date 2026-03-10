@@ -12,7 +12,7 @@ import java.util.List;
 public class Task {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "task_id")
     private String id;
 
