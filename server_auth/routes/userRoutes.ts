@@ -10,6 +10,7 @@ import { authMiddleware, AuthContext } from "../middlewares/authMiddleware.ts";
 import { User } from "../types/userType.ts";
 import { isUserRow } from "../types/userType.ts";
 import { userRowToApi } from "../mappers/userMapper.ts";
+import { AuthResponse } from "../types/autentificationType.ts";
 
 const db = new DatabaseSync("");
 
@@ -120,14 +121,14 @@ router.post("/login", async (ctx: context) => {
             isAdmin: userRow.isAdmin,
         };
 
-        const jwtToken = createJWT(userPayload);
+        const jwtToken = await createJWT(userPayload);
 
-        const loginPayload = {
+        const loginPayload: AuthResponse = {
             token: jwtToken,          
             user: userRowToApi(userRow)
         };
 
-        const response: ApiResponse<any> = {
+        const response: ApiResponse<AuthResponse> = {
             success: true,
             data: loginPayload,
         };
