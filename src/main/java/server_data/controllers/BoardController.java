@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import server_data.dtos.BoardDto;
-import server_data.dtos.ColumnDto;
+import server_data.dtos.KanbanColumnDto;
 import server_data.dtos.UserDto;
 import server_data.services.BoardService;
 
@@ -50,7 +50,7 @@ public class BoardController {
     }
 
     @PostMapping("/Boards/{idBoard}/columns")
-    public ColumnDto createColumnToBoard(@PathVariable String idBoard, @RequestBody ColumnDto columnDto) {
+    public KanbanColumnDto createColumnToBoard(@PathVariable String idBoard, @RequestBody KanbanColumnDto columnDto) {
         return this.boardService.createColumnToBoard(idBoard, columnDto);
     }
 
