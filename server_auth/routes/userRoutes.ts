@@ -1,172 +1,217 @@
 import { Router, context } from "@oak/oak";
 import { DatabaseSync } from "node:sqlite";
-import { hashPassword } from "../lib/jwt.ts";
-import { ApiErrorCode, APIException, ApiResponse } from "../types/exceptionType.ts";
+import { createJWT, hashPassword, verifyPassword } from "../lib/jwt.ts";
+import {
+  ApiErrorCode,
+  APIException,
+  ApiResponse,
+} from "../types/exceptionType.ts";
 import { authMiddleware, AuthContext } from "../middlewares/authMiddleware.ts";
 import { User } from "../types/userType.ts";
 import { isUserRow } from "../types/userType.ts";
-import { userRowToApi } from "../mappers/userMapper.ts"
+import { userRowToApi } from "../mappers/userMapper.ts";
 
 const db = new DatabaseSync("");
 
 const router = new Router({ prefix: "/users" });
 
 router.post("/register", async (ctx: context) => {
-    try {
-        const userIdValue = crypto.randomUUID();
-        const pseudoValue = ctx.params.pseudo;
-        const nameValue = ctx.params.name;
-        const lastNameValue = ctx.params.lastName;
-        const password = await hashPassword(ctx.params.password);;
-        const emailValue = ctx.params.email;
+  try {
+    const data = await ctx.request.body.json();
 
-        const insertResult = db
-            .prepare(`INSERT INTO User (user_id, pseudo, name, last_name, password, email, isAdmin, created_at) VALUES (:userId, :pseudo, :name, :lastName, :password, :email, :isAdmin, :createdAt)`)
-            .run({
-                userId: userIdValue,
-                pseudo: pseudoValue,
-                name: nameValue,
-                lastName: lastNameValue,
-                password: password,
-                email: emailValue,
-                isAdmin: 0,
-                createdAt: new Date().toISOString().split('T')[0]
-            });
+    const userIdValue = crypto.randomUUID();
+    const pseudoValue = data.pseudo;
+    const nameValue = data.name;
+    const lastNameValue = data.lastName;
+    const password = await hashPassword(data.password);
+    const emailValue = data.email;
 
-        if (!insertResult || insertResult.changes === 0) {
-            const response: ApiResponse<User> = {
-                success: false,
-                error: {
-                    code: ApiErrorCode.BAD_REQUEST,
-                    message: "Error in the request..."
-                },
-            };
+    const insertResult = db
+      .prepare(
+        `INSERT INTO User (user_id, pseudo, name, last_name, password, email, isAdmin, created_at) VALUES (:userId, :pseudo, :name, :lastName, :password, :email, :isAdmin, :createdAt)`,
+      )
+      .run({
+        userId: userIdValue,
+        pseudo: pseudoValue,
+        name: nameValue,
+        lastName: lastNameValue,
+        password: password,
+        email: emailValue,
+        isAdmin: 0,
+        createdAt: new Date().toISOString().split("T")[0],
+      });
 
-            ctx.response.status = 404;
-            ctx.response.body = response;
+    if (!insertResult || insertResult.changes === 0) {
+      const response: ApiResponse<User> = {
+        success: false,
+        error: {
+          code: ApiErrorCode.BAD_REQUEST,
+          message: "Error in the request...",
+        },
+      };
 
-            return;
-        }
+      ctx.response.status = 404;
+      ctx.response.body = response;
 
-        const userRow = db
-            .prepare(`SELECT user_id, pseudo, name, last_name, password, email, isAdmin, created_at FROM User WHERE user_id = ?`).get(insertResult.lastInsertRowid);
-
-        if (!userRow || !isUserRow(userRow)) {
-            const response: ApiResponse<User> = {
-                success: false,
-                error: {
-                    code: ApiErrorCode.NOT_FOUND,
-                    message: "User not found..."
-                },
-            };
-
-            ctx.response.status = 404;
-            ctx.response.body = response;
-
-            return;
-        }
-
-        const response: ApiResponse<User> = {
-            success: true,
-            data: userRowToApi(userRow),
-        };
-      
-        ctx.response.status = 200;
-        ctx.response.body = response;
-    } catch (error: any) {
-        console.error("Detailed SQL error : ", error.message);
-        ctx.response.status = 500;
-        ctx.response.body = { success: false, error: { message: error.message } };
+      return;
     }
+
+    const userRow = db
+      .prepare(
+        `SELECT user_id, pseudo, name, last_name, password, email, isAdmin, created_at FROM User WHERE user_id = ?`,
+      )
+      .get(userIdValue);
+
+    if (!userRow || !isUserRow(userRow)) {
+      const response: ApiResponse<User> = {
+        success: false,
+        error: {
+          code: ApiErrorCode.NOT_FOUND,
+          message: "User not found...",
+        },
+      };
+
+      ctx.response.status = 404;
+      ctx.response.body = response;
+
+      return;
+    }
+
+    const response: ApiResponse<User> = {
+      success: true,
+      data: userRowToApi(userRow),
+    };
+
+    ctx.response.status = 200;
+    ctx.response.body = response;
+  } catch (error: any) {
+    console.error("Detailed SQL error : ", error.message);
+    ctx.response.status = 500;
+    ctx.response.body = { success: false, error: { message: error.message } };
+  }
 });
 
 router.post("/login", async (ctx: context) => {
-    try {
-        const hashedPasswordValue = await hashPassword(ctx.params.password);
-        const pseudoValue = ctx.params.pseudo;
+  try {
+    const data = await ctx.request.body.json();
 
-        if (!hashedPasswordValue || !pseudoValue) {
-            throw new APIException(
-                ApiErrorCode.UNAUTHORIZED,
-                404,
-                "Missing information(s)...",
-            );
-        }
+    const passwordValue = data.password;
+    const pseudoValue = data.pseudo;
 
-        const userRow = db
-            .prepare(`SELECT user_id, pseudo, name, last_name, password, isAdmin, created_at FROM User WHERE pseudo = ?`)
-            .get(pseudoValue);
+    if (!passwordValue || !pseudoValue) {
+      throw new APIException(
+        ApiErrorCode.UNAUTHORIZED,
+        404,
+        "Missing information(s)...",
+      );
+    }
 
-        if (!userRow || !isUserRow(userRow)) {
-            const response: ApiResponse<User> = {
-                success: false,
-                error: {
-                    code: ApiErrorCode.NOT_FOUND,
-                    message: "User not found..."
-                },
-            };
+    const userRow = db
+      .prepare(
+        `SELECT user_id, pseudo, name, last_name, password, isAdmin, created_at FROM User WHERE pseudo = ?`,
+      )
+      .get(pseudoValue);
 
-            ctx.response.status = 404;
-            ctx.response.body = response;
-
-            return;
-        }
-        
-        const response: ApiResponse<User> = {
-            success: true,
-            data: userRowToApi(userRow),
+    if (userRow && isUserRow(userRow)) {
+      if (await verifyPassword(data.password, userRow.password)) {
+        const userPayload = {
+            userId: userRow.user_id,
+            username: userRow.pseudo,
+            isAdmin: userRow.isAdmin,
         };
-      
+
+        const jwtToken = createJWT(userPayload);
+
+        const loginPayload = {
+            token: jwtToken,          
+            user: userRowToApi(userRow)
+        };
+
+        const response: ApiResponse<any> = {
+            success: true,
+            data: loginPayload,
+        };
+
         ctx.response.status = 200;
         ctx.response.body = response;
-    } catch (error: any) {
-        console.error("Detailed SQL error : ", error.message);
-        ctx.response.status = 500;
-        ctx.response.body = { success: false, error: { message: error.message } };
+      } else {
+        const response = {
+          success: false,
+          error: {
+            code: ApiErrorCode.UNAUTHORIZED,
+            message: "Wrong Password...",
+          },
+        };
+
+        ctx.response.status = 401;
+        ctx.response.body = response;
+
+        return;
+      }
+    } else {
+      const response = {
+        success: false,
+        error: {
+          code: ApiErrorCode.NOT_FOUND,
+          message: "User Not Found...",
+        },
+      };
+
+      ctx.response.status = 404;
+      ctx.response.body = response;
+
+      return;
     }
+  } catch (error: any) {
+    console.error("Detailed SQL error : ", error.message);
+    ctx.response.status = 500;
+    ctx.response.body = { success: false, error: { message: error.message } };
+  }
 });
 
 router.get("/me", authMiddleware, (ctx: AuthContext) => {
-    try {
-        const userId = ctx.state.user?.userId;
+  try {
+    const userId = ctx.state.user?.userId;
 
-        if (!userId) {
-            throw new APIException(
-                ApiErrorCode.UNAUTHORIZED,
-                401,
-                "User not identified in the token..."
-            );
-        }
-
-        const userRow = db
-            .prepare(`SELECT user_id, pseudo, name, last_name, password, isAdmin, created_at FROM User WHERE user_id = ?`)
-            .get(userId);
-
-        if (!userRow || !isUserRow(userRow)) {
-            const response: ApiResponse<User> = {
-                success: false,
-                error: {
-                    code: ApiErrorCode.NOT_FOUND,
-                    message: "User not found..."
-                },
-            };
-
-            ctx.response.status = 404;
-            ctx.response.body = response;
-
-            return;
-        }
-        
-        const response: ApiResponse<User> = {
-            success: true,
-            data: userRowToApi(userRow),
-        };
-      
-        ctx.response.status = 200;
-        ctx.response.body = response;
-    } catch (error: any) {
-        console.error("Detailed SQL error : ", error.message);
-        ctx.response.status = 500;
-        ctx.response.body = { success: false, error: { message: error.message } };
+    if (!userId) {
+      throw new APIException(
+        ApiErrorCode.UNAUTHORIZED,
+        401,
+        "User not identified in the token...",
+      );
     }
+
+    const userRow = db
+      .prepare(
+        `SELECT user_id, pseudo, name, last_name, password, isAdmin, created_at FROM User WHERE user_id = ?`,
+      )
+      .get(userId);
+
+    if (!userRow || !isUserRow(userRow)) {
+      const response: ApiResponse<User> = {
+        success: false,
+        error: {
+          code: ApiErrorCode.NOT_FOUND,
+          message: "User not found...",
+        },
+      };
+
+      ctx.response.status = 404;
+      ctx.response.body = response;
+
+      return;
+    }
+
+    const response: ApiResponse<User> = {
+      success: true,
+      data: userRowToApi(userRow),
+    };
+
+    ctx.response.status = 200;
+    ctx.response.body = response;
+  } catch (error: any) {
+    console.error("Detailed SQL error : ", error.message);
+    ctx.response.status = 500;
+    ctx.response.body = { success: false, error: { message: error.message } };
+  }
 });

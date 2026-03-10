@@ -1,7 +1,7 @@
 import { SQLOutputValue } from "node:sqlite";
 
 export interface User {
-    userId: number;
+    userId: string;
     pseudo: string;
     name: string;
     lastName: string;
@@ -12,7 +12,7 @@ export interface User {
 }
 
 export interface UserRow {
-    user_id: number;
+    user_id: string;
     pseudo: string;
     name: string;
     last_name: string;
@@ -25,7 +25,7 @@ export interface UserRow {
 
 export function isUserRow(obj: Record<string, SQLOutputValue>): obj is UserRow {
     return (
-        "user_id" in obj && typeof obj.user_id === "number" &&
+        "user_id" in obj && typeof obj.user_id === "string" &&
         "pseudo" in obj && typeof obj.pseudo === "string" &&
         "name" in obj && typeof obj.name === "string" &&
         "last_name" in obj && typeof obj.last_name === "string" &&
