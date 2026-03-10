@@ -123,11 +123,13 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Invitation` (
   `invitation_id` CHAR(36) NOT NULL,
   `status` ENUM("Pending", "Accepted", "Rejected") NULL,
   `inviter_id` CHAR(36) NOT NULL,
+  `invitee_id` CHAR(36) NOT NULL,
   `board_id` CHAR(36) NOT NULL,
-  PRIMARY KEY (`invitation_id`, `inviter_id`, `board_id`),
+  PRIMARY KEY (`invitation_id`, `inviter_id`, `board_id`, `invitee_id`),
   UNIQUE INDEX `invitation_id_UNIQUE` (`invitation_id` ASC) VISIBLE,
   INDEX `fk_Invitation_Board1_idx` (`board_id` ASC) VISIBLE,
   INDEX `fk_Invitation_User1_idx` (`inviter_id` ASC) VISIBLE,
+  INDEX `fk_Invitation_User2_idx` (`invitee_id` ASC) VISIBLE,
   CONSTRAINT `fk_Invitation_Board1`
     FOREIGN KEY (`board_id`)
     REFERENCES `e22206673_db1`.`Board` (`board_id`)
@@ -138,6 +140,11 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Invitation` (
     REFERENCES `e22206673_db1`.`User` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
+  CONSTRAINT `fk_Invitation_User2`
+    FOREIGN KEY (`invitee_id`)
+    REFERENCES `e22206673_db1`.`User` (`user_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
 ENGINE = InnoDB;
 
 
