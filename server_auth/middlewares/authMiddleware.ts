@@ -16,7 +16,7 @@ export interface AuthState extends State {
 export async function authMiddleware(ctx: AuthContext, next: Next) {
     const authHeader = ctx.request.headers.get("Authorization");
 
-    if (!authHeader || authHeader.startsWith("Bearer ")) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
         throw new APIException(
             ApiErrorCode.UNAUTHORIZED,
             401,
