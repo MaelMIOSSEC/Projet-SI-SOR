@@ -139,12 +139,12 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Invitation` (
     FOREIGN KEY (`inviter_id`)
     REFERENCES `e22206673_db1`.`User` (`user_id`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE NO ACTION,
   CONSTRAINT `fk_Invitation_User2`
     FOREIGN KEY (`invitee_id`)
     REFERENCES `e22206673_db1`.`User` (`user_id`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 

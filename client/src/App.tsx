@@ -1,4 +1,4 @@
-import { BrowserRouter, Route } from "react-router";
+import { BrowserRouter, Route, Routes } from "react-router";
 
 import Login from "./pages/Login";
 import './App.css'
@@ -6,7 +6,9 @@ import './App.css'
 function App() {
   return (
     <BrowserRouter>
-      <Route path="/" element={<Login />} />
+      <Routes>
+        <Route path="/" element={<Login />} />
+      </Routes>
     </BrowserRouter>
   )
 }
