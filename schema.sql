@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`User` (
   `last_name` VARCHAR(50) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
-  `isAdmin` BOOLEAN NOT NULL,
+  `is_admin` BOOLEAN NOT NULL,
   `created_at` DATE NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `user_id_UNIQUE` (`user_id` ASC) VISIBLE,

@@ -1,6 +1,5 @@
 import { Router, context } from "@oak/oak";
-import { mysql } from "mysql";
-import { Deno } from "https://deno.land/std@0.208.0/version.ts";
+import mysql from "npm:mysql";
 import { createJWT, hashPassword, verifyPassword } from "../lib/jwt.ts";
 import {
   ApiErrorCode,
@@ -14,7 +13,7 @@ import { userRowToApi } from "../mappers/userMapper.ts";
 import { AuthResponse } from "../types/autentificationType.ts";
 
 const connection = mysql.createConnection({
-  host: Deno.env.get("MYSQL_HOST") || "localhost",
+  host: Deno.env.get("MYSQL_HOST") || "obiwan.univ-brest.fr",
   port: Number(Deno.env.get("MYSQL_PORT") || "3306"),
   user: Deno.env.get("MYSQL_USER") || "e22206673sql",
   password: Deno.env.get("MYSQL_PASSWORD") || "rDoKnVI6",
@@ -26,8 +25,6 @@ const router = new Router({ prefix: "/users" });
 router.post("/register", async (ctx: context) => {
   try {
     const data = await ctx.request.body.json();
-
-    console.log("test")
 
     const existingUsers = await connection.query(
         `SELECT pseudo FROM User WHERE pseudo = ?`, [data.pseudo]
@@ -53,7 +50,7 @@ router.post("/register", async (ctx: context) => {
     const createdAtValue = new Date().toISOString().split("T")[0];
 
     const insertResult = await connection.query(
-      `INSERT INTO User (user_id, pseudo, name, last_name, password, email, isAdmin, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO User (user_id, pseudo, name, last_name, password, email, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         userIdValue,
         data.pseudo,
@@ -87,6 +84,8 @@ router.post("/register", async (ctx: context) => {
     );
 
     if (!userRow[0] || !isUserRow(userRow[0])) {
+      console.log("Erreur...")
+      console.log("UserRow => ", userRow[0])
       const response: ApiResponse<User> = {
         success: false,
         error: {
@@ -237,3 +236,5 @@ router.get("/me", authMiddleware, async (ctx: AuthContext) => {
     ctx.response.body = { success: false, error: { message: error.message } };
   }
 });
+
+export default router;

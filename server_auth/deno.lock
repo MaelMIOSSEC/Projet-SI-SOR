@@ -19,6 +19,8 @@
     "jsr:@std/path@1.0": "1.0.9",
     "jsr:@std/path@^1.1.4": "1.1.4",
     "jsr:@tajpouria/cors@^1.2.1": "1.2.1",
+    "npm:@panva/jose@*": "1.9.3",
+    "npm:mysql@*": "2.18.1",
     "npm:mysql@^2.18.1": "2.18.1",
     "npm:path-to-regexp@^6.3.0": "6.3.0"
   },
@@ -113,6 +115,16 @@
     }
   },
   "npm": {
+    "@panva/asn1.js@1.0.0": {
+      "integrity": "sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw=="
+    },
+    "@panva/jose@1.9.3": {
+      "integrity": "sha512-oKzjM5YsCSaL+/7NDQhfqeu0xj7owqRduNLM/W+dtIyGI7/AIaPue/bz4fqjYVDTpmRtrlsserR6kiqJucmbjA==",
+      "dependencies": [
+        "jose"
+      ],
+      "deprecated": true
+    },
     "bignumber.js@9.0.0": {
       "integrity": "sha512-t/OYhhJ2SD+YGBQcjY8GzzDHEk9f3nerxjtfa6tlMXfe7frs/WozhvCNoGvpM0P3bNf3Gq5ZRMlGr5f3r4/N8A=="
     },
@@ -124,6 +136,13 @@
     },
     "isarray@1.0.0": {
       "integrity": "sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ=="
+    },
+    "jose@1.28.2": {
+      "integrity": "sha512-wWy51U2MXxYi3g8zk2lsQ8M6O1lartpkxuq1TYexzPKYLgHLZkCjklaATP36I5BUoWjF2sInB9U1Qf18fBZxNA==",
+      "dependencies": [
+        "@panva/asn1.js"
+      ],
+      "deprecated": true
     },
     "mysql@2.18.1": {
       "integrity": "sha512-Bca+gk2YWmqp2Uf6k5NFEurwY/0td0cpebAucFpY/3jhrwrVGuxU2uQFCHjU19SJfje0yQvi+rVWdq78hR5lig==",
@@ -167,6 +186,9 @@
     "util-deprecate@1.0.2": {
       "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw=="
     }
+  },
+  "remote": {
+    "https://deno.land/std@0.208.0/version.ts": "a3207ea06bba42f09c7c7ab46590b202c98366f26d2ae31622a4839257dbc790"
   },
   "workspace": {
     "dependencies": [

@@ -1,5 +1,5 @@
 import { randomBytes, scrypt } from "node:crypto";
-import { jwtVerify, SignJWT } from "@panva/jose";
+import * as jose from "npm:@panva/jose";
 
 import { type AuthPayload, isAuthPayload } from "../types/autentificationType.ts";
 
@@ -9,7 +9,7 @@ const JWT_KEY = new TextEncoder().encode(JWT_SECRET);
 export async function createJWT(
     payload: Omit<AuthPayload, "exp">
 ): Promise<string> {
-    return await new SignJWT(payload)
+    return await new jose.SignJWT(payload)
         .setProtectedHeader({ alg: "HS256" })
         .setExpirationTime("24h")
         .sign(JWT_KEY);
@@ -17,7 +17,7 @@ export async function createJWT(
 
 export async function verifyJWT(token: string): Promise<AuthPayload | null> {
     try {
-        const { payload } = await jwtVerify(token, JWT_SECRET);
+        const { payload } = await jose.jwtVerify(token, JWT_SECRET);
 
         if (isAuthPayload(payload)) {
             return payload;

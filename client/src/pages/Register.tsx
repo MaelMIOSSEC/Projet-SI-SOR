@@ -26,6 +26,8 @@ export default function Login() {
     const lastName = formData.get("lastName");
     const email = formData.get("email");
 
+    console.log("FROM DATA username => ", username);
+
     try {
       const res = await fetch(`${API_URL}/users/register`, {
         method: "POST",
@@ -130,9 +132,10 @@ export default function Login() {
             <input
               style={{ width: "480px", height: "40px", fontSize: "16px" }}
               type="text"
-              id="username"
+              name="username"
               required
               placeholder="Enter your Username"
+              disabled={state.status === "submitting"}
             />
           </div>
           <div style={{ margin: "10px 0", width: "510px" }}>
@@ -150,9 +153,10 @@ export default function Login() {
             <input
               style={{ width: "480px", height: "40px", fontSize: "16px" }}
               type="password"
-              id="password"
+              name="password"
               required
               placeholder="Enter your Password"
+              disabled={state.status === "submitting"}
             />
           </div>
           <div
@@ -178,9 +182,10 @@ export default function Login() {
               <input
                 style={{ width: "200px", height: "40px", fontSize: "16px" }}
                 type="text"
-                id="name"
+                name="name"
                 required
                 placeholder="Enter your Name"
+                disabled={state.status === "submitting"}
               />
             </div>
             <div style={{ padding: "0 48px" }}>
@@ -198,9 +203,10 @@ export default function Login() {
               <input
                 style={{ width: "200px", height: "40px", fontSize: "16px" }}
                 type="text"
-                id="lastName"
+                name="lastName"
                 required
                 placeholder="Enter your Lastname"
+                disabled={state.status === "submitting"}
               />
             </div>
           </div>
@@ -219,9 +225,10 @@ export default function Login() {
             <input
               style={{ width: "480px", height: "40px", fontSize: "16px" }}
               type="text"
-              id="email"
+              name="email"
               required
               placeholder="Enter your Email"
+              disabled={state.status === "submitting"}
             />
           </div>
           <button

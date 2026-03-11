@@ -1,5 +1,6 @@
 import { Application } from "@oak/oak";
 import { oakCors } from "@tajpouria/cors";
+import userRouter from "./routes/userRoutes.ts";
 
 // ---------- Application --------------------------------
 
@@ -11,6 +12,8 @@ const ADDRESS = `${PROTOCOL}://${HOSTNAME}:${PORT}`;
 const app = new Application();
 
 app.use(oakCors());
+app.use(userRouter.routes());
+app.use(userRouter.allowedMethods());
 
 app.addEventListener("listen", () =>
   console.log(`Server listening on ${ADDRESS}`)
