@@ -2,6 +2,8 @@ package server_data.services.impl;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import jakarta.persistence.EntityNotFoundException;
 import server_data.dtos.BoardDto;
 import server_data.dtos.KanbanColumnDto;
@@ -11,6 +13,7 @@ import server_data.mappers.BoardMapper;
 import server_data.repositories.BoardRepository;
 import server_data.services.BoardService;
 
+@Service("BoardService")
 public class BoardServiceImpl implements BoardService{
 
     private final BoardRepository boardRepository;

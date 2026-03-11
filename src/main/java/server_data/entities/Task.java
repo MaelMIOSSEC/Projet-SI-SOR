@@ -28,11 +28,11 @@ public class Task {
     @Column(name = "priority")
     private Priority priority;
 
-    @CollectionTable(name = "fk_Task_User1", joinColumns = @JoinColumn(name = "user_id"))
+    @ManyToOne
     @Column(name = "user_id")
     private String userId;
 
-    @CollectionTable(name = "fk_Task_KanbanColumn1", joinColumns = @JoinColumn(name = "kanban_column_id"))
+    @ManyToOne
     @Column(name = "kanban_column_id")
     private String kanbanColumnId;
 
@@ -40,5 +40,6 @@ public class Task {
     private int position;
 
     // Avoir plus tard car les commentaires sont dans la BDD MongoDB
+    @Transient
     private List<Comment> comments;
 }
