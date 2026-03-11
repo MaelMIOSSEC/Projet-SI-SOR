@@ -3,7 +3,7 @@ import {User, UserRow} from "../types/userType.ts";
 export function userRowToApi(row: UserRow): User {
     return {
         userId: row.user_id,
-        pseudo: row.pseudo,
+        username: row.username,
         name: row.name,
         lastName: row.last_name,
         password: row.password,

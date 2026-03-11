@@ -26,8 +26,6 @@ export default function Login() {
     const lastName = formData.get("lastName");
     const email = formData.get("email");
 
-    console.log("FROM DATA username => ", username);
-
     try {
       const res = await fetch(`${API_URL}/users/register`, {
         method: "POST",

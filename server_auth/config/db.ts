@@ -6,7 +6,7 @@ const connection = await new Client().connect({
   port: Number(Deno.env.get("MYSQL_PORT") || "3306"),
   username: Deno.env.get("MYSQL_USER") || "e22206673sql",
   password: Deno.env.get("MYSQL_PASSWORD") || "rDoKnVI6",
-  database: Deno.env.get("MYSQL_DATABASE") || "e22206673_db1",
+  db: Deno.env.get("MYSQL_DATABASE") || "e22206673_db1",
 });
 
 export default connection;

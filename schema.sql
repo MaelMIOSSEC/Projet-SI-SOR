@@ -22,7 +22,7 @@ USE `e22206673_db1` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `e22206673_db1`.`User` (
   `user_id` CHAR(36) NOT NULL,
-  `pseudo` VARCHAR(50) NOT NULL,
+  `username` VARCHAR(50) NOT NULL,
   `name` VARCHAR(50) NOT NULL,
   `last_name` VARCHAR(50) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`User` (
   `created_at` DATE NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `user_id_UNIQUE` (`user_id` ASC) VISIBLE,
-  UNIQUE INDEX `pseudo_UNIQUE` (`pseudo` ASC) VISIBLE)
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 

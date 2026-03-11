@@ -1,5 +1,5 @@
 import { Router, context } from "@oak/oak";
-import mysql from "npm:mysql";
+import connection from "../config/db.ts";
 import { createJWT, hashPassword, verifyPassword } from "../lib/jwt.ts";
 import {
   ApiErrorCode,
@@ -12,22 +12,16 @@ import { isUserRow } from "../types/userType.ts";
 import { userRowToApi } from "../mappers/userMapper.ts";
 import { AuthResponse } from "../types/autentificationType.ts";
 
-const connection = mysql.createConnection({
-  host: Deno.env.get("MYSQL_HOST") || "obiwan.univ-brest.fr",
-  port: Number(Deno.env.get("MYSQL_PORT") || "3306"),
-  user: Deno.env.get("MYSQL_USER") || "e22206673sql",
-  password: Deno.env.get("MYSQL_PASSWORD") || "rDoKnVI6",
-  database: Deno.env.get("MYSQL_DATABASE") || "e22206673_db1",
-});
-
 const router = new Router({ prefix: "/users" });
 
 router.post("/register", async (ctx: context) => {
   try {
     const data = await ctx.request.body.json();
 
+    console.log("username => ", data)
+
     const existingUsers = await connection.query(
-        `SELECT pseudo FROM User WHERE pseudo = ?`, [data.pseudo]
+        `SELECT username FROM User WHERE username = ?`, [data.username]
     );
 
     if (existingUsers.length > 0) {
@@ -50,10 +44,10 @@ router.post("/register", async (ctx: context) => {
     const createdAtValue = new Date().toISOString().split("T")[0];
 
     const insertResult = await connection.query(
-      `INSERT INTO User (user_id, pseudo, name, last_name, password, email, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO User (user_id, username, name, last_name, password, email, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         userIdValue,
-        data.pseudo,
+        data.username,
         data.name,
         data.lastName,
         passwordHash,
@@ -79,7 +73,7 @@ router.post("/register", async (ctx: context) => {
     }
 
     const userRow = await connection.query(
-      `SELECT user_id, pseudo, name, last_name, password, email, isAdmin, created_at FROM User WHERE user_id = ?`,
+      `SELECT user_id, username, name, last_name, password, email, is_admin, created_at FROM User WHERE user_id = ?`,
       [userIdValue],
     );
 
@@ -119,9 +113,9 @@ router.post("/login", async (ctx: context) => {
     const data = await ctx.request.body.json();
 
     const passwordValue = data.password;
-    const pseudoValue = data.pseudo;
+    const usernameValue = data.username;
 
-    if (!passwordValue || !pseudoValue) {
+    if (!passwordValue || !usernameValue) {
       throw new APIException(
         ApiErrorCode.UNAUTHORIZED,
         404,
@@ -130,15 +124,15 @@ router.post("/login", async (ctx: context) => {
     }
 
     const userRow = await connection.query(
-      `SELECT user_id, pseudo, name, last_name, password, isAdmin, created_at FROM User WHERE pseudo = ?`,
-      [pseudoValue],
+      `SELECT user_id, username, name, last_name, password, is_admin, created_at FROM User WHERE username = ?`,
+      [usernameValue],
     );
 
     if (userRow[0] && isUserRow(userRow[0])) {
       if (await verifyPassword(data.password, userRow[0].password)) {
         const userPayload = {
           userId: userRow[0].user_id,
-          username: userRow[0].pseudo,
+          username: userRow[0].username,
           isAdmin: userRow[0].isAdmin,
         };
 
@@ -204,7 +198,7 @@ router.get("/me", authMiddleware, async (ctx: AuthContext) => {
     }
 
     const userRow = await connection.query(
-      `SELECT user_id, pseudo, name, last_name, password, isAdmin, created_at FROM User WHERE user_id = ?`,
+      `SELECT user_id, username, name, last_name, password, isAdmin, created_at FROM User WHERE user_id = ?`,
       [userId],
     );
 

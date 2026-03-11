@@ -4,7 +4,7 @@
 
 export interface User {
     userId: string;
-    pseudo: string;
+    username: string;
     name: string;
     lastName: string;
     password: string;
