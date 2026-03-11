@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import server_data.dtos.KanbanColumnDto;
 import server_data.dtos.TaskDto;
 import server_data.services.KanbanColumnService;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController

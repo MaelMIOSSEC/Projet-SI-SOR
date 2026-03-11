@@ -24,47 +24,47 @@ public class BoardController {
         this.boardService = boardService;
     }
 
-    @GetMapping("/Boards")
+    @GetMapping("/boards")
     public List<BoardDto> getAllBoard() {
         return this.boardService.getAllBoard();
     }
 
-    @GetMapping("/Boards/{idBoard}")
+    @GetMapping("/boards/{idBoard}")
     public BoardDto getBoardById(@PathVariable String idBoard) {
         return this.boardService.getBoardById(idBoard);
     }
 
-    @PostMapping("/Boards")
+    @PostMapping("/boards")
     public BoardDto createBoard(final @RequestBody BoardDto boardDto) {
         return this.boardService.createBoard(boardDto);
     }
 
-    @PutMapping("/Boards/{idBoard}")
+    @PutMapping("/boards/{idBoard}")
     public BoardDto updateBoard(@PathVariable String idBoard, @RequestBody BoardDto boardDto) {
         return this.boardService.updateBoard(idBoard, boardDto);
     }
 
-    @DeleteMapping("/Boards/{idBoard}")
+    @DeleteMapping("/boards/{idBoard}")
     public Boolean deleteBoard(@PathVariable String idBoard) {
         return this.boardService.deleteBoard(idBoard);
     }
 
-    @PostMapping("/Boards/{idBoard}/columns")
+    @PostMapping("/boards/{idBoard}/columns")
     public KanbanColumnDto createColumnToBoard(@PathVariable String idBoard, @RequestBody KanbanColumnDto columnDto) {
         return this.boardService.createColumnToBoard(idBoard, columnDto);
     }
 
-    @DeleteMapping("/Boards/{idBoard}/columns/{idColumn}")
+    @DeleteMapping("/boards/{idBoard}/columns/{idColumn}")
     public Boolean deleteColumnToBoard(@PathVariable String idBoard, @PathVariable String idColumn) {
         return this.boardService.deleteColumnToBoard(idBoard, idColumn);
     }
 
-    @PostMapping("/Boards/{idBoard}/users")
+    @PostMapping("/boards/{idBoard}/users")
     public UserDto addUserToBoard(@PathVariable String idBoard, @RequestBody UserDto userDto) {
         return this.boardService.addUserToBoard(idBoard, userDto);
     }
 
-    @DeleteMapping("/Boards/{idBoard}/users/{idUser}")
+    @DeleteMapping("/boards/{idBoard}/users/{idUser}")
     public Boolean delUserToBoard(@PathVariable String idBoard, @PathVariable String idUser) {
         return this.boardService.delUserToBoard(idBoard, idUser);
     }

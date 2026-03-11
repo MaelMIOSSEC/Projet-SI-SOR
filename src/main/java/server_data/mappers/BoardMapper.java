@@ -2,9 +2,12 @@ package server_data.mappers;
 
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
 import server_data.dtos.BoardDto;
 import server_data.entities.Board;
 
+@Component
 public class BoardMapper {
 
     private KanbanColumnMapper kanbanColumnMapper;

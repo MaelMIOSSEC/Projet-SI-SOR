@@ -1,8 +1,11 @@
 package server_data.mappers;
 
+import org.springframework.stereotype.Component;
+
 import server_data.dtos.TaskDto;
 import server_data.entities.Task;
 
+@Component
 public class TaskMapper {
 
     public TaskDto toDto(Task task) {

@@ -1,8 +1,11 @@
 package server_data.mappers;
 
+import org.springframework.stereotype.Component;
+
 import server_data.dtos.KanbanColumnDto;
 import server_data.entities.KanbanColumn;
 
+@Component
 public class KanbanColumnMapper {
     
     public KanbanColumnDto toDto(KanbanColumn kanbanColumn) {
