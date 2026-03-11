@@ -27,7 +27,7 @@ export function isAuthPayload(obj: AuthPayload): obj is AuthPayload {
     return (
         "userId" in obj && typeof obj.userId === "string" &&
         "username" in obj && typeof obj.username === "string" &&
-        "isAdmin" in obj && typeof obj.isAdmin === "boolean" &&
+        "isAdmin" in obj && typeof obj.isAdmin === "number" &&
         "exp" in obj && typeof obj.exp === "number"
     );
 }

@@ -9,7 +9,7 @@ export interface User {
     lastName: string;
     password: string;
     email: string;
-    role: string;
+    isAdmin: boolean;
     createdAt: string;
 }
 

@@ -18,8 +18,6 @@ router.post("/register", async (ctx: context) => {
   try {
     const data = await ctx.request.body.json();
 
-    console.log("username => ", data)
-
     const existingUsers = await connection.query(
         `SELECT username FROM User WHERE username = ?`, [data.username]
     );
@@ -78,8 +76,6 @@ router.post("/register", async (ctx: context) => {
     );
 
     if (!userRow[0] || !isUserRow(userRow[0])) {
-      console.log("Erreur...")
-      console.log("UserRow => ", userRow[0])
       const response: ApiResponse<User> = {
         success: false,
         error: {
@@ -124,7 +120,7 @@ router.post("/login", async (ctx: context) => {
     }
 
     const userRow = await connection.query(
-      `SELECT user_id, username, name, last_name, password, is_admin, created_at FROM User WHERE username = ?`,
+      `SELECT user_id, username, name, last_name, password, email, is_admin, created_at FROM User WHERE username = ?`,
       [usernameValue],
     );
 

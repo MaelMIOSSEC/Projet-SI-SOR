@@ -8,7 +8,7 @@ export function userRowToApi(row: UserRow): User {
         lastName: row.last_name,
         password: row.password,
         email: row.email,
-        role: row.role,
-        createdAt: row.created_at
+        isAdmin: row.is_admin === 0 ? false : true,
+        createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at
     }
 }

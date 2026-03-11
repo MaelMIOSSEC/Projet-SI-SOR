@@ -5,6 +5,7 @@
     "jsr:@denosaurs/plug@1": "1.1.0",
     "jsr:@oak/commons@1": "1.0.1",
     "jsr:@oak/oak@^17.2.0": "17.2.0",
+    "jsr:@panva/jose@*": "6.2.1",
     "jsr:@std/assert@1": "1.0.19",
     "jsr:@std/bytes@1": "1.0.6",
     "jsr:@std/crypto@1": "1.0.5",
@@ -63,6 +64,9 @@
         "jsr:@std/path@1",
         "npm:path-to-regexp"
       ]
+    },
+    "@panva/jose@6.2.1": {
+      "integrity": "6725a90a47be84c57a0f889c73bf09c6a209019c816f1f029f9084929fadfcbf"
     },
     "@std/assert@1.0.19": {
       "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",

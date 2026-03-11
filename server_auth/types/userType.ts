@@ -7,7 +7,7 @@ export interface User {
     lastName: string;
     password: string;
     email: string;
-    role: string;
+    isAdmin: boolean;
     createdAt: string;
 }
 
@@ -18,8 +18,8 @@ export interface UserRow {
     last_name: string;
     password: string;
     email: string;
-    role: string;
-    created_at: string;
+    is_admin: number;
+    created_at: string | Date;
     [key: string]: SQLOutputValue;
 }
 
@@ -31,7 +31,7 @@ export function isUserRow(obj: Record<string, SQLOutputValue>): obj is UserRow {
         "last_name" in obj && typeof obj.last_name === "string" &&
         "password" in obj && typeof obj.password === "string" &&
         "email" in obj && typeof obj.email === "string" &&
-        "is_admin" in obj && typeof obj.role === "int" &&
-        "created_at" in obj && typeof obj.created_at === "string"
+        "is_admin" in obj && typeof obj.is_admin === "number" &&
+        "created_at" in obj && (typeof obj.created_at === "string" || obj.created_at instanceof Date)
     );
 }
