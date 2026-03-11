@@ -3,11 +3,17 @@ export default function Login() {
     <main
       style={{
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
       }}
     >
+       <div style={{ display: "flex", paddingBottom: "60px" }}>
+            <a href="#" style={{ border: "1px solid", textDecoration: "none", pointerEvents: "none", cursor: "default", backgroundColor: "#ccc"}}>Connexion</a>
+            <div style={{ width: "1px", height: "50px", backgroundColor: "black", margin: "0 20px" }}></div>
+            <a href="/register" style={{ border: "1px solid", textDecoration: "none"  }}>Inscription</a>
+        </div>
       <div
         style={{
           borderRadius: "30px",
@@ -17,11 +23,6 @@ export default function Login() {
           height: "450px",
         }}
       >
-        <div style={{     paddingBottom: "30px" }}>
-            <a href="#" style={{ border: "1px solid", padding: "8px", marginRight: "5px", textDecoration: "none", color: "black"}}>Connexion</a>
-            /
-            <a href="/register" style={{ border: "1px solid", padding: "8px", marginLeft: "5px", textDecoration: "none", color: "black"}}>Inscription</a>
-        </div>
         <h1 style={{ textTransform: "uppercase" }}>Connexion au compte</h1>
         <div
           style={{

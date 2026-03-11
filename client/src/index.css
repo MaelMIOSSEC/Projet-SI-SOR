@@ -55,3 +55,15 @@ button {
 button:hover {
   background-color: var(--primary-hover);
 }
+
+a {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: 15px 25px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 20px;
+}

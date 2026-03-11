@@ -27,6 +27,8 @@ router.post("/register", async (ctx: context) => {
   try {
     const data = await ctx.request.body.json();
 
+    console.log("test")
+
     const existingUsers = await connection.query(
         `SELECT pseudo FROM User WHERE pseudo = ?`, [data.pseudo]
     );
