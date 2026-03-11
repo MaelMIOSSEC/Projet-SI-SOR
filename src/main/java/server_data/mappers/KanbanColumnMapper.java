@@ -7,13 +7,23 @@ public class KanbanColumnMapper {
     
     public KanbanColumnDto toDto(KanbanColumn kanbanColumn) {
         if (kanbanColumn == null) return null;
-
-        return new KanbanColumnDto();
+        
+        KanbanColumnDto kanbanColumnDto = new KanbanColumnDto();
+        kanbanColumnDto.setId(kanbanColumn.getId());
+        kanbanColumnDto.setTitle(kanbanColumn.getTitle());
+        kanbanColumnDto.setPosition(kanbanColumn.getPosition());
+        kanbanColumnDto.setIdBoard(kanbanColumn.getIdBoard());
+        return kanbanColumnDto;
     }
 
     public KanbanColumn toEntity(KanbanColumnDto kanbanColumnDto) {
         if (kanbanColumnDto == null) return null;
 
-        return new KanbanColumn();
+        KanbanColumn kanbanColumn = new KanbanColumn();
+        kanbanColumn.setId(kanbanColumnDto.getId());
+        kanbanColumn.setTitle(kanbanColumnDto.getTitle());
+        kanbanColumn.setPosition(kanbanColumnDto.getPosition());
+        kanbanColumn.setIdBoard(kanbanColumnDto.getIdBoard());
+        return kanbanColumn;
     }
 }
