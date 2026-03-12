@@ -1,8 +1,11 @@
 package server_data.mappers;
 
+import org.springframework.stereotype.Component;
+
 import server_data.dtos.CommentDto;
 import server_data.entities.Comment;
 
+@Component
 public class CommentMapper {
 
     public CommentDto toDto(Comment comment) {

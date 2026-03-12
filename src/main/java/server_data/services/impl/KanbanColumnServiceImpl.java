@@ -9,7 +9,6 @@ import server_data.dtos.KanbanColumnDto;
 import server_data.dtos.TaskDto;
 import server_data.entities.Board;
 import server_data.entities.KanbanColumn;
-import server_data.mappers.BoardMapper;
 import server_data.mappers.KanbanColumnMapper;
 import server_data.mappers.TaskMapper;
 import server_data.repositories.BoardRepository;
@@ -54,7 +53,7 @@ public class KanbanColumnServiceImpl implements KanbanColumnService{
     public List<TaskDto> getTasksByColumn(String idColumn) {
         if (this.kanbanColumnRepository.existsById(idColumn)) return null;
 
-        return this.taskRepository.findByKanbanColumnId(idColumn).stream().map(this.taskMapper::toDto).toList();
+        return this.taskRepository.findByKanbanColumn_Id(idColumn).stream().map(this.taskMapper::toDto).toList();
     }
 
     @Override

@@ -29,7 +29,7 @@ public class BoardServiceImpl implements BoardService{
 
     @Override
     public List<BoardDto> getAllBoard() {
-        return this.boardRepository.findAllBoards().stream().map(this.boardMapper::toDto).toList();
+        return this.boardRepository.findAll().stream().map(this.boardMapper::toDto).toList();
     }
 
     @Override

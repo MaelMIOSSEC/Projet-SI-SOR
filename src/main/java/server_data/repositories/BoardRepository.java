@@ -8,9 +8,9 @@ import server_data.entities.Board;
 
 public interface BoardRepository extends JpaRepository<Board, String>{
 
-    List<Board> findAllBoards();
+    //List<Board> findAllBoards();
 
-    List<Board> findByUser(String userId);
+    List<Board> findByMembers_Id(String userId);
 
     List<Board> findByTitle(String title);
 

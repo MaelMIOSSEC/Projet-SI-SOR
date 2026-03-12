@@ -8,11 +8,11 @@ import java.util.List;
 
 public interface TaskRepository extends JpaRepository<Task, String> {
 
-    List<Task> findByKanbanColumnId(String kanbanColumnId);
+    List<Task> findByKanbanColumn_Id(String kanbanColumnId);
 
     List<Task> findByTitle(String title);
 
-    List<Task> findByUserId(String userId);
+    List<Task> findByUser_Id(String userId);
 
-    List<Task> findByBoardId(String boardId);
+    List<Task> findByKanbanColumn_Board_Id(String boardId);
 }

@@ -2,11 +2,14 @@ package server_data.services.impl;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import server_data.dtos.CommentDto;
 import server_data.mappers.CommentMapper;
 import server_data.repositories.CommentRepository;
 import server_data.services.CommentService;
 
+@Service("CommentService")
 public class CommentServiceImpl implements CommentService{
 
     private CommentRepository commentRepository;

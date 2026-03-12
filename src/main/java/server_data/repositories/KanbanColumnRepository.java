@@ -8,8 +8,8 @@ import server_data.entities.KanbanColumn;
 
 public interface KanbanColumnRepository extends JpaRepository<KanbanColumn, String> {
 
-    List<KanbanColumn> findByBoardIdByPositionAsc(String boardId);
+    List<KanbanColumn> findByBoard_IdOrderByPositionAsc(String boardId);
 
-    KanbanColumn findByTitleAndBoardId(String title, String boardId);
+    KanbanColumn findByTitleAndBoard_Id(String title, String boardId);
 
 }
