@@ -7,8 +7,13 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import server_data.dtos.TaskDto;
+import server_data.entities.KanbanColumn;
+import server_data.entities.Task;
+import server_data.entities.User;
 import server_data.mappers.TaskMapper;
+import server_data.repositories.KanbanColumnRepository;
 import server_data.repositories.TaskRepository;
+import server_data.repositories.UserRepository;
 import server_data.services.TaskService;
 
 @Service("TaskService")
@@ -17,10 +22,14 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
+    private final KanbanColumnRepository kanbanColumnRepository;
+    private final UserRepository userRepository;
 
-    public TaskServiceImpl(TaskRepository taskRepository, TaskMapper taskMapper) {
+    public TaskServiceImpl(TaskRepository taskRepository, TaskMapper taskMapper, KanbanColumnRepository kanbanColumnRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
+        this.kanbanColumnRepository = kanbanColumnRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -36,6 +45,12 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto createTask(TaskDto taskDto) {
         var task = this.taskMapper.toEntity(taskDto);
+        KanbanColumn kanbanColumn = this.kanbanColumnRepository.findById(taskDto.getKanbanColumnId())
+            .orElseThrow(() -> new EntityNotFoundException("Column not found!"));
+        task.setKanbanColumn(kanbanColumn);
+        User user = userRepository.findById(taskDto.getUserId())
+            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        task.setUser(user);
         return this.taskMapper.toDto(this.taskRepository.save(task));
     }
 
@@ -60,9 +75,15 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Boolean addingUser(String idTask, String idUser, TaskDto taskDto) {
-        if (!this.taskRepository.existsById(idTask)) return false;
-        var task = this.taskMapper.toEntity(taskDto);
-        task.setUserId(idUser);
+        Task task = this.taskRepository.findById(idTask)
+            .orElseThrow(() -> new EntityNotFoundException("Tâche non trouvée"));
+
+        User user = this.userRepository.findById(idUser)
+            .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé"));
+
+        task.setUser(user);
+
+        this.taskRepository.save(task);
         return true;
     }
 

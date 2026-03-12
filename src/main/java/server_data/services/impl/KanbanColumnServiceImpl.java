@@ -25,15 +25,15 @@ public class KanbanColumnServiceImpl implements KanbanColumnService{
     private TaskRepository taskRepository;
     private TaskMapper taskMapper;
     private BoardRepository boardRepository;
-    private BoardMapper boardMapper;
+    //private BoardMapper boardMapper;
 
-    public KanbanColumnServiceImpl(KanbanColumnRepository kanbanColumnRepository, KanbanColumnMapper kanbanColumnMapper, TaskRepository taskRepository, TaskMapper taskMapper, BoardRepository boardRepository, BoardMapper boardMapper) {
+    public KanbanColumnServiceImpl(KanbanColumnRepository kanbanColumnRepository, KanbanColumnMapper kanbanColumnMapper, TaskRepository taskRepository, TaskMapper taskMapper, BoardRepository boardRepository/* , BoardMapper boardMapper*/) {
         this.kanbanColumnRepository = kanbanColumnRepository;
         this.kanbanColumnMapper = kanbanColumnMapper;
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
         this.boardRepository = boardRepository;
-        this.boardMapper = boardMapper;
+        //this.boardMapper = boardMapper;
     }
 
     @Override

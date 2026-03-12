@@ -17,8 +17,12 @@ public class TaskMapper {
         taskDto.setDescription(task.getDescription());
         taskDto.setDeadline(task.getDeadline());
         taskDto.setPriority(task.getPriority());
-        taskDto.setUserId(task.getUserId());
-        taskDto.setKanbanColumnId(task.getKanbanColumnId());
+        if (task.getUser() != null) {
+            taskDto.setUserId(task.getUser().getId());
+        }
+        if (task.getKanbanColumn() != null) {
+            taskDto.setKanbanColumnId(task.getKanbanColumn().getId());
+        }
         taskDto.setPosition(task.getPosition());
         taskDto.setComments(task.getComments());
         return taskDto;
@@ -33,8 +37,8 @@ public class TaskMapper {
         task.setDescription(taskDto.getDescription());
         task.setDeadline(taskDto.getDeadline());
         task.setPriority(taskDto.getPriority());
-        task.setUserId(taskDto.getUserId());
-        task.setKanbanColumnId(taskDto.getKanbanColumnId());
+        //task.setUserId(taskDto.getUserId());
+        //task.setKanbanColumnId(taskDto.getKanbanColumnId());
         task.setPosition(taskDto.getPosition());
         task.setComments(taskDto.getComments());
         return task;
