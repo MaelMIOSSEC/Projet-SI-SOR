@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../hooks/useAuth.ts";
-import { useNavigate } from "react-router";
 
 const Navbar = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [isShrunk, setIsShrunk] = useState(false);

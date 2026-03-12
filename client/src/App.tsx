@@ -4,17 +4,20 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Index from "./pages/Index";
 import Navbar from "./components/Navbar";
+import AuthProvider from "./contexts/AuthProvider";
 import "./App.css";
 
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-      </Routes>
+      <AuthProvider>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

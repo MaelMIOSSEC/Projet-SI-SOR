@@ -4,7 +4,7 @@ import { AuthContext, type AuthContextValue } from "./AuthContext.ts";
 
 import { type AuthResponse } from "../model.ts";
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export default function AuthProvider({ children }: { children: ReactNode }) {
   const [authResponse, setAuthResponse] = useState<AuthResponse | null>(() => {
     const stored = localStorage.getItem("authResponse");
 

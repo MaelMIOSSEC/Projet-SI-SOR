@@ -65,6 +65,7 @@ export default function Login() {
     >
       <div style={{ display: "flex", paddingBottom: "60px" }}>
         <a
+          className="btn-link"
           href="#"
           style={{
             border: "1px solid",
@@ -85,6 +86,7 @@ export default function Login() {
           }}
         ></div>
         <a
+          className="btn-link"
           href="/register"
           style={{ border: "1px solid", textDecoration: "none" }}
         >
@@ -123,7 +125,7 @@ export default function Login() {
               Username*
             </p>
             <input
-              style={{ width: "480px", height: "40px", fontSize: "16px" }}
+              style={{ width: "510px", height: "40px", fontSize: "16px" }}
               type="text"
               name="username"
               required
@@ -144,7 +146,7 @@ export default function Login() {
               Password*
             </p>
             <input
-              style={{ width: "480px", height: "40px", fontSize: "16px" }}
+              style={{ width: "510px", height: "40px", fontSize: "16px" }}
               type="password"
               name="password"
               required

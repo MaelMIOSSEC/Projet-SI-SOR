@@ -70,6 +70,7 @@ export default function Login() {
     >
       <div style={{ display: "flex", paddingBottom: "60px" }}>
         <a
+          className="btn-link"
           href="/login"
           style={{ border: "1px solid", textDecoration: "none" }}
         >
@@ -85,6 +86,7 @@ export default function Login() {
         ></div>
         <a
           href="#"
+          className="btn-link"
           style={{
             border: "1px solid",
             textDecoration: "none",
@@ -128,7 +130,7 @@ export default function Login() {
               Username*
             </p>
             <input
-              style={{ width: "480px", height: "40px", fontSize: "16px" }}
+              style={{ width: "510px", height: "40px", fontSize: "16px" }}
               type="text"
               name="username"
               required
@@ -149,7 +151,7 @@ export default function Login() {
               Password*
             </p>
             <input
-              style={{ width: "480px", height: "40px", fontSize: "16px" }}
+              style={{ width: "510px", height: "40px", fontSize: "16px" }}
               type="password"
               name="password"
               required
@@ -178,7 +180,7 @@ export default function Login() {
                 Name*
               </p>
               <input
-                style={{ width: "200px", height: "40px", fontSize: "16px" }}
+                style={{ width: "230px", height: "40px", fontSize: "16px" }}
                 type="text"
                 name="name"
                 required
@@ -199,7 +201,7 @@ export default function Login() {
                 LastName*
               </p>
               <input
-                style={{ width: "200px", height: "40px", fontSize: "16px" }}
+                style={{ width: "230px", height: "40px", fontSize: "16px" }}
                 type="text"
                 name="lastName"
                 required
@@ -221,7 +223,7 @@ export default function Login() {
               Email*
             </p>
             <input
-              style={{ width: "480px", height: "40px", fontSize: "16px" }}
+              style={{ width: "510px", height: "40px", fontSize: "16px" }}
               type="text"
               name="email"
               required

@@ -11,13 +11,34 @@ public class UserMapper {
     public UserDto toDto(User user) {
         if (user == null) return null;
 
-        return new UserDto();
+        UserDto userDto = new UserDto();
+        userDto.setId(user.getId());
+        userDto.setUsername(user.getUsername());
+        userDto.setName(user.getName());
+        userDto.setLastName(user.getLastName());
+        userDto.setPassword(user.getPassword());
+        userDto.setEmail(user.getEmail());
+        userDto.setIsAdmin(user.getIsAdmin());
+        userDto.setCreatedAt(user.getCreatedAt());
+
+        return userDto;
     }
 
     public User toEntity(UserDto userDto) {
         if (userDto == null) return null;
 
-        return new User();
+        User user = new User();
+        if (userDto.getId() != "") user.setId(userDto.getId());
+        user.setId(userDto.getId());
+        user.setUsername(userDto.getUsername());
+        user.setName(userDto.getName());
+        user.setLastName(userDto.getLastName());
+        user.setPassword(userDto.getPassword());
+        user.setEmail(userDto.getEmail());
+        user.setIsAdmin(userDto.getIsAdmin());
+        user.setCreatedAt(userDto.getCreatedAt());
+
+        return user;
     }
 
 }
