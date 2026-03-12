@@ -28,8 +28,9 @@ public class UserMapper {
         if (userDto == null) return null;
 
         User user = new User();
-        if (userDto.getId() != "") user.setId(userDto.getId());
-        user.setId(userDto.getId());
+        if (userDto.getId() != null && !userDto.getId().isEmpty()) {
+            user.setId(userDto.getId());
+        }
         user.setUsername(userDto.getUsername());
         user.setName(userDto.getName());
         user.setLastName(userDto.getLastName());

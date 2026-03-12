@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class UserDto {
@@ -25,10 +26,10 @@ public class UserDto {
     @NotBlank(message = "The email is required.")
     private String email;
 
-    @NotBlank(message = "The role required.")
+    @NotNull(message = "The role is required.")
     private Integer isAdmin;
 
-    @NotBlank(message = "The created at date is required.")
+    @NotNull(message = "The created at date is required.")
     private LocalDate createdAt;
 
 }
