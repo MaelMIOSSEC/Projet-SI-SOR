@@ -29,7 +29,7 @@ public class Task {
     private Priority priority;
 
     @ManyToOne
-    @JoinColumn(name = "kanban_column_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
