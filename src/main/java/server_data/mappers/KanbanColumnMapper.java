@@ -15,7 +15,9 @@ public class KanbanColumnMapper {
         kanbanColumnDto.setId(kanbanColumn.getId());
         kanbanColumnDto.setTitle(kanbanColumn.getTitle());
         kanbanColumnDto.setPosition(kanbanColumn.getPosition());
-        kanbanColumnDto.setIdBoard(kanbanColumn.getIdBoard());
+        if (kanbanColumn.getBoard() != null) {
+            kanbanColumnDto.setIdBoard(kanbanColumn.getBoard().getId());
+        }
         return kanbanColumnDto;
     }
 
@@ -26,7 +28,7 @@ public class KanbanColumnMapper {
         kanbanColumn.setId(kanbanColumnDto.getId());
         kanbanColumn.setTitle(kanbanColumnDto.getTitle());
         kanbanColumn.setPosition(kanbanColumnDto.getPosition());
-        kanbanColumn.setIdBoard(kanbanColumnDto.getIdBoard());
+        kanbanColumn.setId(kanbanColumnDto.getIdBoard());
         return kanbanColumn;
     }
 }

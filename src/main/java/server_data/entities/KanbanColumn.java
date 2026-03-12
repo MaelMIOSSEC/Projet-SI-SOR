@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -26,6 +27,6 @@ public class KanbanColumn {
     private int position;
 
     @ManyToOne
-    @Column(name = "board_id")
-    private String idBoard;
+    @JoinColumn(name = "board_id", nullable = false)
+    private Board board;
 }

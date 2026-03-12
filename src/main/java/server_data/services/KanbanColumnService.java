@@ -12,4 +12,6 @@ public interface KanbanColumnService {
     KanbanColumnDto updateColumn(String idColumn, KanbanColumnDto kanbanColumnDto);
 
     List<TaskDto> getTasksByColumn(String idColumn);
+
+    KanbanColumnDto createColumn(KanbanColumnDto kanbanColumnDto);
 }
