@@ -3,6 +3,9 @@
   "specifiers": {
     "npm:@deno/vite-plugin@^1.0.6": "1.0.6_vite@7.3.1__@types+node@24.10.10__picomatch@4.0.3_@types+node@24.10.10",
     "npm:@eslint/js@^9.39.1": "9.39.2",
+    "npm:@fortawesome/fontawesome-svg-core@^7.2.0": "7.2.0",
+    "npm:@fortawesome/free-solid-svg-icons@^7.2.0": "7.2.0",
+    "npm:@fortawesome/react-fontawesome@^3.2.0": "3.2.0_@fortawesome+fontawesome-svg-core@7.2.0_react@19.2.4",
     "npm:@types/node@^24.10.1": "24.10.10",
     "npm:@types/react-dom@^19.2.3": "19.2.3_@types+react@19.2.11",
     "npm:@types/react@^19.2.14": "19.2.14",
@@ -13,6 +16,7 @@
     "npm:eslint-plugin-react-refresh@~0.4.24": "0.4.26_eslint@9.39.2",
     "npm:eslint@^9.39.1": "9.39.2",
     "npm:globals@^16.5.0": "16.5.0",
+    "npm:lucide-react@0.577": "0.577.0_react@19.2.4",
     "npm:react-bootstrap@^2.10.10": "2.10.10_@types+react@19.2.11_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:react-dom@^19.2.0": "19.2.4_react@19.2.4",
     "npm:react-router@^7.13.1": "7.13.1_react@19.2.4_react-dom@19.2.4__react@19.2.4",
@@ -354,6 +358,28 @@
       "dependencies": [
         "@eslint/core",
         "levn"
+      ]
+    },
+    "@fortawesome/fontawesome-common-types@7.2.0": {
+      "integrity": "sha512-IpR0bER9FY25p+e7BmFH25MZKEwFHTfRAfhOyJubgiDnoJNsSvJ7nigLraHtp4VOG/cy8D7uiV0dLkHOne5Fhw=="
+    },
+    "@fortawesome/fontawesome-svg-core@7.2.0": {
+      "integrity": "sha512-6639htZMjEkwskf3J+e6/iar+4cTNM9qhoWuRfj9F3eJD6r7iCzV1SWnQr2Mdv0QT0suuqU8BoJCZUyCtP9R4Q==",
+      "dependencies": [
+        "@fortawesome/fontawesome-common-types"
+      ]
+    },
+    "@fortawesome/free-solid-svg-icons@7.2.0": {
+      "integrity": "sha512-YTVITFGN0/24PxzXrwqCgnyd7njDuzp5ZvaCx5nq/jg55kUYd94Nj8UTchBdBofi/L0nwRfjGOg0E41d2u9T1w==",
+      "dependencies": [
+        "@fortawesome/fontawesome-common-types"
+      ]
+    },
+    "@fortawesome/react-fontawesome@3.2.0_@fortawesome+fontawesome-svg-core@7.2.0_react@19.2.4": {
+      "integrity": "sha512-E9Gu1hqd6JussVO26EC4WqRZssXMnQr2ol7ZNWkkFOH8jZUaxDJ9Z9WF9wIVkC+kJGXUdY3tlffpDwEKfgQrQw==",
+      "dependencies": [
+        "@fortawesome/fontawesome-svg-core",
+        "react"
       ]
     },
     "@humanfs/core@0.19.1": {
@@ -1190,6 +1216,12 @@
         "yallist"
       ]
     },
+    "lucide-react@0.577.0_react@19.2.4": {
+      "integrity": "sha512-4LjoFv2eEPwYDPg/CUdBJQSDfPyzXCRrVW1X7jrx/trgxnxkHFjnVZINbzvzxjN70dxychOfg+FTYwBiS3pQ5A==",
+      "dependencies": [
+        "react"
+      ]
+    },
     "minimatch@3.1.2": {
       "integrity": "sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==",
       "dependencies": [
@@ -1555,6 +1587,9 @@
       "dependencies": [
         "npm:@deno/vite-plugin@^1.0.6",
         "npm:@eslint/js@^9.39.1",
+        "npm:@fortawesome/fontawesome-svg-core@^7.2.0",
+        "npm:@fortawesome/free-solid-svg-icons@^7.2.0",
+        "npm:@fortawesome/react-fontawesome@^3.2.0",
         "npm:@types/node@^24.10.1",
         "npm:@types/react-dom@^19.2.3",
         "npm:@types/react@^19.2.14",
@@ -1564,6 +1599,7 @@
         "npm:eslint-plugin-react-refresh@~0.4.24",
         "npm:eslint@^9.39.1",
         "npm:globals@^16.5.0",
+        "npm:lucide-react@0.577",
         "npm:react-bootstrap@^2.10.10",
         "npm:react-dom@^19.2.0",
         "npm:react-router@^7.13.1",

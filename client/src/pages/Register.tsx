@@ -33,8 +33,6 @@ export default function Login() {
         body: JSON.stringify({ username, password, name, lastName, email }),
       });
 
-      console.log("Res => ", res);
-
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
