@@ -10,10 +10,11 @@ import server_data.dtos.UserDto;
 import server_data.entities.User;
 import server_data.mappers.UserMapper;
 import server_data.repositories.UserRepository;
+import server_data.services.UserService;
 
 @Service("UserService")
 @Transactional
-public class UserServiceImpl {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
