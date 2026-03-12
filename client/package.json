@@ -13,7 +13,9 @@
     "@deno/vite-plugin": "^1.0.6",
     "@types/react": "^19.2.14",
     "@vitejs/plugin-react": "^5.1.4",
+    "bootstrap": "^5.3.8",
     "react": "^19.2.0",
+    "react-bootstrap": "^2.10.10",
     "react-dom": "^19.2.0",
     "react-router": "^7.13.1"
   },
