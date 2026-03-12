@@ -69,7 +69,7 @@ const Navbar = () => {
                 <a
                   className="nav-link"
                   style={{ fontSize: 17 }}
-                  href="Services/services.html"
+                  href="/profil"
                 >
                   Profil
                 </a>
