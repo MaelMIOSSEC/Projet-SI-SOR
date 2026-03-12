@@ -12,16 +12,19 @@ import server_data.entities.Board;
 import server_data.mappers.BoardMapper;
 import server_data.repositories.BoardRepository;
 import server_data.services.BoardService;
+import server_data.services.KanbanColumnService;
 
 @Service("BoardService")
 public class BoardServiceImpl implements BoardService{
 
+    private final KanbanColumnService kanbanColumnService;
     private final BoardRepository boardRepository;
     private final BoardMapper boardMapper;
 
-    public BoardServiceImpl(BoardRepository boardRepository, BoardMapper boardMapper) {
+    public BoardServiceImpl(BoardRepository boardRepository, BoardMapper boardMapper, KanbanColumnService kanbanColumnService) {
         this.boardRepository = boardRepository;
         this.boardMapper = boardMapper;
+        this.kanbanColumnService = kanbanColumnService;
     }
 
     @Override
@@ -60,17 +63,8 @@ public class BoardServiceImpl implements BoardService{
 
     @Override
     public KanbanColumnDto createColumnToBoard(String idBoard, KanbanColumnDto kanbanColumnDto) {
-        BoardDto boardDto = this.boardRepository.findById(idBoard).map(this.boardMapper::toDto).orElseThrow(() -> new EntityNotFoundException("Board not found!"));
-        if (boardDto.getKanbanColumns().contains(kanbanColumnDto)) {
-            return null;
-        }
-        List<KanbanColumnDto> lKanbanColumnDto = boardDto.getKanbanColumns();
-        lKanbanColumnDto.add(kanbanColumnDto);
-        boardDto.setKanbanColumns(lKanbanColumnDto);
-        var board = this.boardMapper.toEntity(boardDto);
-        // Pas sur d'avoir besoin de la première partie de cette ligne
-        this.boardMapper.toDto(this.boardRepository.save(board));
-        return kanbanColumnDto;
+        kanbanColumnDto.setIdBoard(idBoard);
+        return this.kanbanColumnService.createColumn(kanbanColumnDto);
         
     }
 
