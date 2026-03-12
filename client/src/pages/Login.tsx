@@ -163,6 +163,22 @@ export default function Login() {
           >
             {state.status === "submitting" ? "Connexion..." : "Se connecter"}
           </button>
+          {state.status === "error" ? (
+            <p
+              style={{
+                border: "1px solid",
+                padding: "10px",
+                borderRadius: "15px",
+                backgroundColor: "red",
+                color: "white",
+                opacity: "50%",
+              }}
+            >
+              Une erreur s'est produite à l'enregistrement du formulaire...
+            </p>
+          ) : (
+            <></>
+          )}
         </form>
       </div>
     </main>
