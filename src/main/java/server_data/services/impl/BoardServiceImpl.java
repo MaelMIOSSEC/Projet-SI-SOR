@@ -10,10 +10,15 @@ import server_data.dtos.BoardDto;
 import server_data.dtos.KanbanColumnDto;
 import server_data.dtos.UserDto;
 import server_data.entities.Board;
+import server_data.entities.BoardMember;
 import server_data.entities.KanbanColumn;
+import server_data.entities.Role;
+import server_data.entities.User;
 import server_data.mappers.BoardMapper;
 import server_data.mappers.KanbanColumnMapper;
+import server_data.repositories.BoardMemberRepository;
 import server_data.repositories.BoardRepository;
+import server_data.repositories.UserRepository;
 import server_data.services.BoardService;
 import server_data.services.KanbanColumnService;
 
@@ -25,12 +30,16 @@ public class BoardServiceImpl implements BoardService{
     private final KanbanColumnMapper kanbanColumnMapper;
     private final BoardRepository boardRepository;
     private final BoardMapper boardMapper;
+    private final UserRepository userRepository;
+    private final BoardMemberRepository boardMemberRepository;
 
-    public BoardServiceImpl(BoardRepository boardRepository, BoardMapper boardMapper, KanbanColumnService kanbanColumnService, KanbanColumnMapper kanbanColumnMapper) {
+    public BoardServiceImpl(BoardRepository boardRepository, BoardMapper boardMapper, KanbanColumnService kanbanColumnService, KanbanColumnMapper kanbanColumnMapper, UserRepository userRepository, BoardMemberRepository boardMemberRepository) {
         this.boardRepository = boardRepository;
         this.boardMapper = boardMapper;
         this.kanbanColumnService = kanbanColumnService;
         this.kanbanColumnMapper = kanbanColumnMapper;
+        this.userRepository = userRepository;
+        this.boardMemberRepository = boardMemberRepository;
     }
 
     @Override
@@ -102,14 +111,26 @@ public class BoardServiceImpl implements BoardService{
 
     @Override
     public UserDto addUserToBoard(String idBoard, UserDto userDto) {
-        BoardDto boardDto = this.boardRepository.findById(idBoard).map(this.boardMapper::toDto).orElseThrow(() -> new EntityNotFoundException("Board not found!"));
-        if (boardDto.getMembers().contains(userDto)) return null;
+        Board board = this.boardRepository.findById(idBoard)
+            .orElseThrow(() -> new EntityNotFoundException("Board not found!"));
 
-        List<UserDto> lUserDto = boardDto.getMembers();
-        lUserDto.add(userDto);
-        boardDto.setMembers(lUserDto);
-        var board = this.boardMapper.toEntity(boardDto);
-        this.boardMapper.toDto(this.boardRepository.save(board));
+        User user = this.userRepository.findById(userDto.getId())
+            .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+        
+        if (board.getMembers().stream().anyMatch(m -> m.getUser().getId().equals(user.getId()))) {
+            return userDto; 
+        }
+
+        BoardMember membership = new BoardMember();
+        membership.setBoard(board);
+        membership.setUser(user);
+        membership.setRole(Role.Invited);
+
+        board.getMembers().add(membership);
+
+        this.boardRepository.save(board);
+        this.boardMemberRepository.save(membership);
+
         return userDto;
     }
 
@@ -117,13 +138,12 @@ public class BoardServiceImpl implements BoardService{
     public Boolean delUserToBoard(String idBoard, String idUser) {
         Board board = this.boardRepository.findById(idBoard).orElseThrow(() -> new EntityNotFoundException("Board not found!"));
 
-        boolean remove = board.getMembers().removeIf(user ->
-            user.getId().equals(idUser)
+        boolean remove = board.getMembers().removeIf(membership ->
+            membership.getUser().getId().equals(idUser)
         );
 
         if (remove) {
             this.boardRepository.save(board);
-            return remove;
         }
 
         return remove;

@@ -100,7 +100,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `e22206673_db1`.`BoardMember` (
   `user_id` CHAR(36) NOT NULL,
   `board_id` CHAR(36) NOT NULL,
-  `role` ENUM("Member", "Owner", "Invited") NULL,
+  `role` ENUM("Member", "Owner", "Invited") DEFAULT 'Invited',
   PRIMARY KEY (`user_id`, `board_id`),
   INDEX `fk_BoardMember_Board1_idx` (`board_id` ASC) VISIBLE,
   CONSTRAINT `fk_BoardMember_User`

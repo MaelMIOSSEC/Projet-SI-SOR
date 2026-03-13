@@ -10,7 +10,7 @@ public interface BoardRepository extends JpaRepository<Board, String>{
 
     //List<Board> findAllBoards();
 
-    List<Board> findByMembers_Id(String userId);
+    List<Board> findByMembers_User_Id(String userId);
 
     List<Board> findByTitle(String title);
 
