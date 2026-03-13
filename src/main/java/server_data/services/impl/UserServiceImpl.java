@@ -56,10 +56,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(String idUser, UserDto userDTO) {
-        if (!this.userRepository.existsById(idUser)) throw new EntityNotFoundException(" User not found!");
-        var User = this.userMapper.toEntity(userDTO);
-        User.setId(idUser);
-        return this.userMapper.toDto(this.userRepository.save(User));
+        User userToUpdate = this.userRepository.findById(idUser)
+            .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + idUser));
+        userToUpdate.setUsername(userDTO.getUsername());
+        userToUpdate.setName(userDTO.getName());
+        userToUpdate.setLastName(userDTO.getLastName());
+        userToUpdate.setEmail(userDTO.getEmail());
+
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isBlank()) {
+            userToUpdate.setPassword(userDTO.getPassword());
+        }
+    
+        userToUpdate.setIsAdmin(userDTO.getIsAdmin());
+
+        return this.userMapper.toDto(this.userRepository.save(userToUpdate));
     }
 
     @Override
