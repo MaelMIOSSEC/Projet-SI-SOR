@@ -5,26 +5,32 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import server_data.dtos.BoardDto;
 import server_data.dtos.KanbanColumnDto;
 import server_data.dtos.UserDto;
 import server_data.entities.Board;
+import server_data.entities.KanbanColumn;
 import server_data.mappers.BoardMapper;
+import server_data.mappers.KanbanColumnMapper;
 import server_data.repositories.BoardRepository;
 import server_data.services.BoardService;
 import server_data.services.KanbanColumnService;
 
 @Service("BoardService")
+@Transactional
 public class BoardServiceImpl implements BoardService{
 
     private final KanbanColumnService kanbanColumnService;
+    private final KanbanColumnMapper kanbanColumnMapper;
     private final BoardRepository boardRepository;
     private final BoardMapper boardMapper;
 
-    public BoardServiceImpl(BoardRepository boardRepository, BoardMapper boardMapper, KanbanColumnService kanbanColumnService) {
+    public BoardServiceImpl(BoardRepository boardRepository, BoardMapper boardMapper, KanbanColumnService kanbanColumnService, KanbanColumnMapper kanbanColumnMapper) {
         this.boardRepository = boardRepository;
         this.boardMapper = boardMapper;
         this.kanbanColumnService = kanbanColumnService;
+        this.kanbanColumnMapper = kanbanColumnMapper;
     }
 
     @Override
@@ -45,10 +51,20 @@ public class BoardServiceImpl implements BoardService{
 
     @Override
     public BoardDto updateBoard(String idBoard, BoardDto boardDto) {
-        if (!this.boardRepository.existsById(idBoard)) throw new EntityNotFoundException("Board not found!");
-        var board = this.boardMapper.toEntity(boardDto);
-        board.setId(idBoard);
-        return this.boardMapper.toDto(this.boardRepository.save(board));
+        Board boardToUpdate = this.boardRepository.findById(idBoard)
+            .orElseThrow(() -> new EntityNotFoundException("Board not found!"));
+        boardToUpdate.setTitle(boardDto.getTitle());
+        if (boardDto.getKanbanColumns() != null) {
+            boardToUpdate.getKanbanColumns().clear();
+        
+            List<KanbanColumn> newColumns = boardDto.getKanbanColumns().stream()
+                .map(this.kanbanColumnMapper::toEntity)
+                .toList();
+            newColumns.forEach(col -> col.setBoard(boardToUpdate));
+        
+            boardToUpdate.getKanbanColumns().addAll(newColumns);
+        }
+        return this.boardMapper.toDto(this.boardRepository.save(boardToUpdate));
     }
 
     @Override
