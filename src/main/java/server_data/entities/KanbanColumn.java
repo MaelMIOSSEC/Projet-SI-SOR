@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "KanbanColumn")
+@Table(name = "\"TKanbanColumnk\"")
 @Data
 public class KanbanColumn {
 
