@@ -11,9 +11,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+// import jakarta.persistence.JoinColumn;
+// import jakarta.persistence.JoinTable;
+// import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 //import lombok.Data;
 
@@ -35,11 +35,6 @@ public class Board {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<KanbanColumn> kanbanColumns;
 
-    @ManyToMany
-    @JoinTable(
-        name = "BoardMember",
-        joinColumns = @JoinColumn(name = "board_id"), 
-        inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<User> members;
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BoardMember> members;
 }

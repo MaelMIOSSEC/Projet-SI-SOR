@@ -62,6 +62,15 @@ public class KanbanColumnServiceImpl implements KanbanColumnService{
 
         Board board = this.boardRepository.findById(kanbanColumnDto.getIdBoard()).orElseThrow(() -> new EntityNotFoundException("Board not found!"));
 
+        List<KanbanColumn> lKanbanColumns = board.getKanbanColumns();
+        if (lKanbanColumns.size() < kanbanColumn.getPosition()) {
+            kanbanColumn.setPosition(lKanbanColumns.size() + 1);
+        }
+        for (int i = 0; i < lKanbanColumns.size() - 1; i++) {
+            if (lKanbanColumns.get(i).getPosition() == kanbanColumn.getPosition()) {
+                kanbanColumn.setPosition(lKanbanColumns.size() + 1);
+            }
+        }
         kanbanColumn.setBoard(board);
 
         return this.kanbanColumnMapper.toDto(this.kanbanColumnRepository.save(kanbanColumn));

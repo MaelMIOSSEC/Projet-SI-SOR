@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 
 import server_data.dtos.BoardDto;
 import server_data.entities.Board;
+import server_data.entities.BoardMember;
+import server_data.entities.Role;
 
 @Component
 public class BoardMapper {
@@ -30,7 +32,7 @@ public class BoardMapper {
         }
 
         if (board.getMembers() != null) {
-            boardDto.setMembers(board.getMembers().stream().map(this.userMapper::toDto).collect(Collectors.toList()));
+            boardDto.setMembers(board.getMembers().stream().map(membership -> this.userMapper.toDto(membership.getUser())).collect(Collectors.toList()));
         }
 
         return boardDto;
@@ -48,7 +50,14 @@ public class BoardMapper {
         }
         
         if (boardDto.getMembers() != null) {
-            board.setMembers(boardDto.getMembers().stream().map(this.userMapper::toEntity).collect(Collectors.toList()));
+            board.setMembers(boardDto.getMembers().stream().map(userDto -> {
+                BoardMember boardMember = new BoardMember();
+                boardMember.setUser(this.userMapper.toEntity(userDto));
+                boardMember.setBoard(board);
+                boardMember.setRole(Role.Invited);
+                return boardMember;
+
+            }).collect(Collectors.toList()));
         } 
         return board;
     }
