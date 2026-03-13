@@ -42,13 +42,16 @@ export default function Profil() {
 
       if (!res.ok) {
         alert("Erreur lors de la mise à jour du profil.");
+        setEditState({
+          status: "error",
+          error: `Update failed (${res.status})`,
+        });
         return;
       }
 
       const updatedUserFromServer = await res.json();
 
       if (setUser) {
-        // IMPORTANT : On passe l'objet complet mis à jour pour déclencher le re-rendu
         setUser({
           ...user,
           username: updatedUserFromServer.username,
@@ -76,14 +79,12 @@ export default function Profil() {
         display: "flex",
         flexDirection: "row",
         marginTop: "63px",
-        border: "1px solid",
         height: "800px",
       }}
     >
       <Sidebar />
       <div
         style={{
-          border: "1px solid",
           width: "75%",
           margin: "40px",
         }}
@@ -92,7 +93,6 @@ export default function Profil() {
         <div
           style={{
             borderRadius: "25px",
-            border: "1px solid",
             margin: "60px 200px",
           }}
         >

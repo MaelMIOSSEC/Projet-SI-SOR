@@ -1,6 +1,6 @@
 import { createContext } from "react";
 
-import { type AuthResponse } from "../model.ts";
+import { type AuthResponse, type User } from "../model.ts";
 
 export interface AuthContextValue {
   authResponse: AuthResponse | null;
@@ -11,4 +11,5 @@ export interface AuthContextValue {
 export const AuthContext = createContext<AuthContextValue>({
   authResponse: null,
   setAuthResponse: () => {},
+  setUser: () => {},
 });

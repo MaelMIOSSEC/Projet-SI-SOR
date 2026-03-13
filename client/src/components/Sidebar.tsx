@@ -6,6 +6,7 @@ import {
   ShieldUser,
   ChartNoAxesColumn,
 } from "lucide-react";
+import { URL_TOMCAT } from "../config/api";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -23,10 +24,37 @@ const Sidebar = () => {
     }
   };
 
+  const handleDelete = async (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch(`${URL_TOMCAT}/users/${user.userId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        alert("Erreur lors de la suppression du profil.");
+        setEditState({
+          status: "error",
+          error: `Update failed (${res.status})`,
+        });
+        return;
+      }
+
+      logout(user);
+      navigate("/");
+    } catch (error) {
+      setState({
+        status: "error",
+
+        error: error instanceof Error ? error.message : "Registration failed.",
+      });
+    }
+  };
+
   return (
     <div
       style={{
-        border: "1px solid",
         width: "25%",
         display: "flex",
         flexDirection: "column",
@@ -45,7 +73,6 @@ const Sidebar = () => {
         <a
           href="/profil"
           style={{
-            border: "1px solid",
             fontSize: "x-large",
             textDecoration: "none",
             color: "black",
@@ -59,7 +86,6 @@ const Sidebar = () => {
         <a
           href=""
           style={{
-            border: "1px solid",
             fontSize: "x-large",
             textDecoration: "none",
             color: "black",
@@ -73,9 +99,8 @@ const Sidebar = () => {
         {user.isAdmin === true ? (
           <>
             <a
-              href=""
+              href="/accountManagment"
               style={{
-                border: "1px solid",
                 fontSize: "x-large",
                 textDecoration: "none",
                 color: "black",
@@ -89,7 +114,6 @@ const Sidebar = () => {
             <a
               href=""
               style={{
-                border: "1px solid",
                 fontSize: "x-large",
                 textDecoration: "none",
                 color: "black",
@@ -107,7 +131,7 @@ const Sidebar = () => {
       </div>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <button
-        onClick={ logoutUser }
+          onClick={ logoutUser }
           type="button"
           className="btn btn-primary"
           style={{
@@ -120,6 +144,7 @@ const Sidebar = () => {
           Déconnexion
         </button>
         <button
+          onClick={ handleDelete }
           type="button"
           className="btn btn-danger"
           style={{

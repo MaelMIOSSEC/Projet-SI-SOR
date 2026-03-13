@@ -2,7 +2,7 @@ import { type ReactNode, useState } from "react";
 
 import { AuthContext, type AuthContextValue } from "./AuthContext.ts";
 
-import { type AuthResponse } from "../model.ts";
+import { type AuthResponse, type User } from "../model.ts";
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [authResponse, setAuthResponse] = useState<AuthResponse | null>(() => {

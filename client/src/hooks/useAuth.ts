@@ -1,11 +1,9 @@
 import { useContext } from "react";
-
 import { AuthContext } from "../contexts/AuthContext.ts";
-
 import { type AuthResponse } from "../model.ts";
 
 export const useAuth = () => {
-  const { authResponse, setAuthResponse } = useContext(AuthContext);
+  const { authResponse, setAuthResponse, setUser } = useContext(AuthContext);
 
   const login = (response: AuthResponse) => {
     setAuthResponse(response);
@@ -42,5 +40,6 @@ export const useAuth = () => {
     login,
     logout,
     authFetch,
+    setUser,
   };
 };
