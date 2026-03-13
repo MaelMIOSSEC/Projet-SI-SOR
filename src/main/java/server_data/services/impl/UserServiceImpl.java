@@ -1,5 +1,6 @@
 package server_data.services.impl;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -48,8 +49,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDTO) {
-        var User = this.userMapper.toEntity(userDTO);
-        return this.userMapper.toDto(this.userRepository.save(User));
+        var user = this.userMapper.toEntity(userDTO);
+        user.setCreatedAt(LocalDate.now());
+        return this.userMapper.toDto(this.userRepository.save(user));
     }
 
     @Override

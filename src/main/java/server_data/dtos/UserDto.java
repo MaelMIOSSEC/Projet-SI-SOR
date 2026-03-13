@@ -29,7 +29,6 @@ public class UserDto {
     @NotNull(message = "The role is required.")
     private Integer isAdmin;
 
-    @NotNull(message = "The created at date is required.")
     private LocalDate createdAt;
 
 }
