@@ -28,7 +28,7 @@ public class KanbanColumnMapper {
         kanbanColumn.setId(kanbanColumnDto.getId());
         kanbanColumn.setTitle(kanbanColumnDto.getTitle());
         kanbanColumn.setPosition(kanbanColumnDto.getPosition());
-        kanbanColumn.setId(kanbanColumnDto.getIdBoard());
+        //kanbanColumn.setId(kanbanColumnDto.getIdBoard());
         return kanbanColumn;
     }
 }

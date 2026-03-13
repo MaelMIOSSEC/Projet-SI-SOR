@@ -42,16 +42,30 @@ public class KanbanColumnServiceImpl implements KanbanColumnService{
 
     @Override
     public KanbanColumnDto updateColumn(String idColumn, KanbanColumnDto kanbanColumnDto) {
-        if (!this.kanbanColumnRepository.existsById(idColumn)) return null;
+        KanbanColumn existingColumn = this.kanbanColumnRepository.findById(idColumn)
+            .orElseThrow(() -> new EntityNotFoundException("Kanban column not found!"));
 
-        var kanbanColumn = this.kanbanColumnMapper.toEntity(kanbanColumnDto);
+        String boardId = kanbanColumnDto.getIdBoard();
+        if (boardId == null) {
+            boardId = existingColumn.getBoard().getId();
+        }
+
+        KanbanColumn kanbanColumn = this.kanbanColumnMapper.toEntity(kanbanColumnDto);
         kanbanColumn.setId(idColumn);
+
+        if (kanbanColumnDto.getIdBoard() == null) {
+            throw new IllegalArgumentException("L'ID du Board est requis pour mettre à jour la colonne.");
+        }
+        Board board = this.boardRepository.findById(boardId)
+            .orElseThrow(() -> new EntityNotFoundException("Board not found!"));
+        kanbanColumn.setBoard(board);
+    
         return this.kanbanColumnMapper.toDto(this.kanbanColumnRepository.save(kanbanColumn));
     }
 
     @Override
     public List<TaskDto> getTasksByColumn(String idColumn) {
-        if (this.kanbanColumnRepository.existsById(idColumn)) return null;
+        if (!this.kanbanColumnRepository.existsById(idColumn)) return null;
 
         return this.taskRepository.findByKanbanColumn_Id(idColumn).stream().map(this.taskMapper::toDto).toList();
     }
