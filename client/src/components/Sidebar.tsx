@@ -109,7 +109,7 @@ const Sidebar = () => {
         <button
         onClick={ logoutUser }
           type="button"
-          class="btn btn-primary"
+          className="btn btn-primary"
           style={{
             margin: "10px",
             borderRadius: "15px",
