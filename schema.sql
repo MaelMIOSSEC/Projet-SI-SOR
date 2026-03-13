@@ -60,8 +60,8 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`KanbanColumn` (
   CONSTRAINT `fk_KanbanColumn_Board1`
     FOREIGN KEY (`board_id`)
     REFERENCES `e22206673_db1`.`Board` (`board_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -84,13 +84,13 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Task` (
   CONSTRAINT `fk_Task_User1`
     FOREIGN KEY (`user_id`)
     REFERENCES `e22206673_db1`.`User` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_Task_KanbanColumn1`
     FOREIGN KEY (`kanban_column_id`)
     REFERENCES `e22206673_db1`.`KanbanColumn` (`kanban_column_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -106,13 +106,13 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`BoardMember` (
   CONSTRAINT `fk_BoardMember_User`
     FOREIGN KEY (`user_id`)
     REFERENCES `e22206673_db1`.`User` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_BoardMember_Board1`
     FOREIGN KEY (`board_id`)
     REFERENCES `e22206673_db1`.`Board` (`board_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -133,18 +133,18 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`Invitation` (
   CONSTRAINT `fk_Invitation_Board1`
     FOREIGN KEY (`board_id`)
     REFERENCES `e22206673_db1`.`Board` (`board_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_Invitation_User1`
     FOREIGN KEY (`inviter_id`)
     REFERENCES `e22206673_db1`.`User` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_Invitation_User2`
     FOREIGN KEY (`invitee_id`)
     REFERENCES `e22206673_db1`.`User` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
