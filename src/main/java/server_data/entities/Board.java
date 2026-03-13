@@ -9,15 +9,19 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
-import lombok.Data;
+//import lombok.Data;
 
 @Entity
 @Table(name = "\"Board\"")
-@Data
+//@Data
+@Getter
+@Setter
 public class Board {
 
     @Id
