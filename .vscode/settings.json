@@ -1,4 +1,5 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
-    "deno.enable": true
+    "deno.enable": true,
+    "java.debug.settings.onBuildFailureProceed": true
 }
