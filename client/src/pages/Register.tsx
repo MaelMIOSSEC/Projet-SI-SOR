@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { URL_DENO } from "../config/api";
+import { URL_DENO } from "../config/api.ts";
 import { useNavigate } from "react-router";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth.ts";
 
 type RegisterState =
   | { status: "idle" }
   | { status: "submitting" }
   | { status: "error"; error: string };
 
-export default function Login() {
+export default function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -38,6 +38,8 @@ export default function Login() {
       }
 
       const apiResponse = await res.json();
+
+      console.log("APIResponse => ", apiResponse.data);
 
       if (apiResponse.success) {
         login(apiResponse.data);

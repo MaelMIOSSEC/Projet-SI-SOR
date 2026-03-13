@@ -25,6 +25,7 @@ public class Task {
     @Column(name = "deadline")
     private LocalDate deadline;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "priority")
     private Priority priority;
 

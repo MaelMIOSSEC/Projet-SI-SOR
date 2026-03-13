@@ -6,7 +6,7 @@ import {
   ShieldUser,
   ChartNoAxesColumn,
 } from "lucide-react";
-import { URL_TOMCAT } from "../config/api";
+import { URL_TOMCAT } from "../config/api.ts";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -112,7 +112,7 @@ const Sidebar = () => {
               <ShieldUser /> Gestion des comptes
             </a>
             <a
-              href=""
+              href="/statistics"
               style={{
                 fontSize: "x-large",
                 textDecoration: "none",
@@ -131,7 +131,7 @@ const Sidebar = () => {
       </div>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <button
-          onClick={ logoutUser }
+          onClick={logoutUser}
           type="button"
           className="btn btn-primary"
           style={{
@@ -144,7 +144,7 @@ const Sidebar = () => {
           Déconnexion
         </button>
         <button
-          onClick={ handleDelete }
+          onClick={handleDelete}
           type="button"
           className="btn btn-danger"
           style={{
@@ -159,6 +159,6 @@ const Sidebar = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Sidebar;

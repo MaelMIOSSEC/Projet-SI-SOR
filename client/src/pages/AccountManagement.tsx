@@ -70,14 +70,17 @@ export default function AccountManagement() {
       }
     };
 
-    const handleUpdateIsAdmin = async (e: SubmitEvent<HTMLFormElement>, isAdmin) => {
+    const handleUpdateIsAdmin = async (
+      e: SubmitEvent<HTMLFormElement>,
+      isAdmin,
+    ) => {
       e.preventDefault();
 
       const isAdminState = isAdmin === 1 ? 0 : 1;
 
       const updatedData = {
         ...formData,
-        isAdmin: isAdminState
+        isAdmin: isAdminState,
       };
 
       try {
@@ -106,22 +109,23 @@ export default function AccountManagement() {
             error instanceof Error ? error.message : "Registration failed.",
         });
       }
-    }
+    };
 
     const handleDelete = async (e: SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       if (connectedUser?.userId === user.id) {
-        const confirmation = window.confirm("Voulez-vous vraiment supprimer votre propre compte ?");
+        const confirmation = window.confirm(
+          "Voulez-vous vraiment supprimer votre propre compte ?",
+        );
 
         if (!confirmation) return;
-
       }
 
       try {
         const res = await fetch(`${URL_TOMCAT}/users/${user.id}`, {
           method: "DELETE",
-        })
+        });
 
         if (!res.ok) {
           alert("Erreur lors de la mise à jour du profil.");
@@ -136,7 +140,7 @@ export default function AccountManagement() {
           logout(connectedUser);
           navigate("/");
         }
-        
+
         fetchUsers();
       } catch (error) {
         setState({
@@ -146,7 +150,7 @@ export default function AccountManagement() {
             error instanceof Error ? error.message : "Registration failed.",
         });
       }
-    }
+    };
 
     return (
       <tr>
@@ -231,7 +235,10 @@ export default function AccountManagement() {
           </button>
         </td>
         <td>
-          <button onClick={handleDelete} style={{ borderRadius: "10px", backgroundColor: "red" }}>
+          <button
+            onClick={handleDelete}
+            style={{ borderRadius: "10px", backgroundColor: "red" }}
+          >
             <Trash2 />
           </button>
         </td>
@@ -241,15 +248,15 @@ export default function AccountManagement() {
 
   const fetchUsers = async () => {
     try {
-        const response = await fetch(`${URL_TOMCAT}/users`);
+      const response = await fetch(`${URL_TOMCAT}/users`);
 
-        const data = await response.json();
+      const data = await response.json();
 
-        setUsers(data);
-      } catch (err) {
-        console.error("Échec de la récupération : ", err);
-      }
-  }
+      setUsers(data);
+    } catch (err) {
+      console.error("Échec de la récupération : ", err);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();

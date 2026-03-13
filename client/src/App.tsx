@@ -1,12 +1,13 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Index from "./pages/Index";
-import Profil from "./pages/Profil";
-import Navbar from "./components/Navbar";
-import AccountManagement from "./pages/AccountManagement";
-import AuthProvider from "./contexts/AuthProvider";
+import Login from "./pages/Login.tsx";
+import Register from "./pages/Register.tsx";
+import Index from "./pages/Index.tsx";
+import Profil from "./pages/Profil.tsx";
+import Navbar from "./components/Navbar.tsx";
+import AccountManagement from "./pages/AccountManagement.tsx";
+import Statistics from "./pages/Statistics.tsx";
+import AuthProvider from "./contexts/AuthProvider.tsx";
 import "./App.css";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/profil" element={<Profil />} />
           <Route path="/accountManagment" element={<AccountManagement />} />
+          <Route path="/statistics" element={<Statistics />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
         </Routes>

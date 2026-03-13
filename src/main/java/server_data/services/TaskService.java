@@ -6,6 +6,8 @@ import server_data.dtos.TaskDto;
 
 public interface TaskService {
 
+    List<TaskDto> getAllTasks();
+
     List<TaskDto> getTasksByIdBoard(String idBoard);
 
     TaskDto getTaskById(String idTask);

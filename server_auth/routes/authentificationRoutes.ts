@@ -19,11 +19,12 @@ router.post("/register", async (ctx: context) => {
     const data = await ctx.request.body.json();
 
     const existingUsers = await connection.query(
-        `SELECT username FROM User WHERE username = ?`, [data.username]
+      `SELECT username FROM User WHERE username = ?`,
+      [data.username],
     );
 
     if (existingUsers.length > 0) {
-        const response: ApiResponse<User> = {
+      const response: ApiResponse<User> = {
         success: false,
         error: {
           code: ApiErrorCode.CONFLICT,
@@ -55,7 +56,10 @@ router.post("/register", async (ctx: context) => {
       ],
     );
 
-    if (!insertResult || (insertResult.affectedRows === 0 && insertResult.changes === undefined)) {
+    if (
+      !insertResult ||
+      (insertResult.affectedRows === 0 && insertResult.changes === undefined)
+    ) {
       const response: ApiResponse<User> = {
         success: false,
         error: {
@@ -90,9 +94,22 @@ router.post("/register", async (ctx: context) => {
       return;
     }
 
-    const response: ApiResponse<User> = {
+    const userPayload = {
+      userId: userRow[0].user_id,
+      username: userRow[0].username,
+      isAdmin: userRow[0].isAdmin,
+    };
+
+    const jwtToken = await createJWT(userPayload);
+
+    const loginPayload: AuthResponse = {
+      token: jwtToken,
+      user: userRowToApi(userRow[0]),
+    };
+
+    const response: ApiResponse<AuthResponse> = {
       success: true,
-      data: userRowToApi(userRow[0]),
+      data: loginPayload,
     };
 
     ctx.response.status = 200;

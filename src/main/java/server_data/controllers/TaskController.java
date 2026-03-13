@@ -17,8 +17,13 @@ public class TaskController {
         this.taskService = taskService;
     }
 
+    @GetMapping
+    public List<TaskDto> getTasks() {
+        return this.taskService.getAllTasks();
+    }
+
     @GetMapping("/board/{idBoard}")
-    public List<TaskDto> getTasks(@PathVariable String idBoard) {
+    public List<TaskDto> getTasksByBoard(@PathVariable String idBoard) {
         return this.taskService.getTasksByIdBoard(idBoard);
     }
 

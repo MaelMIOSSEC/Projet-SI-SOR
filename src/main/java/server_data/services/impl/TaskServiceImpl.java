@@ -33,6 +33,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public List<TaskDto> getAllTasks() {
+        return this.taskRepository.findAll().stream().map(taskMapper::toDto).toList();
+    }
+
+    @Override
     public List<TaskDto> getTasksByIdBoard(String idBoard) {
         return this.taskRepository.findByKanbanColumn_Board_Id(idBoard).stream().map(this.taskMapper::toDto).toList();
     }
