@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { API_URL } from "../config/api";
+import { URL_TOMCAT } from "../config/api";
 import Sidebar from "../components/Sidebar";
 
 type ProfilState =
@@ -12,24 +12,32 @@ export default function Profil() {
   const { user } = useAuth();
 
   const [state, setState] = useState<ProfilState>({ status: "idle" });
+  const [formData, setFormData] = useState(user);
+
+  const handleChange = (e: React.FormEvent<HTMLInputElement>) => {
+    const { name, value } = e.currentTarget;
+    setFormData(prevState => ({ ...prevState, [name]: value }));
+  };
 
   const handleUpdate = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setState({ status: "submitting" });
 
-    const formData = new FormData(e.currentTarget);
-    const username = formData.get("username");
-    const password = formData.get("password");
-    const name = formData.get("name");
-    const lastName = formData.get("lastName");
-    const email = formData.get("email");
+    const data = {
+      username: formData.username,
+      password: formData.password,
+      name: formData.name,
+      lastName: formData.lastName,
+      email: formData.email
+    }
 
     try {
-      const res = await fetch(`${API_URL}/users/${user.userId}`, {
+      console.log("URL_TOMCAT => ", URL_TOMCAT);
+      const res = await fetch(`${URL_TOMCAT}/users/${user.userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, name, lastName, email }),
+        body: JSON.stringify({ data }),
       });
 
       if (!res.ok) {
@@ -103,7 +111,8 @@ export default function Profil() {
                 type="text"
                 name="username"
                 required
-                value={user.username}
+                value={formData.username}
+                onChange={handleChange}
               />
             </div>
             <div style={{ margin: "10px 0", width: "510px" }}>
@@ -123,7 +132,8 @@ export default function Profil() {
                 type="password"
                 name="password"
                 required
-                value={user.password}
+                value={formData.password}
+                onChange={handleChange}
               />
             </div>
             <div
@@ -151,7 +161,8 @@ export default function Profil() {
                   type="text"
                   name="name"
                   required
-                  value={user.name}
+                  value={formData.name}
+                  onChange={handleChange}
                 />
               </div>
               <div style={{ padding: "0 48px" }}>
@@ -171,7 +182,8 @@ export default function Profil() {
                   type="text"
                   name="lastName"
                   required
-                  value={user.lastName}
+                  value={formData.lastName}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -192,7 +204,8 @@ export default function Profil() {
                 type="text"
                 name="email"
                 required
-                value={user.email}
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
             <button

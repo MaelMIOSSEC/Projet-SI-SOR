@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { API_URL } from "../config/api";
+import { URL_DENO } from "../config/api";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 
@@ -24,7 +24,7 @@ export default function Login() {
     const password = formData.get("password");
 
     try {
-      const res = await fetch(`${API_URL}/users/login`, {
+      const res = await fetch(`${URL_DENO}/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
