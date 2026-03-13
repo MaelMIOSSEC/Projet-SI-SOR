@@ -9,19 +9,18 @@ type ProfilState =
   | { status: "error"; error: string };
 
 export default function Profil() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
 
   const [state, setState] = useState<ProfilState>({ status: "idle" });
   const [formData, setFormData] = useState(user);
 
   const handleChange = (e: React.FormEvent<HTMLInputElement>) => {
     const { name, value } = e.currentTarget;
-    setFormData(prevState => ({ ...prevState, [name]: value }));
+    setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
   const handleUpdate = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setState({ status: "submitting" });
 
     const data = {
@@ -29,31 +28,43 @@ export default function Profil() {
       password: formData.password,
       name: formData.name,
       lastName: formData.lastName,
-      email: formData.email
-    }
+      email: formData.email,
+      isAdmin: formData.isAdmin ? 1 : 0,
+      createdAt: formData.createdAt,
+    };
 
     try {
-      console.log("URL_TOMCAT => ", URL_TOMCAT);
       const res = await fetch(`${URL_TOMCAT}/users/${user.userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data }),
+        body: JSON.stringify(data),
       });
 
       if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
-      const apiResponse = await res.json();
-
-      if (apiResponse.ok) {
-        alert("Profil mis à jour avec succès !");
-      } else {
         alert("Erreur lors de la mise à jour du profil.");
+        return;
       }
+
+      const updatedUserFromServer = await res.json();
+
+      if (setUser) {
+        // IMPORTANT : On passe l'objet complet mis à jour pour déclencher le re-rendu
+        setUser({
+          ...user,
+          username: updatedUserFromServer.username,
+          name: updatedUserFromServer.name,
+          lastName: updatedUserFromServer.lastName,
+          email: updatedUserFromServer.email,
+          isAdmin: updatedUserFromServer.isAdmin,
+        });
+      }
+
+      alert("Profil mis à jour avec succès !");
+      setState({ status: "idle" });
     } catch (error) {
       setState({
         status: "error",
+
         error: error instanceof Error ? error.message : "Registration failed.",
       });
     }
@@ -86,7 +97,7 @@ export default function Profil() {
           }}
         >
           <form
-            onSubmit={ handleUpdate }
+            onSubmit={handleUpdate}
             style={{
               display: "flex",
               justifyContent: "center",
