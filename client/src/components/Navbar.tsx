@@ -66,13 +66,26 @@ const Navbar = () => {
 
             {isConnected ? (
               <li className="nav-item drop-down-menu">
-                <a
-                  className="nav-link"
-                  style={{ fontSize: 17 }}
-                  href="/profil"
-                >
+                <a className="nav-link" style={{ fontSize: 17 }} href="/profil">
                   Profil
                 </a>
+                <div className="subpage">
+                  <a className="nav-link" href="/profil">
+                    Informations
+                  </a>
+                  {user.isAdmin ? (
+                    <>
+                      <a className="nav-link" href="/accountManagment">
+                        Gestion des comptes
+                      </a>
+                      <a className="nav-link" href="/statistics">
+                        Statistiques
+                      </a>
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                </div>
               </li>
             ) : (
               <>

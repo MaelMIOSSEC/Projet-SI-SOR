@@ -53,6 +53,14 @@ public class BoardServiceImpl implements BoardService{
     }
 
     @Override
+    public List<BoardDto> getBoardsByUserId(String idUser) {
+        return this.boardRepository.findByMembers_User_Id(idUser)
+                .stream()
+                .map(this.boardMapper::toDto)
+                .toList();
+    }
+
+    @Override
     public BoardDto createBoard(BoardDto boardDto) {
         var board = this.boardMapper.toEntity(boardDto);
         return this.boardMapper.toDto(this.boardRepository.save(board));

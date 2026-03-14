@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "../components/Sidebar";
-import { useAuth } from "../hooks/useAuth";
-import { URL_TOMCAT } from "../config/api";
+import Sidebar from "../components/Sidebar.tsx";
+import { useAuth } from "../hooks/useAuth.ts";
+import { URL_TOMCAT } from "../config/api.ts";
 import type { UserRow } from "../types/userType.ts";
 import Table from "react-bootstrap/Table";
 import { SquarePen, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router/internal/react-server-client";
 
 type AdminState =
   | { status: "idle" }
@@ -12,14 +13,16 @@ type AdminState =
   | { status: "error"; error: string };
 
 export default function AccountManagement() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const { user: connectedUser } = useAuth();
   const [users, setUsers] = useState<UserRow[]>([]);
 
-  if (!connectedUser.isAdmin) {
+  if (!connectedUser?.isAdmin) {
     navigate("/");
   }
 
-  const UserRowItem = ({ user }: { user: userRow }) => {
+  const UserRowItem = ({ user }: { user: UserRow }) => {
     const [formData, setFormData] = useState(user);
     const [state, setState] = useState<AdminState>({ status: "idle" });
 
@@ -50,7 +53,7 @@ export default function AccountManagement() {
 
         if (!res.ok) {
           alert("Erreur lors de la mise à jour du profil.");
-          setEditState({
+          setState({
             status: "error",
             error: `Update failed (${res.status})`,
           });
@@ -92,7 +95,7 @@ export default function AccountManagement() {
 
         if (!res.ok) {
           alert("Erreur lors de la mise à jour du profil.");
-          setEditState({
+          setState({
             status: "error",
             error: `Update failed (${res.status})`,
           });
@@ -129,7 +132,7 @@ export default function AccountManagement() {
 
         if (!res.ok) {
           alert("Erreur lors de la mise à jour du profil.");
-          setEditState({
+          setState({
             status: "error",
             error: `Update failed (${res.status})`,
           });
@@ -137,7 +140,7 @@ export default function AccountManagement() {
         }
 
         if (connectedUser?.userId === user.id) {
-          logout(connectedUser);
+          logout();
           navigate("/");
         }
 
@@ -181,16 +184,6 @@ export default function AccountManagement() {
             name="email"
             required
             value={formData.email}
-            onChange={(e) => handleChange(e)}
-          />
-        </td>
-        <td>
-          <input
-            style={{ width: "200px", textAlign: "center" }}
-            type="text"
-            name="password"
-            required
-            value={formData.name}
             onChange={(e) => handleChange(e)}
           />
         </td>
@@ -293,7 +286,6 @@ export default function AccountManagement() {
               <th scope="col">Nom</th>
               <th scope="col">Prénom</th>
               <th scope="col">Email</th>
-              <th scope="col">Mot de passe</th>
               <th scope="col">Pseudo</th>
               <th scope="col">Admin</th>
               <th scope="col"></th>
