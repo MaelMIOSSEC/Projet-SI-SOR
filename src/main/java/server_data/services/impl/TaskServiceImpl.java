@@ -61,6 +61,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskDto updateTask(String idTask, TaskDto taskDto) {
+        Task taskToUpdate = this.taskRepository.findById(idTask)
+            .orElseThrow(() -> new EntityNotFoundException("Task not found!"));
+        taskToUpdate.setTitle(taskDto.getTitle());
+        taskToUpdate.setDescription(taskDto.getDescription());
+        taskToUpdate.setPosition(taskDto.getPosition());
+        taskToUpdate.setPriority(taskDto.getPriority());
+        // A continuer
         if (!this.taskRepository.existsById(idTask)) throw new EntityNotFoundException(" Task not found!");
         var task = this.taskMapper.toEntity(taskDto);
         task.setId(idTask);
