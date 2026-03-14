@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { URL_DENO } from "../config/api";
+import { API_URL } from "../config/api.ts";
 import { useNavigate } from "react-router";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth.ts";
 
 type LoginState =
   | { status: "idle" }
@@ -24,7 +24,7 @@ export default function Login() {
     const password = formData.get("password");
 
     try {
-      const res = await fetch(`${URL_DENO}/users/login`, {
+      const res = await fetch(`${API_URL}/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -51,7 +51,7 @@ export default function Login() {
         error: err instanceof Error ? err.message : "Login failed.",
       });
     }
-  }
+  };
 
   return (
     <main

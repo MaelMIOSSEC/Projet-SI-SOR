@@ -1,4 +1,4 @@
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth.ts";
 import { useNavigate } from "react-router";
 import {
   CircleUser,
@@ -6,7 +6,13 @@ import {
   ShieldUser,
   ChartNoAxesColumn,
 } from "lucide-react";
-import { URL_TOMCAT } from "../config/api.ts";
+import { API_URL } from "../config/api.ts";
+import { useState } from "react";
+
+type SidebarState =
+  | { status: "idle" }
+  | { status: "submitting" }
+  | { status: "error"; error: string };
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -15,33 +21,42 @@ const Sidebar = () => {
 
   const isConnected = user !== null;
 
+  const [state, setState] = useState<SidebarState>({ status: "idle" });
+
   const logoutUser = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (isConnected) {
-      logout(user);
+      logout();
       navigate("/");
     }
   };
 
   const handleDelete = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setState({ status: "submitting" });
 
     try {
-      const res = await fetch(`${URL_TOMCAT}/users/${user.userId}`, {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/users/${user?.userId}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
-      if (!res.ok) {
+      if (!response.ok) {
         alert("Erreur lors de la suppression du profil.");
-        setEditState({
+        setState({
           status: "error",
-          error: `Update failed (${res.status})`,
+          error: `Update failed (${response.status})`,
         });
         return;
       }
 
-      logout(user);
+      logout();
       navigate("/");
     } catch (error) {
       setState({
@@ -96,7 +111,7 @@ const Sidebar = () => {
         >
           <TableOfContents /> Tableaux
         </a>
-        {user.isAdmin === true ? (
+        {user?.isAdmin === true ? (
           <>
             <a
               href="/accountManagment"

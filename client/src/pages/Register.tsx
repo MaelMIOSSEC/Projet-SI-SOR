@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { URL_DENO } from "../config/api.ts";
+import { API_URL } from "../config/api.ts";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth.ts";
 
@@ -27,7 +27,7 @@ export default function Register() {
     const email = formData.get("email");
 
     try {
-      const res = await fetch(`${URL_DENO}/users/register`, {
+      const res = await fetch(`${API_URL}/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password, name, lastName, email }),

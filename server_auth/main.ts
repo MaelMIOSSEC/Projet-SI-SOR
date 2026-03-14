@@ -1,6 +1,8 @@
 import { Application } from "@oak/oak";
 import { oakCors } from "@tajpouria/cors";
 import autentificationRouter from "./routes/authentificationRoutes.ts";
+import statisticsRouter from "./routes/statisticsRoutes.ts";
+import usersRouter from "./routes/usersRoutes.ts";
 
 // ---------- Application --------------------------------
 
@@ -14,9 +16,13 @@ const app = new Application();
 app.use(oakCors());
 app.use(autentificationRouter.routes());
 app.use(autentificationRouter.allowedMethods());
+app.use(statisticsRouter.routes());
+app.use(statisticsRouter.allowedMethods());
+app.use(usersRouter.routes());
+app.use(usersRouter.allowedMethods());
 
 app.addEventListener("listen", () =>
-  console.log(`Server listening on ${ADDRESS}`)
+  console.log(`Server listening on ${ADDRESS}`),
 );
 
 if (import.meta.main) {

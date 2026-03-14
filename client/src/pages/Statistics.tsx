@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar.tsx";
-import { URL_TOMCAT } from "../config/api.ts";
+import { API_URL } from "../config/api.ts";
 import type { UserRow } from "../types/userType.ts";
 import type { BoardRow } from "../types/boardType.ts";
 import type { TaskRow } from "../types/taskType.ts";
@@ -12,37 +12,70 @@ export default function Statistics() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${URL_TOMCAT}/users`);
+      const token = localStorage.getItem("token");
 
-      const data = await response.json();
+      const response = await fetch(`${API_URL}/users`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-      setUsers(data);
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      }
     } catch (err) {
-      console.error("Échec de la récupération : ", err);
+      console.error(
+        "Échec de la récupération des informations utilisateurs: ",
+        err,
+      );
     }
   };
 
   const fetchBoards = async () => {
     try {
-      const response = await fetch(`${URL_TOMCAT}/boards`);
+      const token = localStorage.getItem("token");
 
-      const data = await response.json();
+      const response = await fetch(`${API_URL}/boards`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-      setBoards(data);
+      if (response.ok) {
+        const data = await response.json();
+        setBoards(data);
+      }
     } catch (err) {
-      console.error("Échec de la récupération : ", err);
+      console.error(
+        "Échec de la récupération des informations tableaux: ",
+        err,
+      );
     }
   };
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch(`${URL_TOMCAT}/tasks`);
+      const token = localStorage.getItem("token");
 
-      const data = await response.json();
+      const response = await fetch(`${API_URL}/tasks`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-      setTasks(data);
+      if (response.ok) {
+        const data = await response.json();
+        setTasks(data);
+      }
     } catch (err) {
-      console.error("Échec de la récupération : ", err);
+      console.error("Échec de la récupération des informations Taches: ", err);
     }
   };
 
@@ -51,8 +84,6 @@ export default function Statistics() {
     fetchBoards();
     fetchTasks();
   }, []);
-
-  console.log("boards => ", tasks);
 
   return (
     <main

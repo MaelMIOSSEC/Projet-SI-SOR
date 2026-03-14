@@ -4,6 +4,7 @@
     "jsr:@db/sqlite@0.13": "0.13.0",
     "jsr:@denosaurs/plug@1": "1.1.0",
     "jsr:@oak/commons@1": "1.0.1",
+    "jsr:@oak/oak@*": "17.2.0",
     "jsr:@oak/oak@^17.2.0": "17.2.0",
     "jsr:@panva/jose@*": "6.2.1",
     "jsr:@std/assert@1": "1.0.19",

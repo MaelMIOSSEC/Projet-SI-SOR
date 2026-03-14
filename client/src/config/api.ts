@@ -5,9 +5,9 @@
 const apiProtocol = import.meta.env.VITE_API_PROTOCOL || "http";
 const wsProtocol = import.meta.env.VITE_XS_PROTOCOL || "ws";
 const serverHost = import.meta.env.VITE_SERVER_HOST || "localhost";
-const serverPortDeno = import.meta.env.VITE_SERVER_PORT || "8000";
+const serverPort = import.meta.env.VITE_SERVER_PORT || "8000";
 const serverPortTomcat = import.meta.env.VITE_SERVER_PORT || "8080";
 
-export const URL_DENO = `${apiProtocol}://${serverHost}:${serverPortDeno}`;
+export const API_URL = `${apiProtocol}://${serverHost}:${serverPort}`;
 export const URL_TOMCAT = `${apiProtocol}://${serverHost}:${serverPortTomcat}`;
-export const WS_URL = `${wsProtocol}://${serverHost}:${serverPortDeno}`;
+export const WS_URL = `${wsProtocol}://${serverHost}:${serverPort}`;

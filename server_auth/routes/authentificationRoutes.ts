@@ -1,4 +1,4 @@
-import { Router, context } from "@oak/oak";
+import { Router, Context } from "@oak/oak";
 import connection from "../config/db.ts";
 import { createJWT, hashPassword, verifyPassword } from "../lib/jwt.ts";
 import {
@@ -14,7 +14,7 @@ import { AuthResponse } from "../types/autentificationType.ts";
 
 const router = new Router({ prefix: "/users" });
 
-router.post("/register", async (ctx: context) => {
+router.post("/register", async (ctx: Context) => {
   try {
     const data = await ctx.request.body.json();
 
@@ -121,7 +121,7 @@ router.post("/register", async (ctx: context) => {
   }
 });
 
-router.post("/login", async (ctx: context) => {
+router.post("/login", async (ctx: Context) => {
   try {
     const data = await ctx.request.body.json();
 

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
-import { URL_TOMCAT } from "../config/api";
-import Sidebar from "../components/Sidebar";
+import { useAuth } from "../hooks/useAuth.ts";
+import { URL_TOMCAT, API_URL } from "../config/api.ts";
+import Sidebar from "../components/Sidebar.tsx";
+import type { User } from "../types/userType.ts";
 
 type ProfilState =
   | { status: "idle" }
@@ -11,8 +12,15 @@ type ProfilState =
 export default function Profil() {
   const { user, setUser } = useAuth();
 
+  interface UserFormData extends User {
+    newPassword?: string;
+    confirmPassword?: string;
+  }
+
   const [state, setState] = useState<ProfilState>({ status: "idle" });
-  const [formData, setFormData] = useState(user);
+  const [formData, setFormData] = useState<UserFormData | null>(
+    user ? { ...user, newPassword: "", confirmPassword: "" } : null,
+  );
 
   const handleChange = (e: React.FormEvent<HTMLInputElement>) => {
     const { name, value } = e.currentTarget;
@@ -24,32 +32,47 @@ export default function Profil() {
     setState({ status: "submitting" });
 
     const data = {
-      username: formData.username,
-      password: formData.password,
-      name: formData.name,
-      lastName: formData.lastName,
-      email: formData.email,
-      isAdmin: formData.isAdmin ? 1 : 0,
-      createdAt: formData.createdAt,
+      username: formData?.username || user?.username,
+      password: user?.password,
+      name: formData?.name || user?.name,
+      lastName: formData?.lastName || user?.lastName,
+      email: formData?.email || user?.email,
+      isAdmin: formData?.isAdmin ? 1 : 0,
+      createdAt: formData?.createdAt || user?.createdAt,
     };
 
+    if (formData?.newPassword && formData?.newPassword !== "") {
+      if (formData.newPassword !== formData.confirmPassword) {
+        alert("Les nouveaux mots de passe ne correspondent pas");
+        return;
+      }
+      data.password = formData.newPassword;
+    }
+
     try {
-      const res = await fetch(`${URL_TOMCAT}/users/${user.userId}`, {
+      const token = localStorage.getItem("token");
+
+      console.log("Data => ", data);
+
+      const response = await fetch(`${API_URL}/users/${user?.userId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
 
-      if (!res.ok) {
+      if (!response.ok) {
         alert("Erreur lors de la mise à jour du profil.");
-        setEditState({
+        setState({
           status: "error",
-          error: `Update failed (${res.status})`,
+          error: `Update failed (${response.status})`,
         });
         return;
       }
 
-      const updatedUserFromServer = await res.json();
+      const updatedUserFromServer = await response.json();
 
       if (setUser) {
         setUser({
@@ -89,7 +112,7 @@ export default function Profil() {
           margin: "40px",
         }}
       >
-        <h1>Bonjour, {user.name}</h1>
+        <h1>Bonjour, {user?.name}</h1>
         <div
           style={{
             borderRadius: "25px",
@@ -122,7 +145,7 @@ export default function Profil() {
                 type="text"
                 name="username"
                 required
-                value={formData.username}
+                value={formData?.username}
                 onChange={handleChange}
               />
             </div>
@@ -136,14 +159,31 @@ export default function Profil() {
                   opacity: "80%",
                 }}
               >
-                Password*
+                NewPassword*
               </p>
               <input
                 style={{ width: "510px", height: "40px", fontSize: "16px" }}
                 type="password"
-                name="password"
-                required
-                value={formData.password}
+                name="newPassword"
+                onChange={handleChange}
+              />
+            </div>
+            <div style={{ margin: "10px 0", width: "510px" }}>
+              <p
+                style={{
+                  margin: "0",
+                  textAlign: "left",
+                  color: "grey",
+                  fontSize: "14px",
+                  opacity: "80%",
+                }}
+              >
+                ConfirmPassword*
+              </p>
+              <input
+                style={{ width: "510px", height: "40px", fontSize: "16px" }}
+                type="password"
+                name="confirmPassword"
                 onChange={handleChange}
               />
             </div>
@@ -172,7 +212,7 @@ export default function Profil() {
                   type="text"
                   name="name"
                   required
-                  value={formData.name}
+                  value={formData?.name}
                   onChange={handleChange}
                 />
               </div>
@@ -193,7 +233,7 @@ export default function Profil() {
                   type="text"
                   name="lastName"
                   required
-                  value={formData.lastName}
+                  value={formData?.lastName}
                   onChange={handleChange}
                 />
               </div>
@@ -215,7 +255,7 @@ export default function Profil() {
                 type="text"
                 name="email"
                 required
-                value={formData.email}
+                value={formData?.email}
                 onChange={handleChange}
               />
             </div>
