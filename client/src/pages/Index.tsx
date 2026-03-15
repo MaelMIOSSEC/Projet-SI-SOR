@@ -1,3 +1,6 @@
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Modal from "react-bootstrap/Modal";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth.ts";
 import { API_URL } from "../config/api.ts";
@@ -10,7 +13,11 @@ export default function Index() {
 
   const isConnected = user !== null;
 
+  const [show, setShow] = useState(false);
   const [boards, setBoards] = useState<BoardRow[]>([]);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
 
   const fetchBoards = async () => {
     try {
@@ -53,6 +60,7 @@ export default function Index() {
         >
           <h1 style={{ textTransform: "uppercase" }}>Mes tableaux</h1>
           <button
+            onClick={handleShow}
             style={{
               borderRadius: "20px",
               color: "black",
@@ -68,6 +76,43 @@ export default function Index() {
           >
             + Créer un tableau
           </button>
+
+          <Modal show={show} onHide={handleClose}>
+            <Modal.Header closeButton>
+              <Modal.Title>Ajouter un tableau</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <Form.Group
+                  className="mb-3"
+                  controlId="exampleForm.ControlInput1"
+                >
+                  <Form.Label>Titre du tableau</Form.Label>
+                  <Form.Control
+                    type="title"
+                    placeholder="Entrez le titre içi"
+                    required
+                    autoFocus
+                  />
+                </Form.Group>
+                <Form.Group
+                  className="mb-3"
+                  controlId="exampleForm.ControlTextarea1"
+                >
+                  <Form.Label>Example textarea</Form.Label>
+                  <Form.Control as="textarea" rows={3} />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={handleClose}>
+                Close
+              </Button>
+              <Button variant="primary" onClick={handleClose}>
+                Save Changes
+              </Button>
+            </Modal.Footer>
+          </Modal>
         </div>
         <div
           style={{
@@ -84,7 +129,7 @@ export default function Index() {
                   border: "1px solid",
                   margin: "0 50px",
                   padding: "15px 40px",
-                      borderRadius: "20px"
+                  borderRadius: "20px",
                 }}
               >
                 <h2>{board.title}</h2>
