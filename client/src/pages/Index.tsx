@@ -7,6 +7,11 @@ import { API_URL } from "../config/api.ts";
 import { useEffect, useState } from "react";
 import type { BoardRow } from "../types/boardType.ts";
 
+type BoardState =
+  | { status: "idle" }
+  | { status: "submitting" }
+  | { status: "error"; error: string };
+
 export default function Index() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -15,15 +20,62 @@ export default function Index() {
 
   const [show, setShow] = useState(false);
   const [boards, setBoards] = useState<BoardRow[]>([]);
+  const [state, setState] = useState<BoardState>({ status: "idle" });
+  const [formData, setFormData] = useState();
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const handleChange = (e: React.FormEvent<HTMLInputElement>) => {
+    const { name, value } = e.currentTarget;
+    setFormData((prevState) => ({ ...prevState, [name]: value }));
+  };
+
+  const handleCreateBoard = async (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setState({ status: "submitting" });
+
+    const token = localStorage.getItem("token");
+
+    const data = {
+      title: formData?.title,
+    };
+
+    try {
+      const res = await fetch(`${API_URL}/boards`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        alert("Erreur lors de la création du tableau.");
+        setState({
+          status: "error",
+          error: `Update failed (${res.status})`,
+        });
+        return;
+      }
+
+      alert("Tableau ajouté avec succès !");
+      setState({ status: "idle" });
+    } catch (error) {
+      setState({
+        status: "error",
+
+        error: error instanceof Error ? error.message : "Registration failed.",
+      });
+    }
+  };
 
   const fetchBoards = async () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/users/${user.userId}/boards`, {
+      const response = await fetch(`${API_URL}/users/${user?.userId}/boards`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -45,7 +97,7 @@ export default function Index() {
 
   useEffect(() => {
     fetchBoards();
-  });
+  }, []);
 
   if (isConnected) {
     return (
@@ -89,18 +141,13 @@ export default function Index() {
                 >
                   <Form.Label>Titre du tableau</Form.Label>
                   <Form.Control
-                    type="title"
+                    type="text"
+                    name="title"
                     placeholder="Entrez le titre içi"
                     required
                     autoFocus
+                    onChange={(e) => handleChange(e)}
                   />
-                </Form.Group>
-                <Form.Group
-                  className="mb-3"
-                  controlId="exampleForm.ControlTextarea1"
-                >
-                  <Form.Label>Example textarea</Form.Label>
-                  <Form.Control as="textarea" rows={3} />
                 </Form.Group>
               </Form>
             </Modal.Body>
@@ -108,7 +155,7 @@ export default function Index() {
               <Button variant="secondary" onClick={handleClose}>
                 Close
               </Button>
-              <Button variant="primary" onClick={handleClose}>
+              <Button variant="primary" onClick={handleCreateBoard}>
                 Save Changes
               </Button>
             </Modal.Footer>
