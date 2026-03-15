@@ -26,10 +26,12 @@ public class TaskDto {
     private Priority priority;
 
     @NotBlank(message = "The User Id is required.")
-    private String userId;
+    private UserDto user;
+    //private String userId;
 
     @NotBlank(message = "The column of kanban is required.")
-    private String kanbanColumnId;
+    private KanbanColumnDto kanbanColumn; 
+    //private String kanbanColumnId;
 
     private int position;
 

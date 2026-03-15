@@ -8,6 +8,14 @@ import server_data.entities.Task;
 @Component
 public class TaskMapper {
 
+    private KanbanColumnMapper kanbanColumnMapper;
+    private UserMapper userMapper;
+
+    public TaskMapper(KanbanColumnMapper kanbanColumnMapper, UserMapper userMapper) {
+        this.kanbanColumnMapper = kanbanColumnMapper;
+        this.userMapper = userMapper;
+    }
+
     public TaskDto toDto(Task task) {
         if (task == null) return null;
 
@@ -18,10 +26,10 @@ public class TaskMapper {
         taskDto.setDeadline(task.getDeadline());
         taskDto.setPriority(task.getPriority());
         if (task.getUser() != null) {
-            taskDto.setUserId(task.getUser().getId());
+            taskDto.setUser(this.userMapper.toDto(task.getUser()));
         }
         if (task.getKanbanColumn() != null) {
-            taskDto.setKanbanColumnId(task.getKanbanColumn().getId());
+            taskDto.setKanbanColumn(this.kanbanColumnMapper.toDto(task.getKanbanColumn()));
         }
         taskDto.setPosition(task.getPosition());
         taskDto.setComments(task.getComments());
