@@ -99,7 +99,7 @@ const Sidebar = () => {
           <CircleUser /> Informations
         </a>
         <a
-          href=""
+          href="/boards"
           style={{
             fontSize: "x-large",
             textDecoration: "none",

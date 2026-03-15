@@ -52,8 +52,6 @@ export default function Profil() {
     try {
       const token = localStorage.getItem("token");
 
-      console.log("Data => ", data);
-
       const response = await fetch(`${API_URL}/users/${user?.userId}`, {
         method: "PUT",
         headers: {
@@ -81,7 +79,7 @@ export default function Profil() {
           name: updatedUserFromServer.name,
           lastName: updatedUserFromServer.lastName,
           email: updatedUserFromServer.email,
-          isAdmin: updatedUserFromServer.isAdmin,
+          isAdmin: updatedUserFromServer.isAdmin === 1 ? true : false,
         });
       }
 

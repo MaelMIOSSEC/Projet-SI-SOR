@@ -16,7 +16,7 @@ export default function Index() {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/boards`, {
+      const response = await fetch(`${API_URL}/users/${user.userId}/boards`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -79,8 +79,18 @@ export default function Index() {
         >
           {Array.isArray(boards) &&
             boards.map((board) => (
-              <div style={{ border: "1px solid", margin: "0 50px" }}>
-                <h1>{board.title}</h1>
+              <div
+                style={{
+                  border: "1px solid",
+                  margin: "0 50px",
+                  padding: "15px 40px",
+                      borderRadius: "20px"
+                }}
+              >
+                <h2>{board.title}</h2>
+                <p>Nombre de colonnes : {board.kanbanColumns.length}</p>
+                <p>Nombre de membres : {board.members.length}</p>
+                <button>Ouvrir</button>
               </div>
             ))}
         </div>

@@ -48,7 +48,7 @@ const Navbar = () => {
         <div className="collapse navbar-collapse" id="navbarResponsive">
           <ul className="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
             <li className="nav-item drop-down-menu">
-              <a className="nav-link" style={{ fontSize: 17 }} href="#">
+              <a className="nav-link" style={{ fontSize: 17 }} href="/">
                 Mes tableaux
               </a>
               <div className="subpage">
@@ -72,6 +72,9 @@ const Navbar = () => {
                 <div className="subpage">
                   <a className="nav-link" href="/profil">
                     Informations
+                  </a>
+                  <a className="nav-link" href="/boards">
+                    Tableaux
                   </a>
                   {user.isAdmin ? (
                     <>
