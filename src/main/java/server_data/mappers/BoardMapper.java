@@ -1,5 +1,6 @@
 package server_data.mappers;
 
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -29,10 +30,14 @@ public class BoardMapper {
         
         if (board.getKanbanColumns() != null) {
             boardDto.setKanbanColumns(board.getKanbanColumns().stream().map(this.kanbanColumnMapper::toDto).collect(Collectors.toList()));
+        } else {
+            boardDto.setKanbanColumns(new ArrayList<>());
         }
 
         if (board.getMembers() != null) {
             boardDto.setMembers(board.getMembers().stream().map(membership -> this.userMapper.toDto(membership.getUser())).collect(Collectors.toList()));
+        } else {
+            boardDto.setMembers(new ArrayList<>());
         }
 
         return boardDto;
@@ -47,6 +52,8 @@ public class BoardMapper {
 
         if (boardDto.getKanbanColumns() != null) {
             board.setKanbanColumns(boardDto.getKanbanColumns().stream().map(this.kanbanColumnMapper::toEntity).collect(Collectors.toList()));
+        } else {
+            board.setKanbanColumns(new ArrayList<>());
         }
         
         if (boardDto.getMembers() != null) {
@@ -58,7 +65,9 @@ public class BoardMapper {
                 return boardMember;
 
             }).collect(Collectors.toList()));
-        } 
+        } else {
+            board.setMembers(new ArrayList<>());
+        }
         return board;
     }
 }
