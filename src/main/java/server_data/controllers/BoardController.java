@@ -74,5 +74,4 @@ public class BoardController {
         return this.boardService.delUserToBoard(idBoard, idUser);
     }
 
-
 }

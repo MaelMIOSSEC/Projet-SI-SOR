@@ -188,7 +188,7 @@ export default function Index() {
                   <p>Membres :</p>
                   <ul>
                   {board.members?.map((member) => (
-                    <li>{member.username}</li>
+                    <li>{member.userDto.username}</li>
                   ))}
                   </ul>
                 </div>

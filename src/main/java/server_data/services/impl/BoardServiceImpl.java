@@ -162,17 +162,27 @@ public class BoardServiceImpl implements BoardService{
 
     @Override
     public Boolean delUserToBoard(String idBoard, String idUser) {
-        Board board = this.boardRepository.findById(idBoard).orElseThrow(() -> new EntityNotFoundException("Board not found!"));
+        Board board = this.boardRepository.findById(idBoard)
+            .orElseThrow(() -> new EntityNotFoundException("Board not found!"));
 
-        boolean remove = board.getMembers().removeIf(membership ->
-            membership.getUser().getId().equals(idUser)
-        );
+        System.out.println("Tentative de suppression de l'user : " + idUser);
+        System.out.println("Nombre de membres avant : " + board.getMembers().size());
 
-        if (remove) {
+        boolean removed = board.getMembers().removeIf(membership -> {
+            String memberId = membership.getUser().getId();
+            boolean matches = memberId.equals(idUser);
+            if (matches) {
+                System.out.println("Match trouvé pour l'utilisateur : " + memberId);
+            }
+            return matches;
+        });
+
+        if (removed) {
             this.boardRepository.save(board);
+            System.out.println("Nombre de membres après : " + board.getMembers().size());
         }
 
-        return remove;
+        return removed;
     }
 
 }
