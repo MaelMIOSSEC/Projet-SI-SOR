@@ -13,5 +13,5 @@ public class BoardDto {
 
     private List<KanbanColumnDto> kanbanColumns;
 
-    private List<UserDto> members;
+    private List<BoardMemberDto> members;
 }
