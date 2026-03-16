@@ -1,5 +1,6 @@
 package server_data.services.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -63,6 +64,7 @@ public class BoardServiceImpl implements BoardService{
     @Override
     public BoardDto createBoard(String idUser, BoardDto boardDto) {
         var board = this.boardMapper.toEntity(boardDto);
+        board = this.boardRepository.save(board);
         User user = this.userRepository.findById(idUser)
             .orElseThrow(() -> new EntityNotFoundException("User not found!"));
         BoardMember boardMember = new BoardMember();

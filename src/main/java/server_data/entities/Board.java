@@ -1,5 +1,6 @@
 package server_data.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -33,8 +34,8 @@ public class Board {
     private String title;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<KanbanColumn> kanbanColumns;
+    private List<KanbanColumn> kanbanColumns = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BoardMember> members;
+    private List<BoardMember> members = new ArrayList<>();
 }
