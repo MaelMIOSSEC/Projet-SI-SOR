@@ -11,20 +11,22 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY === 0) {
+      if (globalThis.scrollY === 0) {
         setIsShrunk(false);
       } else {
         setIsShrunk(true);
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    globalThis.addEventListener("scroll", handleScroll);
+    return () => globalThis.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <nav
-      className={`navbar navbar-expand-lg navbar-dark fixed-top ${isShrunk ? "navbar-shrink" : ""}`}
+      className={`navbar navbar-expand-lg navbar-dark fixed-top ${
+        isShrunk ? "navbar-shrink" : ""
+      }`}
       id="mainNav"
     >
       <div className="container">
@@ -65,17 +67,15 @@ const Navbar = () => {
                   <a className="nav-link" href="/boards">
                     Tableaux
                   </a>
-                  {user.isAdmin ? (
+                  {user.isAdmin && (
                     <>
                       <a className="nav-link" href="/accountManagment">
                         Gestion des comptes
                       </a>
                       <a className="nav-link" href="/statistics">
-                        Statistiques
+                        Statistiquesclear
                       </a>
                     </>
-                  ) : (
-                    <></>
                   )}
                 </div>
               </li>

@@ -7,65 +7,55 @@ import {
   ChartNoAxesColumn,
 } from "lucide-react";
 import { API_URL } from "../config/api.ts";
-import { useState } from "react";
-
-type SidebarState =
-  | { status: "idle" }
-  | { status: "submitting" }
-  | { status: "error"; error: string };
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { logout } = useAuth();
 
-  console.log("user => ", user);
-
   const isConnected = user !== null;
 
-  const [state, setState] = useState<SidebarState>({ status: "idle" });
-
-  const logoutUser = async (e: SubmitEvent<HTMLFormElement>) => {
+  const logoutUser = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
+  
     if (isConnected) {
       logout();
       navigate("/");
     }
   };
 
-  const handleDelete = async (e: SubmitEvent<HTMLFormElement>) => {
+  const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setState({ status: "submitting" });
-
+  
+    const token = localStorage.getItem("token");
+    const userId = user?.userId;
+  
+    if (!token || !userId) {
+      console.error("Token ou ID utilisateur manquant");
+      return;
+    }
+  
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/users/${user?.userId}`, {
+      const response = await fetch(`${API_URL}/users/${userId}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-
+  
       if (!response.ok) {
-        alert("Erreur lors de la suppression du profil.");
-        setState({
-          status: "error",
-          error: `Update failed (${response.status})`,
-        });
+        // essaye de lire le message d'erreur du serveur
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.message || "Erreur lors de la suppression du profil.");
         return;
       }
-
+  
       logout();
       navigate("/");
     } catch (error) {
-      setState({
-        status: "error",
-
-        error: error instanceof Error ? error.message : "Registration failed.",
-      });
+      console.error("Erreur réseau lors de la suppression du compte :", error);
+      alert("Impossible de contacter le serveur.");
     }
   };
 
@@ -113,7 +103,7 @@ const Sidebar = () => {
         >
           <TableOfContents /> Tableaux
         </a>
-        {user?.isAdmin === true ? (
+        {user?.isAdmin && (
           <>
             <a
               href="/accountManagment"
@@ -142,8 +132,6 @@ const Sidebar = () => {
               <ChartNoAxesColumn /> Statistiques
             </a>
           </>
-        ) : (
-          <></>
         )}
       </div>
       <div style={{ display: "flex", flexDirection: "column" }}>

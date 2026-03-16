@@ -1,11 +1,9 @@
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import Modal from "react-bootstrap/Modal";
+import { Button, Form, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth.ts";
 import { API_URL } from "../config/api.ts";
 import { useEffect, useState } from "react";
-import type { BoardRow } from "../types/boardType.ts";
+import type { Board } from "../types/boardType.ts";
 
 type BoardState =
   | { status: "idle" }
@@ -19,9 +17,9 @@ export default function Index() {
   const isConnected = user !== null;
 
   const [show, setShow] = useState(false);
-  const [boards, setBoards] = useState<BoardRow[]>([]);
+  const [boards, setBoards] = useState<Board[]>([]);
   const [state, setState] = useState<BoardState>({ status: "idle" });
-  const [formData, setFormData] = useState();
+  const [formData, setFormData] = useState<{ title?: string }>({});
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -31,7 +29,9 @@ export default function Index() {
     setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  const handleCreateBoard = async (e: SubmitEvent<HTMLFormElement>) => {
+  console.log("Board => ", boards)
+
+  const handleCreateBoard = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setState({ status: "submitting" });
 
@@ -113,6 +113,7 @@ export default function Index() {
         >
           <h1 style={{ textTransform: "uppercase" }}>Mes tableaux</h1>
           <button
+            type="button"
             onClick={handleShow}
             style={{
               borderRadius: "20px",
@@ -147,7 +148,8 @@ export default function Index() {
                     placeholder="Entrez le titre içi"
                     required
                     autoFocus
-                    onChange={(e) => handleChange(e)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e)}
+                    disabled={state.status === "submitting"}
                   />
                 </Form.Group>
               </Form>
@@ -157,7 +159,7 @@ export default function Index() {
                 Close
               </Button>
               <Button variant="primary" onClick={handleCreateBoard}>
-                Save Changes
+                {state.status === "submitting" ? "Ajout du tableau..." : "Créer un tableau"}
               </Button>
             </Modal.Footer>
           </Modal>
@@ -184,7 +186,7 @@ export default function Index() {
                 <h2>{board.title}</h2>
                 <hr />
                 <div style={{ textAlign: "start" }}>
-                  <p>Colonnes : {board.kanbanColumns.length}</p>
+                  <p>Colonnes : {board?.kanbanColumns?.length}</p>
                   <p>Membres :</p>
                   <ul>
                   {board.members?.map((member) => (
@@ -192,7 +194,7 @@ export default function Index() {
                   ))}
                   </ul>
                 </div>
-                <button>Ouvrir</button>
+                <button type="button">Ouvrir</button>
               </div>
             ))}
         </div>

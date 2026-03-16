@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar.tsx";
 import { useAuth } from "../hooks/useAuth.ts";
 import { API_URL } from "../config/api.ts";
 import type { UserRow } from "../types/userType.ts";
-import Table from "react-bootstrap/Table";
+import { Table } from "react-bootstrap";
 import { SquarePen, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router/internal/react-server-client";
 
@@ -31,7 +31,7 @@ export default function AccountManagement() {
       setFormData((prevState) => ({ ...prevState, [name]: value }));
     };
 
-    const handleUpdate = async (e: SubmitEvent<HTMLFormElement>) => {
+    const handleUpdate = async (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
 
       const data = {
@@ -78,9 +78,11 @@ export default function AccountManagement() {
       }
     };
 
+    console.log("formData.isAdmin => ", formData.isAdmin)
+
     const handleUpdateIsAdmin = async (
-      e: SubmitEvent<HTMLFormElement>,
-      isAdmin,
+      e: React.MouseEvent<HTMLButtonElement>,
+      isAdmin: number,
     ) => {
       e.preventDefault();
 
@@ -124,11 +126,11 @@ export default function AccountManagement() {
       }
     };
 
-    const handleDelete = async (e: SubmitEvent<HTMLFormElement>) => {
+    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
 
       if (connectedUser?.userId === user.id) {
-        const confirmation = window.confirm(
+        const confirmation = globalThis.confirm(
           "Voulez-vous vraiment supprimer votre propre compte ?",
         );
 
@@ -179,19 +181,21 @@ export default function AccountManagement() {
             type="text"
             name="name"
             required
-            value={formData.name}
+            value={formData.name || ""}
             onChange={(e) => handleChange(e)}
+            disabled={state.status === "submitting"}
           />
         </td>
         <td>
-          <input
-            style={{ width: "200px", textAlign: "center" }}
-            type="text"
-            name="lastName"
-            required
-            value={formData.lastName}
-            onChange={(e) => handleChange(e)}
-          />
+        <input
+          style={{ width: "200px", textAlign: "center" }}
+          type="text"
+          name="lastName"
+          required
+          value={String(formData.lastName || "")} 
+          onChange={(e) => handleChange(e)}
+          disabled={state.status === "submitting"}
+        />
         </td>
         <td>
           <input
@@ -199,8 +203,9 @@ export default function AccountManagement() {
             type="text"
             name="email"
             required
-            value={formData.email}
+            value={String(formData.email || "")}
             onChange={(e) => handleChange(e)}
+            disabled={state.status === "submitting"}
           />
         </td>
         <td>
@@ -209,14 +214,16 @@ export default function AccountManagement() {
             type="text"
             name="username"
             required
-            value={formData.username}
+            value={String(formData.username || "")}
             onChange={(e) => handleChange(e)}
+            disabled={state.status === "submitting"}
           />
         </td>
         <td>
           {user.isAdmin === 0 ? (
             <button
-              onClick={(e) => handleUpdateIsAdmin(e, formData.isAdmin)}
+              type="button"
+              onClick={(e) => handleUpdateIsAdmin(e, Number(formData.isAdmin || 0))}
               style={{
                 marginTop: "3px",
                 borderRadius: "10px",
@@ -227,7 +234,8 @@ export default function AccountManagement() {
             ></button>
           ) : (
             <button
-              onClick={(e) => handleUpdateIsAdmin(e, formData.isAdmin)}
+              type="button"
+              onClick={(e) => handleUpdateIsAdmin(e, Number(formData.isAdmin || 0))}
               style={{
                 marginTop: "3px",
                 borderRadius: "10px",
@@ -239,12 +247,13 @@ export default function AccountManagement() {
           )}
         </td>
         <td>
-          <button onClick={handleUpdate} style={{ borderRadius: "10px" }}>
+          <button type="button" onClick={handleUpdate} style={{ borderRadius: "10px" }}>
             <SquarePen />
           </button>
         </td>
         <td>
           <button
+            type="button"
             onClick={handleDelete}
             style={{ borderRadius: "10px", backgroundColor: "red" }}
           >
@@ -319,7 +328,7 @@ export default function AccountManagement() {
           </thead>
           <tbody>
             {Array.isArray(users) &&
-              users.map((user) => <UserRowItem key={user.id} user={user} />)}
+              users.map((user) => <UserRowItem key={String(user.id)} user={user} />)}
           </tbody>
         </Table>
       </div>

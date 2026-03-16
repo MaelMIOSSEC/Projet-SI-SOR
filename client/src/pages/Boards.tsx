@@ -1,26 +1,23 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar.tsx";
-import Table from "react-bootstrap/Table";
+import { Table } from "react-bootstrap";
 import { API_URL } from "../config/api.ts";
-import type { BoardRow } from "../types/boardType.ts";
+import type { Board } from "../types/boardType.ts";
 import { useAuth } from "../hooks/useAuth.ts";
 import { Trash2 } from "lucide-react";
 import { Modal, Button, ListGroup, Badge } from "react-bootstrap";
-import { User, Mail, ShieldCheck, Calendar } from "lucide-react"; // Importez vos icônes habituelles
+import { Mail } from "lucide-react";
+import { BoardMember } from "../types/boardMemberType.ts";
 
-type BoardState =
-  | { status: "idle" }
-  | { status: "submitting" }
-  | { status: "error"; error: string };
+type SelectedMember = BoardMember & { boardId: string };
 
 export default function Board() {
   const { user } = useAuth();
-  const [boards, setBoards] = useState<BoardRow[]>([]);
-  const [state, setState] = useState<BoardState>({ status: "idle" });
+  const [boards, setBoards] = useState<Board[]>([]);
   const [show, setShow] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<any>(null);
-
-  const handleShow = (member: any) => {
+  const [selectedMember, setSelectedMember] = useState<SelectedMember | null>(null);
+  
+  const handleShow = (member: SelectedMember) => {
     setSelectedMember(member);
     setShow(true);
   };
@@ -31,7 +28,7 @@ export default function Board() {
   };
 
   const handleDelete = async (
-    e: SubmitEvent<HTMLFormElement>,
+    e: React.MouseEvent<HTMLButtonElement>,
     boardId: string
   ) => {
     e.preventDefault();
@@ -49,25 +46,17 @@ export default function Board() {
 
       if (!response.ok) {
         alert("Erreur lors de la mise à jour du profil.");
-        setState({
-          status: "error",
-          error: `Update failed (${response.status})`,
-        });
         return;
       }
 
       fetchBoards();
     } catch (error) {
-      setState({
-        status: "error",
-
-        error: error instanceof Error ? error.message : "Registration failed.",
-      });
+      console.error("Erreur lors de la suppression : ", error);
     }
   };
 
   const HandleDeleteFromBoard = async (
-    e: SubmitEvent<HTMLFormElement>,
+    e: React.MouseEvent<HTMLButtonElement>,
     boardId: string,
     userId: string
   ) => {
@@ -91,21 +80,13 @@ export default function Board() {
 
       if (!response.ok) {
         alert("Erreur lors de la mise à jour du profil.");
-        setState({
-          status: "error",
-          error: `Update failed (${response.status})`,
-        });
         return;
       }
 
       alert("ok");
       fetchBoards();
     } catch (error) {
-      setState({
-        status: "error",
-
-        error: error instanceof Error ? error.message : "Registration failed.",
-      });
+      console.error("Erreur lors de la suppression d'un membre du tableau : ", error);
     }
   };
 
@@ -113,7 +94,7 @@ export default function Board() {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/users/${user.userId}/boards`, {
+      const response = await fetch(`${API_URL}/users/${user?.userId}/boards`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -187,14 +168,15 @@ export default function Board() {
           <tbody>
             {Array.isArray(boards) &&
               boards.map((board, index) => (
-                <tr key={board.id}>
+                <tr key={board.boardId}>
                   <td>{board.title}</td>
                   <td>
                     {board.members?.map((member) => (
                       <button
+                        type="button"
                         key={member.userDto.id}
                         onClick={() =>
-                          handleShow({ ...member, boardId: board.id })
+                          handleShow({ ...member, boardId: board.boardId })
                         }
                         className="btn btn-outline-secondary btn-sm m-1 rounded-pill"
                         style={{ width: "120px" }}
@@ -212,7 +194,7 @@ export default function Board() {
                       <Button
                         variant="danger"
                         size="sm"
-                        onClick={(e) => handleDelete(e, board.id)}
+                        onClick={(e) => handleDelete(e, board.boardId)}
                       >
                         <Trash2 size={16} />
                       </Button>
@@ -259,12 +241,14 @@ export default function Board() {
           <Button
             variant="danger"
             onClick={(e) => {
-              HandleDeleteFromBoard(
-                e,
-                selectedMember.boardId,
-                selectedMember.userDto.id
-              );
-              handleClose();
+              if (selectedMember) {
+                HandleDeleteFromBoard(
+                  e,
+                  selectedMember.boardId,
+                  selectedMember.userDto.id
+                );
+                handleClose();
+              }
             }}
           >
             Retirer du tableau

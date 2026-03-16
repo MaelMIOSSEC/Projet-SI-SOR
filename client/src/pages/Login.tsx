@@ -14,7 +14,7 @@ export default function Login() {
 
   const [state, setState] = useState<LoginState>({ status: "idle" });
 
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setState({ status: "submitting" });
@@ -155,6 +155,7 @@ export default function Login() {
             />
           </div>
           <button
+            type="button"
             disabled={state.status === "submitting"}
             style={{
               width: "510px",
@@ -165,7 +166,7 @@ export default function Login() {
           >
             {state.status === "submitting" ? "Connexion..." : "Se connecter"}
           </button>
-          {state.status === "error" ? (
+          {state.status === "error" && (
             <p
               style={{
                 border: "1px solid",
@@ -178,8 +179,6 @@ export default function Login() {
             >
               Une erreur s'est produite à l'enregistrement du formulaire...
             </p>
-          ) : (
-            <></>
           )}
         </form>
       </div>

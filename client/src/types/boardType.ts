@@ -1,8 +1,12 @@
 import { SQLOutputValue } from "node:sqlite";
+import { KanbanColumn } from "./kanbanColumnType.ts";
+import { BoardMember } from "./boardMemberType.ts";
 
 export interface Board {
   boardId: string;
   title: string;
+  kanbanColumns: KanbanColumn[];
+  members: BoardMember[];
 }
 
 export interface BoardRow {
