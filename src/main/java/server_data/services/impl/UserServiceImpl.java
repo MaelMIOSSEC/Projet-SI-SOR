@@ -7,9 +7,12 @@ import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import server_data.dtos.BoardMemberDto;
 import server_data.dtos.UserDto;
 import server_data.entities.User;
+import server_data.mappers.BoardMemberMapper;
 import server_data.mappers.UserMapper;
+import server_data.repositories.BoardMemberRepository;
 import server_data.repositories.UserRepository;
 import server_data.services.UserService;
 
@@ -17,12 +20,16 @@ import server_data.services.UserService;
 @Transactional
 public class UserServiceImpl implements UserService {
 
+    private final BoardMemberRepository boardMemberRepository;
+    private final BoardMemberMapper boardMemberMapper;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, BoardMemberRepository boardMemberRepository, BoardMemberMapper boardMemberMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.boardMemberRepository = boardMemberRepository;
+        this.boardMemberMapper = boardMemberMapper;
     }
 
     @Override
@@ -81,5 +88,10 @@ public class UserServiceImpl implements UserService {
             return false;
         }
 
+    }
+
+    @Override
+    public List<BoardMemberDto> getInvitationByUserId(String idUser) {
+        return this.boardMemberRepository.findByUser_Id(idUser).stream().map(this.boardMemberMapper::toDto).toList();
     }
 }

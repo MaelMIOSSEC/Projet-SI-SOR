@@ -3,7 +3,7 @@ import { SQLOutputValue } from "node:sqlite";
 export type Role = "Owner" | "Invited" | "Member";
 
 export interface InvitationRow {
-    title: string;
+    boardTitle: string;
     role: Role;
 }
 

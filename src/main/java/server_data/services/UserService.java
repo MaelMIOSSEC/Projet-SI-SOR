@@ -2,6 +2,7 @@ package server_data.services;
 
 import java.util.List;
 
+import server_data.dtos.BoardMemberDto;
 import server_data.dtos.UserDto;
 
 public interface UserService {
@@ -19,5 +20,7 @@ public interface UserService {
     UserDto updateUser(String idUser, UserDto userDto);
 
     Boolean deleteUser(String idUser);
+
+    List<BoardMemberDto> getInvitationByUserId(String idUser);
 
 }
