@@ -19,6 +19,8 @@ const Sidebar = () => {
   const { user } = useAuth();
   const { logout } = useAuth();
 
+  console.log("user => ", user);
+
   const isConnected = user !== null;
 
   const [state, setState] = useState<SidebarState>({ status: "idle" });

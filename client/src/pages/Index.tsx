@@ -90,7 +90,7 @@ export default function Index() {
     } catch (err) {
       console.error(
         "Échec de la récupération des informations utilisateurs: ",
-        err,
+        err
       );
     }
   };
@@ -98,6 +98,10 @@ export default function Index() {
   useEffect(() => {
     fetchBoards();
   }, []);
+
+  console.log("user => ", user)
+
+  console.log("boards => ", boards);
 
   if (isConnected) {
     return (
@@ -167,6 +171,7 @@ export default function Index() {
             display: "flex",
             flexDirection: "row",
             justifyContent: "center",
+            boxShadow: "-3px 3px 20px white",
           }}
         >
           {Array.isArray(boards) &&
@@ -180,8 +185,16 @@ export default function Index() {
                 }}
               >
                 <h2>{board.title}</h2>
-                <p>Nombre de colonnes : {board.kanbanColumns.length}</p>
-                <p>Nombre de membres : {board.members.length}</p>
+                <hr />
+                <div style={{ textAlign: "start" }}>
+                  <p>Colonnes : {board.kanbanColumns.length}</p>
+                  <p>Membres :</p>
+                  <ul>
+                  {board.members?.map((member) => (
+                    <li>{member.name}</li>
+                  ))}
+                  </ul>
+                </div>
                 <button>Ouvrir</button>
               </div>
             ))}
