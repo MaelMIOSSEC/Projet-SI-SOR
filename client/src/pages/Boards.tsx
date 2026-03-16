@@ -4,8 +4,7 @@ import Table from "react-bootstrap/Table";
 import { API_URL } from "../config/api.ts";
 import type { BoardRow } from "../types/boardType.ts";
 import { useAuth } from "../hooks/useAuth.ts";
-import { SquarePen, Trash2 } from "lucide-react";
-import { useNavigate } from "react-router/internal/react-server-client";
+import { Trash2 } from "lucide-react";
 
 type BoardState =
   | { status: "idle" }
@@ -74,8 +73,6 @@ export default function Board() {
     }
   };
 
-  console.log("boards => ", boards);
-
   useEffect(() => {
     fetchBoards();
   }, []);
@@ -117,7 +114,7 @@ export default function Board() {
           <tbody>
             {Array.isArray(boards) &&
               boards.map((board) => (
-                <>
+                <tr>
                   <td>{board.title}</td>
                   <td>{board.members.length}</td>
                   <td>{board.kanbanColumns?.length}</td>
@@ -131,7 +128,7 @@ export default function Board() {
                       </button>
                     </td>
                   </td>
-                </>
+                </tr>
               ))}
           </tbody>
         </Table>

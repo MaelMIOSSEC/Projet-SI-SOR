@@ -62,6 +62,7 @@ export default function Index() {
 
       alert("Tableau ajouté avec succès !");
       setState({ status: "idle" });
+      fetchBoards();
     } catch (error) {
       setState({
         status: "error",
@@ -167,17 +168,17 @@ export default function Index() {
             display: "flex",
             flexDirection: "row",
             justifyContent: "center",
-            boxShadow: "-3px 3px 20px white",
           }}
         >
           {Array.isArray(boards) &&
             boards.map((board) => (
               <div
                 style={{
-                  border: "1px solid",
                   margin: "0 50px",
                   padding: "15px 40px",
                   borderRadius: "20px",
+                  width: "250px",
+                  boxShadow: "gray -3px 3px 20px"
                 }}
               >
                 <h2>{board.title}</h2>
@@ -187,7 +188,7 @@ export default function Index() {
                   <p>Membres :</p>
                   <ul>
                   {board.members?.map((member) => (
-                    <li>{member.name}</li>
+                    <li>{member.username}</li>
                   ))}
                   </ul>
                 </div>

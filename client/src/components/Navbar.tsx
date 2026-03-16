@@ -51,17 +51,6 @@ const Navbar = () => {
               <a className="nav-link" style={{ fontSize: 17 }} href="/">
                 Mes tableaux
               </a>
-              <div className="subpage">
-                <a className="nav-link" href="#">
-                  Présentation
-                </a>
-                <a className="nav-link" href="#propos">
-                  A Propos
-                </a>
-                <a className="nav-link" href="#contact">
-                  Contact
-                </a>
-              </div>
             </li>
 
             {isConnected ? (

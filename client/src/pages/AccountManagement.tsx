@@ -316,7 +316,7 @@ export default function AccountManagement() {
               <th scope="col"></th>
               <th></th>
             </tr>
-          </thead>Rôle
+          </thead>
           <tbody>
             {Array.isArray(users) &&
               users.map((user) => <UserRowItem key={user.id} user={user} />)}
