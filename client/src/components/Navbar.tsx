@@ -1,13 +1,27 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../hooks/useAuth.ts";
+import Button from 'react-bootstrap/Button'
+import Modal from 'react-bootstrap/Modal'
+import { API_URL } from "../config/api.ts";
+import type { InvitationRow } from "../types/BoardMemberType.ts";
 
 const Navbar = () => {
+
+  type InvitationState =
+  | { status: "idle" }
+  | { status: "submitting" }
+  | { status: "error"; error: string };
+
   const { user } = useAuth();
 
   const [isShrunk, setIsShrunk] = useState(false);
 
   const isConnected = user !== null;
+
+  const [state, setState] = useState<InvitationState>({ status: "idle" });
+
+  const [invitations, setInvitation] = useState<InvitationRow[]>([]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +36,45 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
+  const reject = async (e : SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setState({ status: "submitting" });
+
+    const data = "Reject";
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/users/${user?.userId}/boards`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(data),
+            });
+      
+            if (!response.ok) {
+              alert("Erreur lors de la suppression de l'invitation");
+              setState({
+                status: "error",
+                error: `Update failed (${response.status})`,
+              });
+              return;
+            }
+    } catch (error )  {
+      setState({
+        status: "error",
+
+        error: error instanceof Error ? error.message : "Registration failed.",
+      });
+    }
+  }
   return (
     <nav
       className={`navbar navbar-expand-lg navbar-dark fixed-top ${isShrunk ? "navbar-shrink" : ""}`}
@@ -54,7 +107,8 @@ const Navbar = () => {
             </li>
 
             {isConnected ? (
-              <li className="nav-item drop-down-menu">
+              <>
+                <li className="nav-item drop-down-menu">
                 <a className="nav-link" style={{ fontSize: 17 }} href="/profil">
                   Profil
                 </a>
@@ -79,6 +133,44 @@ const Navbar = () => {
                   )}
                 </div>
               </li>
+              <li>
+                <a className="nav-link" style={{ fontSize: 17 }} onClick={handleShow}>
+                  Messagerie
+                </a>
+                <>
+                  <Modal show={show} onHide={handleClose}>
+                    <Modal.Header closeButton>
+                      <Modal.Title>Modal heading</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                      <div style={{display:"flex", flexDirection:"column"}}>
+                        {Array.isArray(invitations) &&
+                          invitations.map((inv) => (
+                            <div>
+                              <p>Vous avez reçu une invitation pour rejoindre le tableau {inv.title}</p>
+                              <Button variant="secondary" onClick={handleClose}>
+                                Rejeter!
+                              </Button>
+                              <Button variant="primary" onClick={handleClose}>
+                                Accepter!
+                              </Button>
+                            </div>
+                          
+                          
+                          
+                          ))}
+
+                      </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button variant="secondary" onClick={handleClose}>
+                        Close
+                      </Button>
+                    </Modal.Footer>
+                  </Modal>
+                </>
+              </li>
+              </>
             ) : (
               <>
                 <li className="nav-item drop-down-menu">

@@ -9,7 +9,6 @@ import server_data.dtos.BoardDto;
 import server_data.dtos.BoardMemberDto;
 import server_data.entities.Board;
 import server_data.entities.BoardMember;
-import server_data.entities.Role;
 
 @Component
 public class BoardMapper {
