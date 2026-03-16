@@ -28,17 +28,13 @@ public class BoardMapper {
         boardDto.setId(board.getId());
         boardDto.setTitle(board.getTitle());
         
-        if (board.getKanbanColumns() != null) {
-            boardDto.setKanbanColumns(board.getKanbanColumns().stream().map(this.kanbanColumnMapper::toDto).collect(Collectors.toList()));
-        } else {
-            boardDto.setKanbanColumns(new ArrayList<>());
-        }
+        boardDto.setKanbanColumns(board.getKanbanColumns() != null 
+            ? board.getKanbanColumns().stream().map(this.kanbanColumnMapper::toDto).collect(Collectors.toList())
+            : new ArrayList<>());
 
-        if (board.getMembers() != null) {
-            boardDto.setMembers(board.getMembers().stream().map(membership -> this.userMapper.toDto(membership.getUser())).collect(Collectors.toList()));
-        } else {
-            boardDto.setMembers(new ArrayList<>());
-        }
+        boardDto.setMembers(board.getMembers() != null 
+            ? board.getMembers().stream().map(m -> this.userMapper.toDto(m.getUser())).collect(Collectors.toList())
+            : new ArrayList<>());
 
         return boardDto;
     }
@@ -50,24 +46,23 @@ public class BoardMapper {
         board.setId(boardDto.getId());
         board.setTitle(boardDto.getTitle());
 
-        if (boardDto.getKanbanColumns() != null) {
-            board.setKanbanColumns(boardDto.getKanbanColumns().stream().map(this.kanbanColumnMapper::toEntity).collect(Collectors.toList()));
-        } else {
-            board.setKanbanColumns(new ArrayList<>());
-        }
+        board.setKanbanColumns(boardDto.getKanbanColumns() != null 
+            ? boardDto.getKanbanColumns().stream().map(this.kanbanColumnMapper::toEntity).collect(Collectors.toList())
+            : new ArrayList<>());
         
-        if (boardDto.getMembers() != null) {
-            board.setMembers(boardDto.getMembers().stream().map(userDto -> {
-                BoardMember boardMember = new BoardMember();
-                boardMember.setUser(this.userMapper.toEntity(userDto));
-                boardMember.setBoard(board);
-                boardMember.setRole(Role.Invited);
-                return boardMember;
+        // if (boardDto.getMembers() != null) {
+        //     board.setMembers(boardDto.getMembers().stream().map(userDto -> {
+        //         BoardMember boardMember = new BoardMember();
+        //         boardMember.setUser(this.userMapper.toEntity(userDto));
+        //         boardMember.setBoard(board);
+        //         boardMember.setRole(Role.Invited);
+        //         return boardMember;
 
-            }).collect(Collectors.toList()));
-        } else {
-            board.setMembers(new ArrayList<>());
-        }
+        //     }).collect(Collectors.toList()));
+        // } else {
+        //     board.setMembers(new ArrayList<>());
+        // }
+        board.setMembers(new ArrayList<>());
         return board;
     }
 }
