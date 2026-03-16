@@ -4,10 +4,51 @@ import Table from "react-bootstrap/Table";
 import { API_URL } from "../config/api.ts";
 import type { BoardRow } from "../types/boardType.ts";
 import { useAuth } from "../hooks/useAuth.ts";
+import { SquarePen, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router/internal/react-server-client";
+
+type BoardState =
+  | { status: "idle" }
+  | { status: "submitting" }
+  | { status: "error"; error: string };
 
 export default function Board() {
   const { user } = useAuth();
   const [boards, setBoards] = useState<BoardRow[]>([]);
+  const [state, setState] = useState<BoardState>({ status: "idle" });
+
+  const handleDelete = async (e: SubmitEvent<HTMLFormElement>, boardId: string) => {
+    e.preventDefault();
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/boards/${boardId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        alert("Erreur lors de la mise à jour du profil.");
+        setState({
+          status: "error",
+          error: `Update failed (${response.status})`,
+        });
+        return;
+      }
+
+      fetchBoards();
+    } catch (error) {
+      setState({
+        status: "error",
+
+        error: error instanceof Error ? error.message : "Registration failed.",
+      });
+    }
+  };
 
   const fetchBoards = async () => {
     try {
@@ -28,14 +69,16 @@ export default function Board() {
     } catch (err) {
       console.error(
         "Échec de la récupération des informations utilisateurs: ",
-        err,
+        err
       );
     }
   };
 
+  console.log("boards => ", boards);
+
   useEffect(() => {
     fetchBoards();
-  });
+  }, []);
 
   return (
     <main
@@ -78,6 +121,16 @@ export default function Board() {
                   <td>{board.title}</td>
                   <td>{board.members.length}</td>
                   <td>{board.kanbanColumns?.length}</td>
+                  <td>
+                    <td>
+                      <button
+                        onClick={(e) => handleDelete(e, board.id)}
+                        style={{ borderRadius: "10px", backgroundColor: "red" }}
+                      >
+                        <Trash2 />
+                      </button>
+                    </td>
+                  </td>
                 </>
               ))}
           </tbody>

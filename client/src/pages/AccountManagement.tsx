@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar.tsx";
 import { useAuth } from "../hooks/useAuth.ts";
-import { URL_TOMCAT } from "../config/api.ts";
+import { API_URL } from "../config/api.ts";
 import type { UserRow } from "../types/userType.ts";
 import Table from "react-bootstrap/Table";
 import { SquarePen, Trash2 } from "lucide-react";
@@ -45,17 +45,22 @@ export default function AccountManagement() {
       };
 
       try {
-        const res = await fetch(`${URL_TOMCAT}/users/${user.id}`, {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(`${API_URL}/users/${user.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify(data),
         });
 
-        if (!res.ok) {
+        if (!response.ok) {
           alert("Erreur lors de la mise à jour du profil.");
           setState({
             status: "error",
-            error: `Update failed (${res.status})`,
+            error: `Update failed (${response.status})`,
           });
           return;
         }
@@ -87,17 +92,22 @@ export default function AccountManagement() {
       };
 
       try {
-        const res = await fetch(`${URL_TOMCAT}/users/${user.id}`, {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(`${API_URL}/users/${user.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify(updatedData),
         });
 
-        if (!res.ok) {
+        if (!response.ok) {
           alert("Erreur lors de la mise à jour du profil.");
           setState({
             status: "error",
-            error: `Update failed (${res.status})`,
+            error: `Update failed (${response.status})`,
           });
           return;
         }
@@ -126,15 +136,21 @@ export default function AccountManagement() {
       }
 
       try {
-        const res = await fetch(`${URL_TOMCAT}/users/${user.id}`, {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(`${API_URL}/users/${user.id}`, {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
 
-        if (!res.ok) {
+        if (!response.ok) {
           alert("Erreur lors de la mise à jour du profil.");
           setState({
             status: "error",
-            error: `Update failed (${res.status})`,
+            error: `Update failed (${response.status})`,
           });
           return;
         }
@@ -241,11 +257,20 @@ export default function AccountManagement() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${URL_TOMCAT}/users`);
+      const token = localStorage.getItem("token");
 
-      const data = await response.json();
-
-      setUsers(data);
+      const response = await fetch(`${API_URL}/users`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      }
     } catch (err) {
       console.error("Échec de la récupération : ", err);
     }
@@ -291,7 +316,7 @@ export default function AccountManagement() {
               <th scope="col"></th>
               <th></th>
             </tr>
-          </thead>
+          </thead>Rôle
           <tbody>
             {Array.isArray(users) &&
               users.map((user) => <UserRowItem key={user.id} user={user} />)}

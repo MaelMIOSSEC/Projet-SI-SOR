@@ -42,7 +42,7 @@ export default function Index() {
     };
 
     try {
-      const res = await fetch(`${API_URL}/boards`, {
+      const res = await fetch(`${API_URL}/users/${user?.userId}/boards`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -98,10 +98,6 @@ export default function Index() {
   useEffect(() => {
     fetchBoards();
   }, []);
-
-  console.log("user => ", user)
-
-  console.log("boards => ", boards);
 
   if (isConnected) {
     return (

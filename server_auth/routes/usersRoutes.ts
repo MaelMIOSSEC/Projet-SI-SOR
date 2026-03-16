@@ -3,7 +3,7 @@ import { hashPassword } from "../lib/jwt.ts";
 
 const router = new Router({ prefix: "/users" });
 
-router.get("", async (ctx: Context) => {
+router.get("/", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
