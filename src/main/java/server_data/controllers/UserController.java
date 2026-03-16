@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import server_data.dtos.BoardMemberDto;
 import server_data.dtos.UserDto;
 import server_data.services.UserService;
 
@@ -63,6 +64,11 @@ public class UserController {
     @DeleteMapping("/{idUser}")
     public Boolean deleteUser(@PathVariable String idUser) {
         return this.userService.deleteUser(idUser);
+    }
+
+    @GetMapping("/{idUser}/invitation")
+    public List<BoardMemberDto> getInvitationByUserId(@PathVariable String idUser) {
+        return this.userService.getInvitationByUserId(idUser);
     }
 
 }

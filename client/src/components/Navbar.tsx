@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button'
 import Modal from 'react-bootstrap/Modal'
 import { API_URL } from "../config/api.ts";
 import type { InvitationRow } from "../types/BoardMemberType.ts";
+import type { User } from "../types/userType.ts";
 
 const Navbar = () => {
 
@@ -13,7 +14,7 @@ const Navbar = () => {
   | { status: "submitting" }
   | { status: "error"; error: string };
 
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   const [isShrunk, setIsShrunk] = useState(false);
 
@@ -50,7 +51,7 @@ const Navbar = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/users/${user?.userId}/boards`, {
+      const response = await fetch(`${API_URL}/users/${user?.id}/invitation`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -75,6 +76,39 @@ const Navbar = () => {
       });
     }
   }
+
+  const fetchInvitation = async () => {
+    try {
+      if (!user?.id || !token) return;
+
+      if (user != null) {
+        const response = await fetch(`${API_URL}/users/${user.id}/invitation`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setInvitation(data);
+      }
+      }
+
+      
+    } catch (error) {
+    console.error(
+        "Échec de la récupération des informations utilisateurs: ",
+        error
+      );
+    }
+  } 
+
+  useEffect(() => {
+    fetchInvitation();
+  }, [user?.id, token]);
+
   return (
     <nav
       className={`navbar navbar-expand-lg navbar-dark fixed-top ${
@@ -140,15 +174,15 @@ const Navbar = () => {
                 <>
                   <Modal show={show} onHide={handleClose}>
                     <Modal.Header closeButton>
-                      <Modal.Title>Modal heading</Modal.Title>
+                      <Modal.Title>Messagerie</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                       <div style={{display:"flex", flexDirection:"column"}}>
                         {Array.isArray(invitations) &&
                           invitations.map((inv) => (
                             <div>
-                              <p>Vous avez reçu une invitation pour rejoindre le tableau {inv.title}</p>
-                              <Button variant="secondary" onClick={handleClose}>
+                              <p>Vous avez reçu une invitation pour rejoindre le tableau {inv.boardTitle}</p>
+                              <Button variant="secondary" onClick={reject}>
                                 Rejeter!
                               </Button>
                               <Button variant="primary" onClick={handleClose}>
