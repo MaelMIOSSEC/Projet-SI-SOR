@@ -23,8 +23,10 @@ public class Comment {
 
     private String content;
 
+    @Field("create_at")
     private LocalDateTime createdAt;
 
+    @Field("url_id")
     private String attachmentUrl;
 
 }
