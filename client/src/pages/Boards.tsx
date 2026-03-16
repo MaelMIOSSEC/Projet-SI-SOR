@@ -4,19 +4,171 @@ import { Table } from "react-bootstrap";
 import { API_URL } from "../config/api.ts";
 import type { Board } from "../types/boardType.ts";
 import { useAuth } from "../hooks/useAuth.ts";
-import { Trash2 } from "lucide-react";
+import { SquarePen, Trash2 } from "lucide-react";
 import { Modal, Button, ListGroup, Badge } from "react-bootstrap";
 import { Mail } from "lucide-react";
-import { BoardMember } from "../types/boardMemberType.ts";
+import type { BoardMember } from "../types/boardMemberType.ts";
 
 type SelectedMember = BoardMember & { boardId: string };
+
+type BoardState =
+  | { status: "idle" }
+  | { status: "submitting" }
+  | { status: "error"; error: string };
+
+interface UserRowProps {
+  board: Board;
+  index: number;
+  user: any;
+  boards: Board[];
+  fetchBoards: () => void;
+  handleShow: (member: SelectedMember) => void;
+}
+
+const UserRowItem = ({
+  board,
+  index,
+  user,
+  boards,
+  fetchBoards,
+  handleShow,
+}: UserRowProps) => {
+  const [formData, setFormData] = useState(board.title);
+  const [state, setState] = useState<BoardState>({ status: "idle" });
+
+  const handleDelete = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    boardId: string
+  ) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/boards/${boardId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.ok) fetchBoards();
+    } catch (error) {
+      console.error("Erreur suppression : ", error);
+    }
+  };
+
+  const handleUpdate = async (e: React.MouseEvent<HTMLButtonElement>, boardId: string) => {
+        e.preventDefault();
+
+        const data = {
+          title: formData,
+        };
+  
+        try {
+          const token = localStorage.getItem("token");
+  
+          const response = await fetch(`${API_URL}/boards/${boardId}`, {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+  
+          if (!response.ok) {
+            alert("Erreur lors de la mise à jour du profil.");
+            setState({
+              status: "error",
+              error: `Update failed (${response.status})`,
+            });
+            return;
+          }
+  
+          fetchBoards();
+          setState({ status: "idle" });
+        } catch (error) {
+          setState({
+            status: "error",
+  
+            error:
+              error instanceof Error ? error.message : "Registration failed.",
+          });
+        }
+      };
+
+  const getRole = (idx: number) => {
+    const members = boards[idx]?.members;
+    return members?.find((m) => m.userDto.id === user?.userId)?.role || null;
+  };
+
+  const role = getRole(index);
+
+  return (
+    <tr>
+      <td>
+        {role === "Owner" ? (
+          <input
+            className="form-control"
+            type="text"
+            value={formData}
+            onChange={(e) => setFormData(e.target.value)}
+            disabled={state.status === "submitting"}
+          />
+        ) : (
+          board.title
+        )}
+      </td>
+      <td>
+        {board.members?.map((member) => (
+          <button
+            type="button"
+            key={member.userDto.id}
+            onClick={() => handleShow({ ...member, boardId: board.id })}
+            disabled={member.userDto.id === user?.userId || role !== "Owner"}
+            className="btn btn-outline-secondary btn-sm m-1 rounded-pill"
+          >
+            {member.userDto.username === user?.username
+              ? `${member.userDto.username} (vous)`
+              : member.userDto.username}
+          </button>
+        ))}
+      </td>
+      <td>{board.kanbanColumns?.length}</td>
+      <td>
+        <Badge bg="secondary">{role}</Badge>
+      </td>
+      <td>
+        <Button
+          variant="danger"
+          size="sm"
+          disabled={role !== "Owner"}
+          onClick={(e) => handleDelete(e, board.id)}
+        >
+          <Trash2 size={16} />
+        </Button>
+      </td>
+      <td>
+        <Button
+          variant="primary"
+          size="sm"
+          disabled={role !== "Owner"}
+          onClick={(e) => handleUpdate(e, board.id)}
+        >
+          <SquarePen size={16} />
+        </Button>
+      </td>
+    </tr>
+  );
+};
 
 export default function Board() {
   const { user } = useAuth();
   const [boards, setBoards] = useState<Board[]>([]);
   const [show, setShow] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<SelectedMember | null>(null);
-  
+  const [selectedMember, setSelectedMember] = useState<SelectedMember | null>(
+    null
+  );
+
   const handleShow = (member: SelectedMember) => {
     setSelectedMember(member);
     setShow(true);
@@ -25,34 +177,6 @@ export default function Board() {
   const handleClose = () => {
     setShow(false);
     setSelectedMember(null);
-  };
-
-  const handleDelete = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-    boardId: string
-  ) => {
-    e.preventDefault();
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/boards/${boardId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        alert("Erreur lors de la mise à jour du profil.");
-        return;
-      }
-
-      fetchBoards();
-    } catch (error) {
-      console.error("Erreur lors de la suppression : ", error);
-    }
   };
 
   const HandleDeleteFromBoard = async (
@@ -76,8 +200,6 @@ export default function Board() {
         }
       );
 
-      console.log(response);
-
       if (!response.ok) {
         alert("Erreur lors de la mise à jour du profil.");
         return;
@@ -86,7 +208,10 @@ export default function Board() {
       alert("ok");
       fetchBoards();
     } catch (error) {
-      console.error("Erreur lors de la suppression d'un membre du tableau : ", error);
+      console.error(
+        "Erreur lors de la suppression d'un membre du tableau : ",
+        error
+      );
     }
   };
 
@@ -117,19 +242,6 @@ export default function Board() {
   useEffect(() => {
     fetchBoards();
   }, []);
-
-  const getRole = (boardId: number) => {
-    const members = boards[boardId]?.members;
-    for (let i = 0; i < members?.length; i++) {
-      if (members[i].userDto.id === user?.userId) {
-        return members[i].role;
-      }
-    }
-
-    return null;
-  };
-
-  console.log("boards", boards);
 
   return (
     <main
@@ -168,39 +280,15 @@ export default function Board() {
           <tbody>
             {Array.isArray(boards) &&
               boards.map((board, index) => (
-                <tr key={board.boardId}>
-                  <td>{board.title}</td>
-                  <td>
-                    {board.members?.map((member) => (
-                      <button
-                        type="button"
-                        key={member.userDto.id}
-                        onClick={() =>
-                          handleShow({ ...member, boardId: board.boardId })
-                        }
-                        className="btn btn-outline-secondary btn-sm m-1 rounded-pill"
-                        style={{ width: "120px" }}
-                      >
-                        {member.userDto.username}
-                      </button>
-                    ))}
-                  </td>
-                  <td>{board.kanbanColumns?.length}</td>
-                  <td>
-                    <Badge bg="secondary">{getRole(index)}</Badge>
-                  </td>
-                  <td>
-                    {getRole(index) === "Owner" && (
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={(e) => handleDelete(e, board.boardId)}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    )}
-                  </td>
-                </tr>
+                <UserRowItem
+                  key={board.id}
+                  board={board}
+                  index={index}
+                  user={user}
+                  boards={boards}
+                  fetchBoards={fetchBoards}
+                  handleShow={handleShow}
+                />
               ))}
           </tbody>
         </Table>

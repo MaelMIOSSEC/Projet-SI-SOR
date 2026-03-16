@@ -78,8 +78,6 @@ export default function AccountManagement() {
       }
     };
 
-    console.log("formData.isAdmin => ", formData.isAdmin)
-
     const handleUpdateIsAdmin = async (
       e: React.MouseEvent<HTMLButtonElement>,
       isAdmin: number,

@@ -3,7 +3,7 @@ import { KanbanColumn } from "./kanbanColumnType.ts";
 import { BoardMember } from "./boardMemberType.ts";
 
 export interface Board {
-  boardId: string;
+  id: string;
   title: string;
   kanbanColumns: KanbanColumn[];
   members: BoardMember[];
