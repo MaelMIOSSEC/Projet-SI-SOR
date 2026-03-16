@@ -35,14 +35,14 @@ export default function Index() {
     e.preventDefault();
     setState({ status: "submitting" });
 
-    const token = localStorage.getItem("token");
-
     const data = {
       title: formData?.title,
     };
 
     try {
-      const res = await fetch(`${API_URL}/users/${user?.userId}/boards`, {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/users/${user?.userId}/boards`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,11 +51,11 @@ export default function Index() {
         body: JSON.stringify(data),
       });
 
-      if (!res.ok) {
+      if (!response.ok) {
         alert("Erreur lors de la création du tableau.");
         setState({
           status: "error",
-          error: `Update failed (${res.status})`,
+          error: `Update failed (${response.status})`,
         });
         return;
       }

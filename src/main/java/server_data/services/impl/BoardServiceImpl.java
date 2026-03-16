@@ -71,10 +71,16 @@ public class BoardServiceImpl implements BoardService{
         boardMember.setUser(user);
         boardMember.setBoard(board);
         boardMember.setRole(Role.Owner);
-        // this.boardMemberRepository.save(boardMember);
+
+        
         List<BoardMember> lBoardMembers = board.getMembers();
+        if (lBoardMembers == null) {
+            lBoardMembers = new ArrayList<>();
+        }
+
         lBoardMembers.add(boardMember);
         board.setMembers(lBoardMembers);
+
         return this.boardMapper.toDto(this.boardRepository.save(board));
     }
 
