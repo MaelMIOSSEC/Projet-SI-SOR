@@ -1,6 +1,6 @@
 package server_data.dtos;
 
-import javax.management.relation.Role;
+import server_data.entities.Role;
 
 import lombok.Data;
 

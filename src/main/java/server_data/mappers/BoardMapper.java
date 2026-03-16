@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import server_data.dtos.BoardDto;
+import server_data.dtos.BoardMemberDto;
 import server_data.entities.Board;
 import server_data.entities.BoardMember;
 import server_data.entities.Role;
@@ -33,7 +34,7 @@ public class BoardMapper {
             : new ArrayList<>());
 
         boardDto.setMembers(board.getMembers() != null 
-            ? board.getMembers().stream().map(m -> this.userMapper.toDto(m.getUser())).collect(Collectors.toList())
+            ? board.getMembers().stream().map(this::mapToMemberDto).collect(Collectors.toList())
             : new ArrayList<>());
 
         return boardDto;
@@ -64,5 +65,12 @@ public class BoardMapper {
         // }
         board.setMembers(new ArrayList<>());
         return board;
+    }
+
+    private BoardMemberDto mapToMemberDto(BoardMember boardMember) {
+        BoardMemberDto boardMemberDto = new BoardMemberDto();
+        boardMemberDto.setUserDto(this.userMapper.toDto(boardMember.getUser()));
+        boardMemberDto.setRole(boardMember.getRole());
+        return boardMemberDto;
     }
 }
