@@ -39,9 +39,9 @@ public class BoardController {
         return this.boardService.getBoardsByUserId(idUser);
     }
 
-    @PostMapping("/boards")
-    public BoardDto createBoard(final @RequestBody BoardDto boardDto) {
-        return this.boardService.createBoard(boardDto);
+    @PostMapping("/users/{idUser}/boards")
+    public BoardDto createBoard(@PathVariable String idUser, final @RequestBody BoardDto boardDto) {
+        return this.boardService.createBoard(idUser, boardDto);
     }
 
     @PutMapping("/boards/{idBoard}")

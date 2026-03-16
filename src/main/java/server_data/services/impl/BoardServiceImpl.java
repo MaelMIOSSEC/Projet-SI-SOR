@@ -61,8 +61,14 @@ public class BoardServiceImpl implements BoardService{
     }
 
     @Override
-    public BoardDto createBoard(BoardDto boardDto) {
+    public BoardDto createBoard(String idUser, BoardDto boardDto) {
         var board = this.boardMapper.toEntity(boardDto);
+        User user = this.userRepository.findById(idUser)
+            .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+        BoardMember boardMember = new BoardMember();
+        boardMember.setUser(user);
+        boardMember.setBoard(board);
+        boardMember.setRole(Role.Owner);
         return this.boardMapper.toDto(this.boardRepository.save(board));
     }
 

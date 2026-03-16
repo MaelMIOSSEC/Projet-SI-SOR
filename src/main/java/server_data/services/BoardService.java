@@ -14,7 +14,7 @@ public interface BoardService {
 
     List<BoardDto> getBoardsByUserId(String idUser);
 
-    BoardDto createBoard(BoardDto boardDto);
+    BoardDto createBoard(String idUser, BoardDto boardDto);
 
     BoardDto updateBoard(String idBoard, BoardDto boardDto);
 

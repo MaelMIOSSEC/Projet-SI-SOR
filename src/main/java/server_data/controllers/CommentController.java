@@ -28,7 +28,7 @@ public class CommentController {
         return this.commentService.getCommentsByTask(idTask);
     }
 
-    @PostMapping("task/{idTask}")
+    @PostMapping("/task/{idTask}")
     public CommentDto addComment(@PathVariable String idTask, @RequestBody CommentDto commentDto) {
         return this.commentService.addComment(idTask, commentDto);
     }
