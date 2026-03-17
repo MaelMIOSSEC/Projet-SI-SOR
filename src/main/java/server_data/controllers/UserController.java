@@ -71,4 +71,14 @@ public class UserController {
         return this.userService.getInvitationByUserId(idUser);
     }
 
+    @PutMapping("/{idUser}/invitation/{idBoard}")
+    public BoardMemberDto acceptInvitation(@PathVariable String idUser, @PathVariable String idBoard) {
+        return this.userService.acceptInvitation(idUser, idBoard);
+    }
+
+    @DeleteMapping("/{idUser}/invitation/{idBoard}")
+    public Boolean rejectInvitation(@PathVariable String idUser, @PathVariable String idBoard) {
+        return this.userService.rejectInvitation(idUser, idBoard);
+    }
+
 }

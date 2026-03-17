@@ -10,4 +10,5 @@ public class BoardMemberDto {
     private UserDto userDto;
     private Role role;
     private String boardTitle;
+    private String boardId;
 }

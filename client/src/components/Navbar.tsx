@@ -41,7 +41,7 @@ const Navbar = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const reject = async (e: SubmitEvent<HTMLFormElement>) => {
+  const reject = async (e: React.MouseEvent<HTMLButtonElement>, boardId: String) => {
     e.preventDefault();
     setState({ status: "submitting" });
 
@@ -50,8 +50,8 @@ const Navbar = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/users/${user?.id}/invitation`, {
-        method: "POST",
+      const response = await fetch(`${API_URL}/users/${user?.userId}/invitation/${boardId}`, {
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -59,11 +59,13 @@ const Navbar = () => {
         body: JSON.stringify(data),
       });
 
+      console.log("response => ", response);
+
       if (!response.ok) {
         alert("Erreur lors de la suppression de l'invitation");
         setState({
           status: "error",
-          error: `Update failed (${response.status})`,
+          error: `Delete failed (${response.status})`,
         });
         return;
       }
@@ -71,7 +73,7 @@ const Navbar = () => {
       setState({
         status: "error",
 
-        error: error instanceof Error ? error.message : "Registration failed.",
+        error: error instanceof Error ? error.message : "Fail.",
       });
     }
   };
@@ -207,7 +209,7 @@ const Navbar = () => {
                                   Vous avez reçu une invitation pour rejoindre
                                   le tableau {inv.boardTitle}
                                 </p>
-                                <Button variant="secondary" onClick={reject}>
+                                <Button variant="secondary" onClick={(e) => reject(e, inv.boardId)}>
                                   Rejeter!
                                 </Button>
                                 <Button variant="primary" onClick={handleClose}>
