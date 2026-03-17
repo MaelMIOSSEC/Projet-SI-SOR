@@ -9,31 +9,56 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 
+ * Data Transfer Object for representing a task.
  */
 @Data
 public class TaskDto {
 
+    /**
+     * The ID of the task.
+     */
     private String id;
 
+    /**
+     * The title of the task.
+     */
     @NotBlank(message = "The title is required.")
     private String title;
 
+    /**
+     * The description of the task.
+     */
     private String description;
 
+    /**
+     * The deadline of the task.
+     */
     private LocalDate deadline;
 
+    /**
+     * The priority of the task.
+     */
     private Priority priority;
 
+    /**
+     * The user assigned to the task.
+     */
     @NotBlank(message = "The User Id is required.")
     private UserDto user;
-    //private String userId;
 
+    /**
+     * The kanban column to which the task belongs.
+     */
     @NotBlank(message = "The column of kanban is required.")
-    private KanbanColumnDto kanbanColumn; 
-    //private String kanbanColumnId;
+    private KanbanColumnDto kanbanColumn;
 
+    /**
+     * The position of the task within the kanban column.
+     */
     private int position;
 
+    /**
+     * The list of comments associated with the task.
+     */
     private List<Comment> comments;
 }
