@@ -1,8 +1,8 @@
 import { Context, Router } from "@oak/oak";
 
-const router = new Router({ prefix: "/tasks" });
+const router = new Router();
 
-router.post("", async (ctx: Context) => {
+router.post("/tasks", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
