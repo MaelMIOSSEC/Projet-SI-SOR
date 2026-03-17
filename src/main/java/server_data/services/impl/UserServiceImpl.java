@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import server_data.dtos.BoardDto;
 import server_data.entities.Board;
+import server_data.entities.BoardMember;
 import server_data.entities.BoardMemberId;
 import server_data.dtos.BoardMemberDto;
 import server_data.dtos.UserDto;
@@ -104,20 +105,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BoardMemberDto acceptInvitation(String idUser, String idBoard) {
-        List<BoardMemberDto> lBoardMemberDto = this.boardMemberRepository.findByUser_Id(idUser).stream().map(this.boardMemberMapper::toDto).toList();
-        BoardMemberDto res = new BoardMemberDto();
-        Board board = this.boardRepository.findById(idBoard)
-            .orElseThrow(() -> new EntityNotFoundException("Board not found with id: " + idBoard));
+        BoardMemberId boardMemberId = new BoardMemberId();
+        boardMemberId.setUser(idUser);
+        boardMemberId.setBoard(idBoard);
 
-        String boardTitle = board.getTitle();
-        for (int i = 0; i < lBoardMemberDto.size(); i++) {
-            if (lBoardMemberDto.get(i).getBoardTitle().equals(boardTitle)) {
-                res = lBoardMemberDto.get(i);
-                res.setRole(Role.Member);
-            }
+        var memberOpt = this.boardMemberRepository.findById(boardMemberId);
+        if (memberOpt.isEmpty()) {
+            throw new EntityNotFoundException("Invitation introuvable pour cet utilisateur et ce tableau");
         }
 
-        return res;
+        BoardMember member = memberOpt.get();
+        member.setRole(Role.Member);
+
+        BoardMember updatedMember = this.boardMemberRepository.save(member);
+
+        return this.boardMemberMapper.toDto(updatedMember);
     }
 
     @Override
