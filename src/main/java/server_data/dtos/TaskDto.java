@@ -1,6 +1,7 @@
 package server_data.dtos;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import server_data.entities.Comment;
 import server_data.entities.Priority;
@@ -43,13 +44,13 @@ public class TaskDto {
     /**
      * The user assigned to the task.
      */
-    @NotBlank(message = "The User Id is required.")
+    @NotNull(message = "The User Id is required.")
     private UserDto user;
 
     /**
      * The kanban column to which the task belongs.
      */
-    @NotBlank(message = "The column of kanban is required.")
+    @NotNull(message = "The column of kanban is required.")
     private KanbanColumnDto kanbanColumn;
 
     /**
