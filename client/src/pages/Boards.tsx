@@ -89,7 +89,6 @@ const UserRowItem = ({
         } catch (error) {
           setState({
             status: "error",
-  
             error:
               error instanceof Error ? error.message : "Registration failed.",
           });
@@ -259,13 +258,6 @@ export default function Board() {
           margin: "40px",
         }}
       >
-        <p style={{ marginTop: "200px" }}>
-          Dans cette page, mettre un tableau contenant tous les tableaux dont
-          l'utilisateur fais partie avec les informations nécéssaires et si
-          l'utilisateur est le créateur du tableau, lui offir la possibilité de
-          l'administrer. AJouter un bouton pour supprimer le tableau ou le
-          quitter.
-        </p>
         <Table striped bordered hover style={{ marginTop: "75px" }}>
           <thead>
             <tr>

@@ -29,8 +29,6 @@ export default function Index() {
     setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  console.log("Board => ", boards)
-
   const handleCreateBoard = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setState({ status: "submitting" });
@@ -99,6 +97,20 @@ export default function Index() {
   useEffect(() => {
     fetchBoards();
   }, []);
+
+  const getBoardsImPartOf = (boards: Board[]) => {
+    const newBoards = [];
+
+    for (let i = 0; i < boards.length; i++) {
+      for (let j = 0; j < boards[i].members.length; j++) {
+        if (boards[i].members[j].userDto.id === user?.userId && boards[i].members[j].role !== "Invited") {
+          newBoards.push(boards[i]);
+        }
+      }
+    }
+
+    return newBoards;
+  }
 
   if (isConnected) {
     return (
@@ -172,8 +184,8 @@ export default function Index() {
             justifyContent: "center",
           }}
         >
-          {Array.isArray(boards) &&
-            boards.map((board) => (
+          {Array.isArray(getBoardsImPartOf(boards)) &&
+            getBoardsImPartOf(boards).map((board) => (
               <div
                 style={{
                   margin: "0 50px",
