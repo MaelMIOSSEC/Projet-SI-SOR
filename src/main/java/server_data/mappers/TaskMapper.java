@@ -5,17 +5,39 @@ import org.springframework.stereotype.Component;
 import server_data.dtos.TaskDto;
 import server_data.entities.Task;
 
+/**
+ * Mapper for converting between Task entities and Task DTOs.
+ */
 @Component
 public class TaskMapper {
 
+    /**
+     * Mapper for converting KanbanColumn entities and DTOs.
+     */
     private KanbanColumnMapper kanbanColumnMapper;
+
+    /**
+     * Mapper for converting User entities and DTOs.
+     */
     private UserMapper userMapper;
 
+    /**
+     * Constructor for TaskMapper.
+     * 
+     * @param kanbanColumnMapper Mapper for KanbanColumn entities and DTOs.
+     * @param userMapper Mapper for User entities and DTOs.
+     */
     public TaskMapper(KanbanColumnMapper kanbanColumnMapper, UserMapper userMapper) {
         this.kanbanColumnMapper = kanbanColumnMapper;
         this.userMapper = userMapper;
     }
 
+    /**
+     * Converts a Task entity to a Task DTO.
+     * 
+     * @param task The Task entity to convert.
+     * @return The corresponding Task DTO.
+     */
     public TaskDto toDto(Task task) {
         if (task == null) return null;
 
@@ -36,6 +58,12 @@ public class TaskMapper {
         return taskDto;
     }
 
+    /**
+     * Converts a Task DTO to a Task entity.
+     * 
+     * @param taskDto The Task DTO to convert.
+     * @return The corresponding Task entity.
+     */
     public Task toEntity(TaskDto taskDto) {
         if (taskDto == null) return null;
 
@@ -45,8 +73,6 @@ public class TaskMapper {
         task.setDescription(taskDto.getDescription());
         task.setDeadline(taskDto.getDeadline());
         task.setPriority(taskDto.getPriority());
-        //task.setUserId(taskDto.getUserId());
-        //task.setKanbanColumnId(taskDto.getKanbanColumnId());
         task.setPosition(taskDto.getPosition());
         task.setComments(taskDto.getComments());
         return task;
