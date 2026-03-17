@@ -89,8 +89,8 @@ public interface UserService {
      *
      * @param idUser the ID of the user rejecting the invitation
      * @param idBoard the ID of the board for which the invitation is being rejected
-     * @return the BoardMemberDto object representing the rejected board membership, or null if the invitation was not found
+     * @return true if the invitation was successfully rejected, false otherwise
      */
-    BoardMemberDto rejectInvitation(String idUser, String idBoard);
+    Boolean rejectInvitation(String idUser, String idBoard);
 
 }
