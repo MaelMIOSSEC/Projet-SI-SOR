@@ -10,17 +10,39 @@ import server_data.dtos.BoardMemberDto;
 import server_data.entities.Board;
 import server_data.entities.BoardMember;
 
+/**
+ * Mapper for converting between Board entities and Board DTOs.
+ */
 @Component
 public class BoardMapper {
 
+    /**
+     * Mapper for converting KanbanColumn entities and DTOs.
+     */
     private KanbanColumnMapper kanbanColumnMapper;
+
+    /**
+     * Mapper for converting User entities and DTOs.
+     */
     private UserMapper userMapper;
 
+    /**
+     * Constructor for BoardMapper.
+     * 
+     * @param kanbanColumnMapper Mapper for KanbanColumn entities and DTOs.
+     * @param userMapper Mapper for User entities and DTOs.
+     */
     public BoardMapper(KanbanColumnMapper kanbanColumnMapper, UserMapper userMapper) {
         this.kanbanColumnMapper = kanbanColumnMapper;
         this.userMapper = userMapper;
     }
 
+    /**
+     * Converts a Board entity to a Board DTO.
+     * 
+     * @param board The Board entity to convert.
+     * @return The corresponding Board DTO.
+     */
     public BoardDto toDto(Board board) {
         if (board == null) return null;
 
@@ -39,6 +61,12 @@ public class BoardMapper {
         return boardDto;
     }
 
+    /**
+     * Converts a Board DTO to a Board entity.
+     * 
+     * @param boardDto The Board DTO to convert.
+     * @return The corresponding Board entity.
+     */
     public Board toEntity(BoardDto boardDto) {
         if (boardDto == null) return null;
 
@@ -50,22 +78,16 @@ public class BoardMapper {
             ? boardDto.getKanbanColumns().stream().map(this.kanbanColumnMapper::toEntity).collect(Collectors.toList())
             : new ArrayList<>());
         
-        // if (boardDto.getMembers() != null) {
-        //     board.setMembers(boardDto.getMembers().stream().map(userDto -> {
-        //         BoardMember boardMember = new BoardMember();
-        //         boardMember.setUser(this.userMapper.toEntity(userDto));
-        //         boardMember.setBoard(board);
-        //         boardMember.setRole(Role.Invited);
-        //         return boardMember;
-
-        //     }).collect(Collectors.toList()));
-        // } else {
-        //     board.setMembers(new ArrayList<>());
-        // }
         board.setMembers(new ArrayList<>());
         return board;
     }
 
+    /**
+     * Helper method to convert a BoardMember entity to a BoardMember DTO.
+     * 
+     * @param boardMember The BoardMember entity to convert.
+     * @return The corresponding BoardMember DTO.
+     */
     private BoardMemberDto mapToMemberDto(BoardMember boardMember) {
         BoardMemberDto boardMemberDto = new BoardMemberDto();
         boardMemberDto.setUserDto(this.userMapper.toDto(boardMember.getUser()));
