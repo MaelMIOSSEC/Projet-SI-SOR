@@ -1,5 +1,7 @@
 package server_data.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 /**
@@ -26,5 +28,6 @@ public class KanbanColumnDto {
     /**
      * The ID of the board to which the kanban column belongs.
      */
+    @JsonProperty("idBoard") 
     private String idBoard;
 }

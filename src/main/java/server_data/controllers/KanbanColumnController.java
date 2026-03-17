@@ -69,7 +69,7 @@ public class KanbanColumnController {
      * @return the created Kanban column DTO
      */
     @PostMapping
-    public KanbanColumnDto createColumn(KanbanColumnDto kanbanColumnDto) {
+    public KanbanColumnDto createColumn(@RequestBody KanbanColumnDto kanbanColumnDto) {
         return this.kanbanColumnService.createColumn(kanbanColumnDto);
     }
     

@@ -7,6 +7,7 @@ import { useParams } from "react-router/internal/react-server-client";
 import type { KanbanColumn } from "../types/kanbanColumnType.ts";
 import type { Task } from "../types/taskType.ts";
 import type { User } from "../types/userType.ts";
+import { Trash2 } from "lucide-react";
 
 type BoardState =
   | { status: "idle" }
@@ -16,9 +17,11 @@ type BoardState =
 const KanbanColumnItem = ({
   kanbanColumn,
   onTasksLoaded,
+  onTaskClick,
 }: {
   kanbanColumn: KanbanColumn;
   onTasksLoaded: (count: number) => void;
+  onTaskClick: (kanbanColumn: KanbanColumn, task: Task) => void;
 }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -57,17 +60,23 @@ const KanbanColumnItem = ({
   return (
     <>
       {tasks.map((task: Task) => (
-        <p
+        <button
+          key={task.id}
+          type="button"
+          onClick={() => onTaskClick(kanbanColumn, task)} // Appel de la fonction reçue
           style={{
             width: "300px",
             padding: "10px",
             borderRadius: "20px",
             margin: "20px",
             boxShadow: "gray -1px 1px 3px",
+            border: "none",
+            backgroundColor: "white",
+            color: "black",
           }}
         >
           {task.title}
-        </p>
+        </button>
       ))}
     </>
   );
@@ -75,6 +84,7 @@ const KanbanColumnItem = ({
 
 export default function BoardDetails() {
   interface TaskFormData {
+    taskId: string;
     title: string;
     description: string;
     deadline: string;
@@ -98,6 +108,7 @@ export default function BoardDetails() {
   const [taskCounts, setTaskCounts] = useState<Record<string, number>>({});
   const [state, setState] = useState<BoardState>({ status: "idle" });
   const [formDataTask, setFormDataTask] = useState<TaskFormData>({
+    taskId: "",
     title: "",
     description: "",
     deadline: "",
@@ -112,16 +123,36 @@ export default function BoardDetails() {
   });
 
   const handleCloseTaskModale = () => setShowTask(false);
-  const handleShowTaskModale = (kanbanColumn: KanbanColumn) => {
-    setFormDataTask((prev) => ({
-      ...prev,
-      kanbanColumn: kanbanColumn,
-    }));
+  const handleShowTaskModale = (kanbanColumn: KanbanColumn, task?: Task) => {
+    console.log("task => ", task);
+    if (task) {
+      setFormDataTask({
+        taskId: task.id,
+        title: task.title,
+        description: task.description || "",
+        deadline: task.deadline || "",
+        priority: task.priority || "",
+        user: task.user || null,
+        kanbanColumn: kanbanColumn,
+      });
+    } else {
+      setFormDataTask({
+        taskId: "",
+        title: "",
+        description: "",
+        deadline: "",
+        priority: "",
+        user: null,
+        kanbanColumn: kanbanColumn,
+      });
+    }
     setShowTask(true);
   };
 
   const handleCloseColumnModale = () => setShowColumn(false);
-  const handleShowColumnModale = () => { setShowColumn(true) };
+  const handleShowColumnModale = () => {
+    setShowColumn(true);
+  };
 
   const handleUpdateCount = (columnId: string, count: number) => {
     setTaskCounts((prev) => ({ ...prev, [columnId]: count }));
@@ -171,10 +202,10 @@ export default function BoardDetails() {
       });
 
       if (!response.ok) {
-        alert("Erreur lors de la création du tableau.");
+        alert("Erreur lors de la création de la tache.");
         setState({
           status: "error",
-          error: `Update failed (${response.status})`,
+          error: `Insert failed (${response.status})`,
         });
         return;
       }
@@ -199,10 +230,8 @@ export default function BoardDetails() {
     const data = {
       title: formDataColumn?.title,
       position: nextColumnPosition,
-      idBoard: boardId
+      idBoard: boardId,
     };
-
-    console.log("data => ", data)
 
     try {
       const token = localStorage.getItem("token");
@@ -217,10 +246,10 @@ export default function BoardDetails() {
       });
 
       if (!response.ok) {
-        alert("Erreur lors de la création du tableau.");
+        alert("Erreur lors de la création de la colonne.");
         setState({
           status: "error",
-          error: `Update failed (${response.status})`,
+          error: `Insert failed (${response.status})`,
         });
         return;
       }
@@ -235,6 +264,79 @@ export default function BoardDetails() {
 
         error: error instanceof Error ? error.message : "Registration failed.",
       });
+    }
+  };
+
+  const handleDeleteColumn = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    columnId: string
+  ) => {
+    e.preventDefault();
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${API_URL}/boards/${boardId}/columns/${columnId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        alert("Erreur lors de la suppression de la colonne.");
+        setState({
+          status: "error",
+          error: `Delete failed (${response.status})`,
+        });
+        return;
+      }
+
+      fetchBoard();
+    } catch (error) {
+      setState({
+        status: "error",
+
+        error: error instanceof Error ? error.message : "Registration failed.",
+      });
+    }
+  };
+
+  const handleDeleteTask = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    taskId: string
+  ) => {
+    e.preventDefault();
+  
+    if (!taskId) {
+      console.error("Impossible de supprimer : taskId est manquant");
+      return;
+    }
+  
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        alert("Erreur lors de la suppression de la tache.");
+        return;
+      }
+  
+      alert("Tache supprimée !");
+      fetchBoard();
+      handleCloseTaskModale();
+    } catch (error) {
+      console.error("Erreur suppression:", error);
     }
   };
 
@@ -266,9 +368,9 @@ export default function BoardDetails() {
     fetchBoard();
   }, []);
 
-  const nextColumnPosition = board?.kanbanColumns 
-  ? Math.max(0, ...board.kanbanColumns.map(col => col.position)) + 1 
-  : 1;
+  const nextColumnPosition = board?.kanbanColumns
+    ? Math.max(0, ...board.kanbanColumns.map((col) => col.position)) + 1
+    : 1;
 
   return (
     <>
@@ -305,9 +407,26 @@ export default function BoardDetails() {
                   boxShadow: "lightgray -1px 1px 10px",
                   margin: "50px 0 0 10px",
                   flexShrink: 0,
+                  position: "relative",
                 }}
               >
                 <strong style={{ display: "flex", flexDirection: "row" }}>
+                  <button
+                    onClick={(e) => handleDeleteColumn(e, kanbanColumn.id)}
+                    type="button"
+                    style={{
+                      position: "absolute",
+                      top: "8px",
+                      right: "8px",
+                      border: "none",
+                      background: "transparent",
+                      cursor: "pointer",
+                      borderRadius: "10px",
+                      backgroundColor: "red",
+                    }}
+                  >
+                    <Trash2 />
+                  </button>
                   <h3>{kanbanColumn.title}</h3>{" "}
                   <h6>({taskCounts[kanbanColumn.id] || 0})</h6>
                 </strong>
@@ -316,6 +435,7 @@ export default function BoardDetails() {
                   onTasksLoaded={(count) =>
                     handleUpdateCount(kanbanColumn.id, count)
                   }
+                  onTaskClick={handleShowTaskModale}
                 />
                 <button
                   type="button"
@@ -368,6 +488,7 @@ export default function BoardDetails() {
                 placeholder="Entrez le titre içi"
                 required
                 autoFocus
+                value={formDataTask.title}
                 onChange={(e) => handleChangeTask(e)}
                 disabled={state.status === "submitting"}
               />
@@ -379,6 +500,7 @@ export default function BoardDetails() {
                 name="description"
                 placeholder="Entrez la description içi"
                 autoFocus
+                value={formDataTask.description}
                 onChange={(e) => handleChangeTask(e)}
                 disabled={state.status === "submitting"}
               />
@@ -391,6 +513,7 @@ export default function BoardDetails() {
                 placeholder="Entrez la deadline içi"
                 autoFocus
                 onChange={handleChangeTask}
+                value={formDataTask.deadline}
                 disabled={state.status === "submitting"}
               />
             </Form.Group>
@@ -399,6 +522,7 @@ export default function BoardDetails() {
               <Form.Select
                 name="priority"
                 onChange={handleChangeTask}
+                value={formDataTask.priority}
                 disabled={state.status === "submitting"}
               >
                 <option value="">Sélectionnez une priorité</option>
@@ -413,6 +537,11 @@ export default function BoardDetails() {
           <Button variant="secondary" onClick={handleCloseTaskModale}>
             Close
           </Button>
+          {formDataTask.title !== "" && (
+            <Button variant="danger" onClick={(e) => handleDeleteTask(e, formDataTask.taskId)}>
+              Supprimer une tache
+            </Button>
+          )}
           <Button variant="primary" onClick={(e) => handleCreateTask(e)}>
             {state.status === "submitting"
               ? "Création de la tache..."
