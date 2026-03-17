@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../hooks/useAuth.ts";
-import Button from 'react-bootstrap/Button'
-import Modal from 'react-bootstrap/Modal'
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 import { API_URL } from "../config/api.ts";
 import type { InvitationRow } from "../types/BoardMemberType.ts";
 import type { User } from "../types/userType.ts";
 
 const Navbar = () => {
-
   type InvitationState =
-  | { status: "idle" }
-  | { status: "submitting" }
-  | { status: "error"; error: string };
+    | { status: "idle" }
+    | { status: "submitting" }
+    | { status: "error"; error: string };
 
   const { user, token } = useAuth();
 
@@ -42,7 +41,7 @@ const Navbar = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const reject = async (e : SubmitEvent<HTMLFormElement>) => {
+  const reject = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setState({ status: "submitting" });
 
@@ -52,58 +51,58 @@ const Navbar = () => {
       const token = localStorage.getItem("token");
 
       const response = await fetch(`${API_URL}/users/${user?.id}/invitation`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify(data),
-            });
-      
-            if (!response.ok) {
-              alert("Erreur lors de la suppression de l'invitation");
-              setState({
-                status: "error",
-                error: `Update failed (${response.status})`,
-              });
-              return;
-            }
-    } catch (error )  {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        alert("Erreur lors de la suppression de l'invitation");
+        setState({
+          status: "error",
+          error: `Update failed (${response.status})`,
+        });
+        return;
+      }
+    } catch (error) {
       setState({
         status: "error",
 
         error: error instanceof Error ? error.message : "Registration failed.",
       });
     }
-  }
+  };
 
   const fetchInvitation = async () => {
     try {
-      if (!user?.id || !token) return;
+      if (!user?.userId || !token) return;
 
       if (user != null) {
-        const response = await fetch(`${API_URL}/users/${user.id}/invitation`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+        const response = await fetch(`${API_URL}/users/${user.userId}/invitation`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        setInvitation(data);
-      }
-      }
+        console.log("response => ", response)
 
-      
+        if (response.ok) {
+          const data = await response.json();
+          setInvitation(data);
+        }
+      }
     } catch (error) {
-    console.error(
+      console.error(
         "Échec de la récupération des informations utilisateurs: ",
         error
       );
     }
-  } 
+  };
 
   useEffect(() => {
     fetchInvitation();
@@ -145,65 +144,74 @@ const Navbar = () => {
             {isConnected ? (
               <>
                 <li className="nav-item drop-down-menu">
-                <a className="nav-link" style={{ fontSize: 17 }} href="/profil">
-                  Profil
-                </a>
-                <div className="subpage">
-                  <a className="nav-link" href="/profil">
-                    Informations
+                  <a
+                    className="nav-link"
+                    style={{ fontSize: 17 }}
+                    href="/profil"
+                  >
+                    Profil
                   </a>
-                  <a className="nav-link" href="/boards">
-                    Tableaux
+                  <div className="subpage">
+                    <a className="nav-link" href="/profil">
+                      Informations
+                    </a>
+                    <a className="nav-link" href="/boards">
+                      Tableaux
+                    </a>
+                    {user.isAdmin && (
+                      <>
+                        <a className="nav-link" href="/accountManagment">
+                          Gestion des comptes
+                        </a>
+                        <a className="nav-link" href="/statistics">
+                          Statistiquesclear
+                        </a>
+                      </>
+                    )}
+                  </div>
+                </li>
+                <li>
+                  <a
+                    className="nav-link"
+                    style={{ fontSize: 17 }}
+                    onClick={handleShow}
+                  >
+                    Messagerie
                   </a>
-                  {user.isAdmin && (
-                    <>
-                      <a className="nav-link" href="/accountManagment">
-                        Gestion des comptes
-                      </a>
-                      <a className="nav-link" href="/statistics">
-                        Statistiquesclear
-                      </a>
-                    </>
-                  )}
-                </div>
-              </li>
-              <li>
-                <a className="nav-link" style={{ fontSize: 17 }} onClick={handleShow}>
-                  Messagerie
-                </a>
-                <>
-                  <Modal show={show} onHide={handleClose}>
-                    <Modal.Header closeButton>
-                      <Modal.Title>Messagerie</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                      <div style={{display:"flex", flexDirection:"column"}}>
-                        {Array.isArray(invitations) &&
-                          invitations.map((inv) => (
-                            <div>
-                              <p>Vous avez reçu une invitation pour rejoindre le tableau {inv.boardTitle}</p>
-                              <Button variant="secondary" onClick={reject}>
-                                Rejeter!
-                              </Button>
-                              <Button variant="primary" onClick={handleClose}>
-                                Accepter!
-                              </Button>
-                            </div>
-                          
-                          
-                          
-                          ))}
-
-                      </div>
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button variant="secondary" onClick={handleClose}>
-                        Close
-                      </Button>
-                    </Modal.Footer>
-                  </Modal>
-                </>
-              </li>
+                  <>
+                    <Modal show={show} onHide={handleClose}>
+                      <Modal.Header closeButton>
+                        <Modal.Title>Messagerie</Modal.Title>
+                      </Modal.Header>
+                      <Modal.Body>
+                        <div
+                          style={{ display: "flex", flexDirection: "column" }}
+                        >
+                          {Array.isArray(invitations) &&
+                            invitations.map((inv) => (
+                              <div>
+                                <p>
+                                  Vous avez reçu une invitation pour rejoindre
+                                  le tableau {inv.boardTitle}
+                                </p>
+                                <Button variant="secondary" onClick={reject}>
+                                  Rejeter!
+                                </Button>
+                                <Button variant="primary" onClick={handleClose}>
+                                  Accepter!
+                                </Button>
+                              </div>
+                            ))}
+                        </div>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>
+                          Close
+                        </Button>
+                      </Modal.Footer>
+                    </Modal>
+                  </>
+                </li>
               </>
             ) : (
               <>
