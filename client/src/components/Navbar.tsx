@@ -41,6 +41,44 @@ const Navbar = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  const accept = async (e: React.MouseEvent<HTMLButtonElement>, boardId: String) => {
+    e.preventDefault();
+    setState({status: "submitting"});
+
+    const data = "Accept";
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/users/${user?.userId}/invitation/${boardId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      console.log("response => ", response);
+
+      if (!response.ok) {
+        alert("Erreur lors de l'acceptation de l'invitation");
+        setState({
+          status: "error",
+          error: `Update failed (${response.status})`,
+        });
+        return;
+      }
+      fetchInvitation();
+    } catch (error) {
+      setState({
+        status: "error",
+
+        error: error instanceof Error ? error.message : "Fail.",
+      });
+    }
+  }
+
   const reject = async (e: React.MouseEvent<HTMLButtonElement>, boardId: String) => {
     e.preventDefault();
     setState({ status: "submitting" });
@@ -59,8 +97,6 @@ const Navbar = () => {
         body: JSON.stringify(data),
       });
 
-      console.log("response => ", response);
-
       if (!response.ok) {
         alert("Erreur lors de la suppression de l'invitation");
         setState({
@@ -69,6 +105,7 @@ const Navbar = () => {
         });
         return;
       }
+      fetchInvitation();
     } catch (error) {
       setState({
         status: "error",
@@ -212,7 +249,7 @@ const Navbar = () => {
                                 <Button variant="secondary" onClick={(e) => reject(e, inv.boardId)}>
                                   Rejeter!
                                 </Button>
-                                <Button variant="primary" onClick={handleClose}>
+                                <Button variant="primary" onClick={(e) => accept(e, inv.boardId)}>
                                   Accepter!
                                 </Button>
                               </div>
