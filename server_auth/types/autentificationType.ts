@@ -23,11 +23,11 @@ export interface AuthPayload {
     exp: number;
 }
 
-export function isAuthPayload(obj: AuthPayload): obj is AuthPayload {
+export function isAuthPayload(obj: any): obj is AuthPayload {
     return (
         "userId" in obj && typeof obj.userId === "string" &&
         "username" in obj && typeof obj.username === "string" &&
-        "isAdmin" in obj && typeof obj.isAdmin === "number" &&
+        "isAdmin" in obj && typeof obj.isAdmin === "boolean" &&
         "exp" in obj && typeof obj.exp === "number"
     );
 }

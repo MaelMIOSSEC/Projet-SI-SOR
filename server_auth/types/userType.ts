@@ -20,10 +20,10 @@ export interface UserRow {
     email: string;
     is_admin: number;
     created_at: string | Date;
-    [key: string]: SQLOutputValue;
+    [key: string]: SQLOutputValue | Date;
 }
 
-export function isUserRow(obj: Record<string, SQLOutputValue>): obj is UserRow {
+export function isUserRow(obj: Record<string, any>): obj is UserRow {
     return (
         "user_id" in obj && typeof obj.user_id === "string" &&
         "username" in obj && typeof obj.username === "string" &&
