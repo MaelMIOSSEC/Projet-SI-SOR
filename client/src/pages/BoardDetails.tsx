@@ -6,6 +6,12 @@ import type { Board } from "../types/boardType.ts";
 import { useParams } from "react-router/internal/react-server-client";
 import type { KanbanColumn } from "../types/kanbanColumnType.ts";
 import type { Task } from "../types/taskType.ts";
+import type { User } from "../types/userType.ts";
+
+type BoardState =
+  | { status: "idle" }
+  | { status: "submitting" }
+  | { status: "error"; error: string };
 
 const KanbanColumnItem = ({
   kanbanColumn,
@@ -48,8 +54,6 @@ const KanbanColumnItem = ({
     fetchTasks();
   }, []);
 
-  console.log("tasks => ", tasks);
-
   return (
     <>
       {tasks.map((task: Task) => (
@@ -60,33 +64,98 @@ const KanbanColumnItem = ({
 };
 
 export default function BoardDetails() {
+  interface TaskFormData {
+    title: string;
+    description: string;
+    deadline: string;
+    priority: string;
+    user: User | null;
+    kanbanColumn: KanbanColumn | null;
+  }
+
   const { user } = useAuth();
   const { boardId } = useParams();
 
   const [show, setShow] = useState(false);
   const [board, setBoard] = useState<Board>();
   const [taskCounts, setTaskCounts] = useState<Record<string, number>>({});
-  const [formData, setFormData] = useState({
+  const [state, setState] = useState<BoardState>({ status: "idle" });
+  const [formData, setFormData] = useState<TaskFormData>({
     title: "",
     description: "",
     deadline: "",
-    priority: ""
+    priority: "",
+    user: null,
+    kanbanColumn: null,
   });
 
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleShow = (kanbanColumn: KanbanColumn) => {
+    setFormData((prev) => ({
+      ...prev,
+      kanbanColumn: kanbanColumn,
+    }));
+    setShow(true);
+  };
 
   const handleUpdateCount = (columnId: string, count: number) => {
     setTaskCounts((prev) => ({ ...prev, [columnId]: count }));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-
-    console.log("name => ", name);
-    console.log("value => ", value);
-    
     setFormData((prevState) => ({ ...prevState, [name]: value }));
+  };
+
+  const handleCreateTask = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setState({ status: "submitting" });
+
+    const data = {
+      title: formData?.title,
+      description: formData?.description,
+      deadline: formData?.deadline,
+      priority: formData?.priority,
+      user: user,
+      kanbanColumn: formData?.kanbanColumn,
+    };
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        alert("Erreur lors de la création du tableau.");
+        setState({
+          status: "error",
+          error: `Update failed (${response.status})`,
+        });
+        return;
+      }
+
+      alert("Tache ajoutée avec succès !");
+      setState({ status: "idle" });
+      handleClose();
+      fetchBoard();
+    } catch (error) {
+      setState({
+        status: "error",
+
+        error: error instanceof Error ? error.message : "Registration failed.",
+      });
+    }
   };
 
   const fetchBoard = async () => {
@@ -117,7 +186,7 @@ export default function BoardDetails() {
     fetchBoard();
   }, []);
 
-  console.log("boards => ", board);
+  console.log("board => ", board);
 
   return (
     <>
@@ -144,7 +213,7 @@ export default function BoardDetails() {
               />
               <button
                 type="button"
-                onClick={handleShow}
+                onClick={() => handleShow(kanbanColumn)}
                 style={{
                   borderRadius: "20px",
                   color: "black",
@@ -180,6 +249,7 @@ export default function BoardDetails() {
                 required
                 autoFocus
                 onChange={(e) => handleChange(e)}
+                disabled={state.status === "submitting"}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
@@ -191,6 +261,7 @@ export default function BoardDetails() {
                 required
                 autoFocus
                 onChange={(e) => handleChange(e)}
+                disabled={state.status === "submitting"}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
@@ -202,11 +273,17 @@ export default function BoardDetails() {
                 required
                 autoFocus
                 onChange={handleChange}
+                disabled={state.status === "submitting"}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="taskPriority">
               <Form.Label>Priorité de la tache</Form.Label>
-              <Form.Select name="priority" required onChange={handleChange}>
+              <Form.Select
+                name="priority"
+                required
+                onChange={handleChange}
+                disabled={state.status === "submitting"}
+              >
                 <option value="">Sélectionnez une priorité</option>
                 <option value="Strong">Strong (Haute)</option>
                 <option value="Medium">Medium (Moyenne)</option>
@@ -219,8 +296,10 @@ export default function BoardDetails() {
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleClose}>
-            test
+          <Button variant="primary" onClick={(e) => handleCreateTask(e)}>
+            {state.status === "submitting"
+              ? "Création de la tache..."
+              : "Créer une tache"}
           </Button>
         </Modal.Footer>
       </Modal>
