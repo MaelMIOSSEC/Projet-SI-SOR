@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth.ts";
 import { API_URL } from "../config/api.ts";
 import { useEffect, useState } from "react";
 import type { Board } from "../types/boardType.ts";
+import { Link } from "react-router-dom";
 
 type BoardState =
   | { status: "idle" }
@@ -103,14 +104,17 @@ export default function Index() {
 
     for (let i = 0; i < boards.length; i++) {
       for (let j = 0; j < boards[i].members.length; j++) {
-        if (boards[i].members[j].userDto.id === user?.userId && boards[i].members[j].role !== "Invited") {
+        if (
+          boards[i].members[j].userDto.id === user?.userId &&
+          boards[i].members[j].role !== "Invited"
+        ) {
           newBoards.push(boards[i]);
         }
       }
     }
 
     return newBoards;
-  }
+  };
 
   if (isConnected) {
     return (
@@ -160,7 +164,9 @@ export default function Index() {
                     placeholder="Entrez le titre içi"
                     required
                     autoFocus
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleChange(e)
+                    }
                     disabled={state.status === "submitting"}
                   />
                 </Form.Group>
@@ -171,7 +177,9 @@ export default function Index() {
                 Close
               </Button>
               <Button variant="primary" onClick={handleCreateBoard}>
-                {state.status === "submitting" ? "Ajout du tableau..." : "Créer un tableau"}
+                {state.status === "submitting"
+                  ? "Ajout du tableau..."
+                  : "Créer un tableau"}
               </Button>
             </Modal.Footer>
           </Modal>
@@ -192,7 +200,7 @@ export default function Index() {
                   padding: "15px 40px",
                   borderRadius: "20px",
                   width: "250px",
-                  boxShadow: "gray -3px 3px 20px"
+                  boxShadow: "gray -3px 3px 20px",
                 }}
               >
                 <h2>{board.title}</h2>
@@ -201,12 +209,22 @@ export default function Index() {
                   <p>Colonnes : {board?.kanbanColumns?.length}</p>
                   <p>Membres :</p>
                   <ul>
-                  {board.members?.map((member) => (
-                    <li>{member.userDto.username}</li>
-                  ))}
+                    {board.members?.map((member) => (
+                      <li>{member.userDto.username}</li>
+                    ))}
                   </ul>
                 </div>
-                <button type="button">Ouvrir</button>
+                <Link
+                  to={`/board/${board.id}`}
+                  style={{
+                    padding: "10px",
+                    border: "1px solid",
+                    textDecoration: "none",
+                    borderRadius: "15px",
+                  }}
+                >
+                  Ouvrir
+                </Link>
               </div>
             ))}
         </div>
