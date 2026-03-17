@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth.ts";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { API_URL } from "../config/api.ts";
-import type { InvitationRow } from "../types/BoardMemberType.ts";
+import type { InvitationRow } from "../types/invitationType.ts";
 import type { User } from "../types/userType.ts";
 
 const Navbar = () => {
@@ -89,8 +89,6 @@ const Navbar = () => {
           },
         });
 
-        console.log("response => ", response)
-
         if (response.ok) {
           const data = await response.json();
           setInvitation(data);
@@ -104,15 +102,30 @@ const Navbar = () => {
     }
   };
 
+  const getInvitation = (invitations: InvitationRow[]) => {
+    const newBoards = [];
+
+    for (let i = 0; i < invitations.length; i++) {
+      if (invitations[i].role === "Invited") {
+        newBoards.push(invitations[i]);
+      }
+    }
+
+    return newBoards;
+  }
+
+  console.log("getInvitation => ", getInvitation(invitations));
+
   useEffect(() => {
     fetchInvitation();
-  }, [user?.id, token]);
+  }, [user?.userId, token]);
+
+  console.log("invitations => ", invitations)
 
   return (
     <nav
-      className={`navbar navbar-expand-lg navbar-dark fixed-top ${
-        isShrunk ? "navbar-shrink" : ""
-      }`}
+      className={`navbar navbar-expand-lg navbar-dark fixed-top ${isShrunk ? "navbar-shrink" : ""
+        }`}
       id="mainNav"
     >
       <div className="container">
@@ -187,8 +200,8 @@ const Navbar = () => {
                         <div
                           style={{ display: "flex", flexDirection: "column" }}
                         >
-                          {Array.isArray(invitations) &&
-                            invitations.map((inv) => (
+                          {Array.isArray(getInvitation(invitations)) &&
+                            getInvitation(invitations).map((inv) => (
                               <div>
                                 <p>
                                   Vous avez reçu une invitation pour rejoindre
