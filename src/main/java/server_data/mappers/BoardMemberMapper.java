@@ -21,6 +21,7 @@ public class BoardMemberMapper {
         boardMemberDto.setUserDto(this.userMapper.toDto(boardMember.getUser()));
         boardMemberDto.setRole(boardMember.getRole());
         boardMemberDto.setBoardTitle(boardMember.getBoard().getTitle());
+        boardMemberDto.setBoardId(boardMember.getBoard().getId());
         
         return boardMemberDto;
     }

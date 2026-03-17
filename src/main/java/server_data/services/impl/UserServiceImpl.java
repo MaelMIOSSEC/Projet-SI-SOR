@@ -7,12 +7,17 @@ import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import server_data.dtos.BoardDto;
+import server_data.entities.Board;
+import server_data.entities.BoardMemberId;
 import server_data.dtos.BoardMemberDto;
 import server_data.dtos.UserDto;
+import server_data.entities.Role;
 import server_data.entities.User;
 import server_data.mappers.BoardMemberMapper;
 import server_data.mappers.UserMapper;
 import server_data.repositories.BoardMemberRepository;
+import server_data.repositories.BoardRepository;
 import server_data.repositories.UserRepository;
 import server_data.services.UserService;
 
@@ -24,12 +29,14 @@ public class UserServiceImpl implements UserService {
     private final BoardMemberMapper boardMemberMapper;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final BoardRepository boardRepository;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, BoardMemberRepository boardMemberRepository, BoardMemberMapper boardMemberMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, BoardMemberRepository boardMemberRepository, BoardMemberMapper boardMemberMapper, BoardRepository boardRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.boardMemberRepository = boardMemberRepository;
         this.boardMemberMapper = boardMemberMapper;
+        this.boardRepository = boardRepository;
     }
 
     @Override
@@ -93,5 +100,35 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<BoardMemberDto> getInvitationByUserId(String idUser) {
         return this.boardMemberRepository.findByUser_Id(idUser).stream().map(this.boardMemberMapper::toDto).toList();
+    }
+
+    @Override
+    public BoardMemberDto acceptInvitation(String idUser, String idBoard) {
+        List<BoardMemberDto> lBoardMemberDto = this.boardMemberRepository.findByUser_Id(idUser).stream().map(this.boardMemberMapper::toDto).toList();
+        BoardMemberDto res = new BoardMemberDto();
+        Board board = this.boardRepository.findById(idBoard)
+            .orElseThrow(() -> new EntityNotFoundException("Board not found with id: " + idBoard));
+
+        String boardTitle = board.getTitle();
+        for (int i = 0; i < lBoardMemberDto.size(); i++) {
+            if (lBoardMemberDto.get(i).getBoardTitle().equals(boardTitle)) {
+                res = lBoardMemberDto.get(i);
+                res.setRole(Role.Member);
+            }
+        }
+
+        return res;
+    }
+
+    @Override
+    public Boolean rejectInvitation(String idUser, String idBoard) {
+        BoardMemberId boardMemberId = new BoardMemberId();
+        boardMemberId.setUser(idUser);
+        boardMemberId.setBoard(idBoard);
+        if (this.boardMemberRepository.existsById(boardMemberId)) {
+            this.boardMemberRepository.deleteById(boardMemberId);
+            return true;
+        }
+        return false;
     }
 }

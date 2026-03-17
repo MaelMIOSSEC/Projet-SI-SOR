@@ -23,4 +23,8 @@ public interface UserService {
 
     List<BoardMemberDto> getInvitationByUserId(String idUser);
 
+    BoardMemberDto acceptInvitation(String idUser, String idBoard);
+
+    Boolean rejectInvitation(String idUser, String idBoard);
+
 }
