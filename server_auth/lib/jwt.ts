@@ -17,7 +17,7 @@ export async function createJWT(
 
 export async function verifyJWT(token: string): Promise<AuthPayload | null> {
     try {
-        const { payload } = await jwtVerify(token, JWT_SECRET);
+        const { payload } = await jwtVerify(token, JWT_KEY);
 
         if (isAuthPayload(payload)) {
             return payload;
@@ -34,7 +34,8 @@ export function hashPassword(password: string): Promise<string> {
     const salt = randomBytes(16).toString("hex");
 
     return new Promise((resolve, reject) => {
-        scrypt(password, salt, 64, (err: any, derivedKey: { toString: (arg0: string) => any; }) => {
+        //scrypt(password, salt, 64, (err: any, derivedKey: { toString: (arg0: string) => any; }) => {
+        scrypt(password, salt, 64, (err: any, derivedKey: any) => {  
             if (err) reject(err);
             else resolve(`${derivedKey.toString("hex")}.${salt}`);
         });
@@ -48,7 +49,8 @@ export function verifyPassword(
     const [hash, salt] = storedHash.split(".");
 
     return new Promise((resolve, reject) => {
-        scrypt(password, salt, 64, (err: any, derivedKey: { toString: (arg0: string) => string; }) => {
+        //scrypt(password, salt, 64, (err: any, derivedKey: { toString: (arg0: string) => string; }) => {
+        scrypt(password, salt, 64, (err: any, derivedKey: any) => { 
             if (err) reject(err);
             else resolve(hash === derivedKey.toString("hex"));
         });

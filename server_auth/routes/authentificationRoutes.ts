@@ -97,7 +97,7 @@ router.post("/register", async (ctx: Context) => {
     const userPayload = {
       userId: userRow[0].user_id,
       username: userRow[0].username,
-      isAdmin: userRow[0].isAdmin,
+      isAdmin: !!userRow[0].isAdmin,
     };
 
     const jwtToken = await createJWT(userPayload);
@@ -146,7 +146,7 @@ router.post("/login", async (ctx: Context) => {
         const userPayload = {
           userId: userRow[0].user_id,
           username: userRow[0].username,
-          isAdmin: userRow[0].isAdmin,
+          isAdmin: !!userRow[0].isAdmin,
         };
 
         const jwtToken = await createJWT(userPayload);
