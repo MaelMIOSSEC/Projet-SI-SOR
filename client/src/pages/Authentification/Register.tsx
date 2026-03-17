@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { API_URL } from "../config/api.ts";
+import { API_URL } from "../../config/api.ts";
 import { useNavigate } from "react-router";
-import { useAuth } from "../hooks/useAuth.ts";
+import { useAuth } from "../../hooks/useAuth.ts";
 
 type RegisterState =
   | { status: "idle" }
@@ -38,8 +38,6 @@ export default function Register() {
       }
 
       const apiResponse = await res.json();
-
-      console.log("APIResponse => ", apiResponse.data);
 
       if (apiResponse.success) {
         login(apiResponse.data);

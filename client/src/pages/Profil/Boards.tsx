@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import Sidebar from "../components/Sidebar.tsx";
+import Sidebar from "../../components/Sidebar.tsx";
 import { Table } from "react-bootstrap";
-import { API_URL } from "../config/api.ts";
-import type { Board } from "../types/boardType.ts";
-import { useAuth } from "../hooks/useAuth.ts";
+import { API_URL } from "../../config/api.ts";
+import type { Board } from "../../types/boardType.ts";
+import { useAuth } from "../../hooks/useAuth.ts";
 import { SquarePen, Trash2 } from "lucide-react";
 import { Modal, Button, ListGroup, Badge } from "react-bootstrap";
 import { Mail } from "lucide-react";
-import type { BoardMember } from "../types/boardMemberType.ts";
+import type { BoardMember } from "../../types/boardMemberType.ts";
 
 type SelectedMember = BoardMember & { boardId: string };
 

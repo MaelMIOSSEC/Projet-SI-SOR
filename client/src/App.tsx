@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 
-import Login from "./pages/Login.tsx";
-import Register from "./pages/Register.tsx";
+import Login from "./pages/Authentification/Login.tsx";
+import Register from "./pages/Authentification/Register.tsx";
 import Index from "./pages/Index.tsx";
 import Profil from "./pages/Profil.tsx";
 import Navbar from "./components/Navbar.tsx";

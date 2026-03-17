@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useAuth } from "../hooks/useAuth.ts";
-import { API_URL } from "../config/api.ts";
-import Sidebar from "../components/Sidebar.tsx";
-import type { User } from "../types/userType.ts";
+import { useAuth } from "../../hooks/useAuth.ts";
+import { API_URL } from "../../config/api.ts";
+import Sidebar from "../../components/Sidebar.tsx";
+import type { User } from "../../types/userType.ts";
 
 type ProfilState =
   | { status: "idle" }

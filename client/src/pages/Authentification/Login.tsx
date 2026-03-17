@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { API_URL } from "../config/api.ts";
+import { API_URL } from "../../config/api.ts";
 import { useNavigate } from "react-router";
-import { useAuth } from "../hooks/useAuth.ts";
+import { useAuth } from "../../hooks/useAuth.ts";
 
 type LoginState =
   | { status: "idle" }

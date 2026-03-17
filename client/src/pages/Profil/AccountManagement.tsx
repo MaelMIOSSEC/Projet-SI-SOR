@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "../components/Sidebar.tsx";
-import { useAuth } from "../hooks/useAuth.ts";
-import { API_URL } from "../config/api.ts";
-import type { UserRow } from "../types/userType.ts";
+import Sidebar from "../../components/Sidebar.tsx";
+import { useAuth } from "../../hooks/useAuth.ts";
+import { API_URL } from "../../config/api.ts";
+import type { UserRow } from "../../types/userType.ts";
 import { Table } from "react-bootstrap";
 import { SquarePen, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router/internal/react-server-client";

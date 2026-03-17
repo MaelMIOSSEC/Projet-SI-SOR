@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import Sidebar from "../components/Sidebar.tsx";
-import { API_URL } from "../config/api.ts";
-import type { UserRow } from "../types/userType.ts";
-import type { BoardRow } from "../types/boardType.ts";
-import type { TaskRow } from "../types/taskType.ts";
+import Sidebar from "../../components/Sidebar.tsx";
+import { API_URL } from "../../config/api.ts";
+import type { UserRow } from "../../types/userType.ts";
+import type { BoardRow } from "../../types/boardType.ts";
+import type { TaskRow } from "../../types/taskType.ts";
 
 export default function Statistics() {
   const [users, setUsers] = useState<UserRow[]>([]);
