@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.ts";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
+import {Button, Modal} from "react-bootstrap";
+import React from "react";
 import { API_URL } from "../config/api.ts";
 import type { InvitationRow } from "../types/invitationType.ts";
 import type { User } from "../types/userType.ts";
@@ -246,10 +246,10 @@ const Navbar = () => {
                                   Vous avez reçu une invitation pour rejoindre
                                   le tableau {inv.boardTitle}
                                 </p>
-                                <Button variant="secondary" onClick={(e) => reject(e, inv.boardId)}>
+                                <Button variant="secondary" onClick={(e: React.MouseEvent<HTMLButtonElement>) => reject(e, inv.boardId)}>
                                   Rejeter!
                                 </Button>
-                                <Button variant="primary" onClick={(e) => accept(e, inv.boardId)}>
+                                <Button variant="primary" onClick={(e: React.MouseEvent<HTMLButtonElement>) => accept(e, inv.boardId)}>
                                   Accepter!
                                 </Button>
                               </div>

@@ -10,9 +10,11 @@
     "jsxImportSource": "react"
   },
   "imports": {
+    
     "react-bootstrap": "npm:react-bootstrap@latest",
     "react-bootstrap/": "npm:react-bootstrap@latest/",
     "react": "npm:react@latest",
+    "react/": "npm:react@latest/",
     "react-dom": "npm:react-dom@latest",
     "react-router": "npm:react-router@latest"
   }

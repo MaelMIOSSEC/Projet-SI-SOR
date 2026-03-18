@@ -20,23 +20,24 @@ export interface TaskRow {
   position: number;
   user_id: string;
   kanban_column_id: string;
-  [key: string]: SQLOutputValue;
+  [key: string]: SQLOutputValue | Date | undefined;
 }
 
-export function isTaskRow(obj: Record<string, SQLOutputValue>): obj is TaskRow {
+export function isTaskRow(obj: Record<string, SQLOutputValue | Date | undefined>): obj is TaskRow {
   return (
     "task_id" in obj &&
     typeof obj.task_id === "string" &&
     "title" in obj &&
     typeof obj.title === "string" &&
-    "description" in obj &&
-    typeof obj.description === "string" &&
-    "deadline" in obj &&
-    typeof obj.deadline === "string" &&
+
+    (!("description" in obj) || obj.description === null || typeof obj.description === "string") &&
+    (!("deadline" in obj) || obj.deadline === null || typeof obj.deadline === "string" || obj.deadline instanceof Date) &&
+
     "priority" in obj &&
-    typeof obj.priority === "number" &&
+    typeof obj.priority === "string" &&
     "position" in obj &&
-    typeof obj.position === "string" &&
+    typeof obj.position === "number" &&
+
     "user_id" in obj &&
     typeof obj.user_id === "string" &&
     "kanban_column_id" in obj &&
