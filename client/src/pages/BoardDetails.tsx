@@ -115,7 +115,7 @@ const KanbanColumnItem = ({
 
         return (
           <div
-            key={task.taskId}
+            key={task.id}
             style={{
               width: "300px",
               padding: "10px",
@@ -150,7 +150,7 @@ const KanbanColumnItem = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleDeleteTask(e, task.taskId);
+                handleDeleteTask(e, task.id);
               }}
               type="button"
               style={{
@@ -232,7 +232,7 @@ export default function BoardDetails() {
     console.log("task => ", task);
     if (task) {
       setFormDataTask({
-        taskId: task.taskId,
+        taskId: task.id,
         title: task.title,
         description: task.description || "",
         deadline: task.deadline || "",
@@ -378,7 +378,7 @@ export default function BoardDetails() {
       description: formDataTask?.description,
       deadline: formDataTask?.deadline,
       priority: formDataTask?.priority,
-      user: { id: user?.userId },
+      user: formDataTask.user ? { id: formDataTask.user.id } : null,
       kanbanColumn: { id: formDataTask.kanbanColumn?.id },
     };
 
@@ -511,7 +511,7 @@ export default function BoardDetails() {
       description: formDataTask?.description,
       deadline: formDataTask?.deadline,
       priority: formDataTask?.priority,
-      user: { id: user?.userId },
+      user: formDataTask.user ? { id: formDataTask.user.id } : null,
       kanbanColumn: { id: formDataTask.kanbanColumn?.id },
     };
 
@@ -788,8 +788,14 @@ export default function BoardDetails() {
             <Form.Group className="mb-3" controlId="taskUser">
               <Form.Label>Assignée à </Form.Label>
               <Form.Select
-                name="assigned"
-                onChange={handleChangeTask}
+                name="user"
+                onChange={(e) => {
+                  const selectedUserId = e.target.value;
+                  setFormDataTask((prev) => ({
+                    ...prev,
+                    user: selectedUserId ? ({ id: selectedUserId } as any) : null,
+                  }));
+                }}
                 value={formDataTask.user?.id || ""}
                 disabled={state.status === "submitting"}
               >

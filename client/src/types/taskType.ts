@@ -1,7 +1,7 @@
 import { SQLOutputValue } from "node:sqlite";
 
 export interface Task {
-  taskId: string;
+  id: string;
   title: string;
   description: string;
   deadline: string;
