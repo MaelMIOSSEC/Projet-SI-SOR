@@ -150,7 +150,7 @@ const Sidebar = () => {
         </button>
         <button
           onClick={handleDelete}
-          type="button"
+          type="submit"
           className="btn btn-danger"
           style={{
             margin: "10px",

@@ -155,7 +155,7 @@ export default function Login() {
             />
           </div>
           <button
-            type="button"
+            type="submit"
             disabled={state.status === "submitting"}
             style={{
               width: "510px",

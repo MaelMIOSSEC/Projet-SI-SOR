@@ -37,7 +37,7 @@ const KanbanColumnItem = ({
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.ok) {
@@ -48,8 +48,42 @@ const KanbanColumnItem = ({
     } catch (err) {
       console.error(
         "Échec de la récupération des informations utilisateurs: ",
-        err
+        err,
       );
+    }
+  };
+
+  const handleDeleteTask = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    taskId: string,
+  ) => {
+    e.preventDefault();
+
+    if (!taskId) {
+      console.error("Impossible de supprimer : taskId est manquant");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        alert("Erreur lors de la suppression de la tache.");
+        return;
+      }
+
+      alert("Tache supprimée !");
+      fetchBoard();
+      handleCloseTaskModale();
+    } catch (error) {
+      console.error("Erreur suppression:", error);
     }
   };
 
@@ -57,27 +91,79 @@ const KanbanColumnItem = ({
     fetchTasks();
   }, []);
 
+  const actualDate = new Date().toISOString().split("T")[0];
+
+  console.log(tasks);
+
   return (
     <>
-      {tasks.map((task: Task) => (
-        <button
-          key={task.id}
-          type="button"
-          onClick={() => onTaskClick(kanbanColumn, task)} // Appel de la fonction reçue
-          style={{
-            width: "300px",
-            padding: "10px",
-            borderRadius: "20px",
-            margin: "20px",
-            boxShadow: "gray -1px 1px 3px",
-            border: "none",
-            backgroundColor: "white",
-            color: "black",
-          }}
-        >
-          {task.title}
-        </button>
-      ))}
+      {tasks.map((task: Task) => {
+        const isExpired =
+          actualDate > new Date(task.deadline).toISOString().split("T")[0];
+
+        const bgColor =
+          task.priority === "Strong"
+            ? "#dc3545"
+            : task.priority === "Medium"
+              ? "#ffc107"
+              : "#198754";
+        const textColor = task.priority === "Medium" ? "#212529" : "white";
+
+        return (
+          <div
+            key={task.taskId}
+            style={{
+              width: "300px",
+              padding: "10px",
+              borderRadius: "20px",
+              margin: "20px",
+              boxShadow: "gray -1px 1px 3px",
+              backgroundColor: isExpired ? "#e9ecef" : bgColor,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              opacity: isExpired ? "0.7" : "1",
+            }}
+          >
+            <button
+              type="button"
+              disabled={isExpired}
+              onClick={() => onTaskClick(kanbanColumn, task)}
+              style={{
+                flex: 1,
+                background: "none",
+                border: "none",
+                textAlign: "left",
+                color: isExpired ? "#6c757d" : textColor,
+                fontWeight: "600",
+                cursor: isExpired ? "default" : "pointer",
+                padding: "5px 10px",
+              }}
+            >
+              {task.title}
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteTask(e, task.id);
+              }}
+              type="button"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: isExpired ? "#6c757d" : textColor,
+                padding: "5px",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+        );
+      })}
     </>
   );
 };
@@ -127,7 +213,7 @@ export default function BoardDetails() {
     console.log("task => ", task);
     if (task) {
       setFormDataTask({
-        taskId: task.id,
+        taskId: task.taskId,
         title: task.title,
         description: task.description || "",
         deadline: task.deadline || "",
@@ -161,7 +247,7 @@ export default function BoardDetails() {
   const handleChangeTask = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormDataTask((prevState) => ({ ...prevState, [name]: value }));
@@ -170,7 +256,7 @@ export default function BoardDetails() {
   const handleChangeColumn = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormDataColumn((prevState) => ({ ...prevState, [name]: value }));
@@ -269,7 +355,7 @@ export default function BoardDetails() {
 
   const handleDeleteColumn = async (
     e: React.MouseEvent<HTMLButtonElement>,
-    columnId: string
+    columnId: string,
   ) => {
     e.preventDefault();
 
@@ -284,7 +370,7 @@ export default function BoardDetails() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -306,34 +392,52 @@ export default function BoardDetails() {
     }
   };
 
-  const handleDeleteTask = async (
+  const handleUpdateTask = async (
     e: React.MouseEvent<HTMLButtonElement>,
-    taskId: string
+    taskId: string,
   ) => {
     e.preventDefault();
-  
+    setState({ status: "submitting" });
+
+    const data = {
+      title: formDataTask?.title,
+      description: formDataTask?.description,
+      deadline: formDataTask?.deadline,
+      priority: formDataTask?.priority,
+      user: { id: user?.userId },
+      kanbanColumn: { id: formDataTask.kanbanColumn?.id },
+    };
+
+    console.log("Data => ", data);
+
     if (!taskId) {
-      console.error("Impossible de supprimer : taskId est manquant");
+      console.error("Impossible de modifier : taskId est manquant");
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`${API_URL}/tasks/${taskId}`, {
-        method: "DELETE",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify(data),
       });
-  
+
       if (!response.ok) {
-        alert("Erreur lors de la suppression de la tache.");
+        alert("Erreur lors de la mise à jour de la tache.");
+        setState({
+          status: "error",
+          error: `Update failed (${response.status})`,
+        });
         return;
       }
-  
-      alert("Tache supprimée !");
+
+      alert("Tache modifiée !");
       fetchBoard();
+      setState({ status: "idle" });
       handleCloseTaskModale();
     } catch (error) {
       console.error("Erreur suppression:", error);
@@ -359,7 +463,7 @@ export default function BoardDetails() {
     } catch (err) {
       console.error(
         "Échec de la récupération des informations utilisateurs: ",
-        err
+        err,
       );
     }
   };
@@ -476,12 +580,12 @@ export default function BoardDetails() {
       </div>
       <Modal show={showTask} onHide={handleCloseTaskModale}>
         <Modal.Header closeButton>
-          <Modal.Title>Ajouter un tableau</Modal.Title>
+          <Modal.Title>Ajouter une tache</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-              <Form.Label>Titre de la tache</Form.Label>
+              <Form.Label>Titre*</Form.Label>
               <Form.Control
                 type="text"
                 name="title"
@@ -494,7 +598,7 @@ export default function BoardDetails() {
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-              <Form.Label>Description de la tache</Form.Label>
+              <Form.Label>Description</Form.Label>
               <Form.Control
                 type="text"
                 name="description"
@@ -506,7 +610,7 @@ export default function BoardDetails() {
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-              <Form.Label>Deadline de la tache</Form.Label>
+              <Form.Label>Deadline</Form.Label>
               <Form.Control
                 type="date"
                 name="deadline"
@@ -518,7 +622,7 @@ export default function BoardDetails() {
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="taskPriority">
-              <Form.Label>Priorité de la tache</Form.Label>
+              <Form.Label>Priorité</Form.Label>
               <Form.Select
                 name="priority"
                 onChange={handleChangeTask}
@@ -534,18 +638,18 @@ export default function BoardDetails() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseTaskModale}>
-            Close
-          </Button>
           {formDataTask.title !== "" && (
-            <Button variant="danger" onClick={(e) => handleDeleteTask(e, formDataTask.taskId)}>
-              Supprimer une tache
-            </Button>
+            <>
+              <Button
+                variant="warning"
+                onClick={(e) => handleUpdateTask(e, formDataTask.taskId)}
+              >
+                {state.status === "submitting" ? "Modification..." : "Modifier"}
+              </Button>
+            </>
           )}
           <Button variant="primary" onClick={(e) => handleCreateTask(e)}>
-            {state.status === "submitting"
-              ? "Création de la tache..."
-              : "Créer une tache"}
+            {state.status === "submitting" ? "Création..." : "Créer"}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -571,13 +675,8 @@ export default function BoardDetails() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseColumnModale}>
-            Close
-          </Button>
           <Button variant="primary" onClick={(e) => handleCreateColumn(e)}>
-            {state.status === "submitting"
-              ? "Création de la colonne..."
-              : "Créer une colonne"}
+            {state.status === "submitting" ? "Création..." : "Créer"}
           </Button>
         </Modal.Footer>
       </Modal>
