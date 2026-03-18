@@ -211,7 +211,7 @@ export default function Index() {
                   <p>Membres :</p>
                   <ul>
                     {board.members?.map((member) => (
-                      <li key={member.id}>{member.userDto.username}</li>
+                      <li key={member.userDto.id}>{member.userDto.username}</li>
                     ))}
                   </ul>
                 </div>
