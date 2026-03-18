@@ -159,11 +159,7 @@ export default function Index() {
       )}
       <div className="header-container">
         <h1 className="header-title">Mes tableaux</h1>
-        <button
-          type="button"
-          onClick={handleShow}
-          className="btn-create-board"
-        >
+        <button type="button" onClick={handleShow} className="btn-create-board">
           + Créer un tableau
         </button>
 
@@ -200,24 +196,31 @@ export default function Index() {
         </Modal>
       </div>
       <div className="boards-list-container">
-        {myBoards.map((board) => (
-          <div key={board.id} className="board-card">
-            <h2>{board.title}</h2>
-            <hr />
-            <div className="board-card-info">
-              <p>Colonnes : {board?.kanbanColumns?.length}</p>
-              <p>Membres :</p>
-              <ul>
-                {board.members?.map((member) => (
-                  <li key={member.userDto.id}>{member.userDto.username}</li>
-                ))}
-              </ul>
+        {myBoards.length === 0 ? (
+          <p className="board-no-board">
+            Pour créer votre premier tableau, il vous suffit de cliquer sur le
+            bouton "Créer un tableau".
+          </p>
+        ) : (
+          myBoards.map((board) => (
+            <div key={board.id} className="board-card">
+              <h2>{board.title}</h2>
+              <hr />
+              <div className="board-card-info">
+                <p>Colonnes : {board?.kanbanColumns?.length}</p>
+                <p>Membres :</p>
+                <ul>
+                  {board.members?.map((member) => (
+                    <li key={member.userDto.id}>{member.userDto.username}</li>
+                  ))}
+                </ul>
+              </div>
+              <Link to={`/board/${board.id}`} className="btn-open-board">
+                Ouvrir
+              </Link>
             </div>
-            <Link to={`/board/${board.id}`} className="btn-open-board">
-              Ouvrir
-            </Link>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </>
   );

@@ -210,6 +210,14 @@ button:hover {
   text-align: start;
 }
 
+.board-no-board {
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: gray 3px -3px 24px;
+  font-size: 20px;
+  width: 510px;
+}
+
 .btn-open-board {
   padding: 10px;
   border: 1px solid var(--border);

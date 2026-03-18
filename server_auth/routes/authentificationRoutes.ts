@@ -18,12 +18,17 @@ router.post("/register", async (ctx: Context) => {
   try {
     const data = await ctx.request.body.json();
 
-    const existingUsers = await connection.query(
+    const existingUsername = await connection.query(
       `SELECT username FROM User WHERE username = ?`,
       [data.username],
     );
 
-    if (existingUsers.length > 0) {
+    const existingEmail = await connection.query(
+      `SELECT email FROM User WHERE email = ?`,
+      [data.email],
+    );
+
+    if (existingUsername.length > 0 || existingEmail.length > 0) {
       const response: ApiResponse<User> = {
         success: false,
         error: {

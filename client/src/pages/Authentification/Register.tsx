@@ -74,6 +74,11 @@ export default function Register() {
               "Certaines informations sont incorrectes. Veuillez réessayer.",
             );
             break;
+          case 409:
+            setErrorMessage(
+              "Cette adresse email ou ce nom d'utilisateur sont déjà utilisés. Veuillez les modifier.",
+            );
+            break;
           case 500:
             setErrorMessage(
               "Le serveur rencontre un problème. Réessayez plus tard.",
@@ -108,9 +113,8 @@ export default function Register() {
 
       <div className="login-card">
         <h1 className="login-title">Création d'un Compte</h1>
-        
+
         <form onSubmit={handleSubmit} className="login-form">
-          
           <div className="form-group">
             <label htmlFor="username" className="form-label">
               Pseudo*
@@ -141,7 +145,7 @@ export default function Register() {
                 disabled={state.status === "submitting"}
               />
             </div>
-            
+
             <div className="form-col">
               <label htmlFor="lastname" className="form-label">
                 Nom de famille*

@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS `e22206673_db1`.`User` (
   `created_at` DATE NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `user_id_UNIQUE` (`user_id` ASC) VISIBLE,
-  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE)
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE,
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
