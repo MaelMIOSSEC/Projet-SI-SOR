@@ -296,8 +296,7 @@ export default function BoardDetails() {
     setState({ status: "submitting" });
 
     const data = {
-      userId: formDataAddUser.userId,
-      boardId: formDataAddUser.boardId,
+      id: formDataAddUser.userId,
     };
 
     try {
