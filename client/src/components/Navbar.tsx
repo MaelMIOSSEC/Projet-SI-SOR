@@ -216,7 +216,7 @@ const Navbar = () => {
                           Gestion des comptes
                         </a>
                         <a className="nav-link" href="/statistics">
-                          Statistiquesclear
+                          Statistiques
                         </a>
                       </>
                     )}
