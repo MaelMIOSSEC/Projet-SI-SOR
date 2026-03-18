@@ -190,7 +190,7 @@ export default function BoardDetails() {
     idBoard: string;
   }
 
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const { boardId } = useParams();
 
   const [show, setShow] = useState(false);
@@ -260,11 +260,9 @@ export default function BoardDetails() {
   const fetchUsers = async () =>{
     try {
 
-      const token = localStorage.getItem("token");
-
       if (!token) return;
 
-      const response = await fetch(`${API_URL}/users/`, {
+      const response = await fetch(`${API_URL}/users`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -275,21 +273,66 @@ export default function BoardDetails() {
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
+      } else {
+      console.error("Erreur serveur API:", response.status);
       }
     } catch (error) { 
-
+      console.error("Erreur lors de la récupération des utilisateurs :", error);
     }
   }
 
   const sortUser = (users: UserRow[]) => {
     const boardMembers = board?.members;
 
-    if (!boardMembers) return [];
+    if (!boardMembers) return users;
 
     return users.filter(user => 
       !boardMembers.some(member => member.userDto.id === user.id)
     );
   }
+
+  const handleAddUserToBoard = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setState({ status: "submitting" });
+
+    const data = {
+      userId: formDataAddUser.userId,
+      boardId: formDataAddUser.boardId,
+    };
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/boards/${boardId}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        alert("Erreur lors de l'invitation de l'utilisateur.");
+        setState({
+          status: "error",
+          error: `Insert failed (${response.status})`,
+        });
+        return;
+      }
+
+      fetchBoard();
+      alert("Utilisateur invité avec succès !");
+      setState({ status: "idle" });
+      handleClose();
+    } catch (error) {
+      setState({
+        status: "error",
+
+        error: error instanceof Error ? error.message : "Invitation failed.",
+      });
+    }
+  };
 
   const handleUpdateCount = (columnId: string, count: number) => {
     setTaskCounts((prev) => ({ ...prev, [columnId]: count }));
@@ -574,6 +617,9 @@ export default function BoardDetails() {
             <Modal.Footer>
               <Button variant="secondary" onClick={handleClose}>
                 Close
+              </Button>
+              <Button variant="primary" onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleAddUserToBoard(e)}>
+                Inviter
               </Button>
             </Modal.Footer>
           </Modal>
