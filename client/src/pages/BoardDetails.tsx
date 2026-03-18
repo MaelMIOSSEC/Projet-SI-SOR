@@ -6,7 +6,7 @@ import type { Board } from "../types/boardType.ts";
 import { useParams } from "react-router/internal/react-server-client";
 import type { KanbanColumn } from "../types/kanbanColumnType.ts";
 import type { Task } from "../types/taskType.ts";
-import type { User } from "../types/userType.ts";
+import type { User, UserRow } from "../types/userType.ts";
 import { Trash2 } from "lucide-react";
 
 type BoardState =
@@ -179,6 +179,11 @@ export default function BoardDetails() {
     kanbanColumn: KanbanColumn | null;
   }
 
+  interface AddUserFromData {
+    userId: string;
+    boardId: string | undefined;
+  }
+
   interface ColumnFormData {
     title: string;
     position: string;
@@ -188,11 +193,21 @@ export default function BoardDetails() {
   const { user } = useAuth();
   const { boardId } = useParams();
 
+  const [show, setShow] = useState(false);
+  
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   const [showTask, setShowTask] = useState(false);
   const [showColumn, setShowColumn] = useState(false);
   const [board, setBoard] = useState<Board>();
+  const [users, setUsers] = useState<UserRow[]>([]);
   const [taskCounts, setTaskCounts] = useState<Record<string, number>>({});
   const [state, setState] = useState<BoardState>({ status: "idle" });
+  const [formDataAddUser, setFormDataAddUser] = useState<AddUserFromData>({
+    userId: "",
+    boardId: boardId,
+  });
   const [formDataTask, setFormDataTask] = useState<TaskFormData>({
     taskId: "",
     title: "",
@@ -235,10 +250,46 @@ export default function BoardDetails() {
     setShowTask(true);
   };
 
+  console.log("board => ", board);
+
   const handleCloseColumnModale = () => setShowColumn(false);
   const handleShowColumnModale = () => {
     setShowColumn(true);
   };
+
+  const fetchUsers = async () =>{
+    try {
+
+      const token = localStorage.getItem("token");
+
+      if (!token) return;
+
+      const response = await fetch(`${API_URL}/users/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      }
+    } catch (error) { 
+
+    }
+  }
+
+  const sortUser = (users: UserRow[]) => {
+    const boardMembers = board?.members;
+
+    if (!boardMembers) return [];
+
+    return users.filter(user => 
+      !boardMembers.some(member => member.userDto.id === user.id)
+    );
+  }
 
   const handleUpdateCount = (columnId: string, count: number) => {
     setTaskCounts((prev) => ({ ...prev, [columnId]: count }));
@@ -470,14 +521,15 @@ export default function BoardDetails() {
 
   useEffect(() => {
     fetchBoard();
+    fetchUsers();
   }, []);
-
+  console.log("users => ", users);
   const nextColumnPosition = board?.kanbanColumns
     ? Math.max(0, ...board.kanbanColumns.map((col) => col.position)) + 1
     : 1;
 
   return (
-    <>
+    <><>
       <div
         style={{
           marginTop: "100px",
@@ -486,97 +538,133 @@ export default function BoardDetails() {
           width: "100%",
         }}
       >
-        <h3>{board?.title}</h3>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            gap: "30px",
-            alignItems: "flex-start",
-            overflowX: "auto",
-            paddingBottom: "20px",
-          }}
-        >
-          {Array.isArray(board?.kanbanColumns) &&
-            board?.kanbanColumns.map((kanbanColumn) => (
+        <h3>
+          {board?.title}
+          <button type="button" className="btn btn-info" onClick={handleShow}>
+            Partager
+          </button>
+        </h3>
+        <>
+          <Modal show={show} onHide={handleClose}>
+            <Modal.Header closeButton>
+              <Modal.Title>Partager</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
               <div
-                key={kanbanColumn.id}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  width: "400px",
-                  padding: "30px 0",
-                  borderRadius: "20px",
-                  boxShadow: "lightgray -1px 1px 10px",
-                  margin: "50px 0 0 10px",
-                  flexShrink: 0,
-                  position: "relative",
-                }}
+                style={{ display: "flex", flexDirection: "column" }}
               >
-                <strong style={{ display: "flex", flexDirection: "row" }}>
-                  <button
-                    onClick={(e) => handleDeleteColumn(e, kanbanColumn.id)}
-                    type="button"
-                    style={{
-                      position: "absolute",
-                      top: "8px",
-                      right: "8px",
-                      border: "none",
-                      background: "transparent",
-                      cursor: "pointer",
-                      borderRadius: "10px",
-                      backgroundColor: "red",
-                    }}
-                  >
-                    <Trash2 />
-                  </button>
-                  <h3>{kanbanColumn.title}</h3>{" "}
-                  <h6>({taskCounts[kanbanColumn.id] || 0})</h6>
-                </strong>
-                <KanbanColumnItem
-                  kanbanColumn={kanbanColumn}
-                  onTasksLoaded={(count) =>
-                    handleUpdateCount(kanbanColumn.id, count)
-                  }
-                  onTaskClick={handleShowTaskModale}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleShowTaskModale(kanbanColumn)}
-                  style={{
-                    borderRadius: "20px",
-                    color: "black",
-                    backgroundColor: "white",
-                    border: "1px dashed black",
-                    padding: "8px 20px",
-                    margin: "10px 0",
-                  }}
+              <Form.Group className="mb-3" controlId="addUser">
+                <Form.Label>utilisateurs</Form.Label>
+                <Form.Select
+                  name="userId"
+                  onChange={(e) => setFormDataAddUser({...formDataAddUser, userId: e.target.value})}
+                  value={formDataAddUser.userId}
+                  disabled={state.status === "submitting"}
                 >
-                  + Ajouter une tache
-                </button>
+                  <option value="">Sélectionnez un utilisateur</option>
+                  {sortUser(users).map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.username}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>  
               </div>
-            ))}
-
-          <div style={{ marginTop: "50px", flexShrink: 0 }}>
-            <button
-              onClick={handleShowColumnModale}
-              type="button"
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={handleClose}>
+                Close
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        gap: "30px",
+        alignItems: "flex-start",
+        overflowX: "auto",
+        paddingBottom: "20px",
+      }}
+    >
+        {Array.isArray(board?.kanbanColumns) &&
+          board?.kanbanColumns.map((kanbanColumn) => (
+            <div
+              key={kanbanColumn.id}
               style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
                 width: "400px",
-                padding: "20px",
+                padding: "30px 0",
                 borderRadius: "20px",
-                backgroundColor: "transparent",
-                border: "2px dashed lightgray",
-                fontSize: "18px",
-                cursor: "pointer",
-                color: "gray",
+                boxShadow: "lightgray -1px 1px 10px",
+                margin: "50px 0 0 10px",
+                flexShrink: 0,
+                position: "relative",
               }}
             >
-              + Ajouter une colonne
-            </button>
-          </div>
+              <strong style={{ display: "flex", flexDirection: "row" }}>
+                <button
+                  onClick={(e) => handleDeleteColumn(e, kanbanColumn.id)}
+                  type="button"
+                  style={{
+                    position: "absolute",
+                    top: "8px",
+                    right: "8px",
+                    border: "none",
+                    background: "transparent",
+                    cursor: "pointer",
+                    borderRadius: "10px",
+                    backgroundColor: "red",
+                  }}
+                >
+                  <Trash2 />
+                </button>
+                <h3>{kanbanColumn.title}</h3>{" "}
+                <h6>({taskCounts[kanbanColumn.id] || 0})</h6>
+              </strong>
+              <KanbanColumnItem
+                kanbanColumn={kanbanColumn}
+                onTasksLoaded={(count) => handleUpdateCount(kanbanColumn.id, count)}
+                onTaskClick={handleShowTaskModale} />
+              <button
+                type="button"
+                onClick={() => handleShowTaskModale(kanbanColumn)}
+                style={{
+                  borderRadius: "20px",
+                  color: "black",
+                  backgroundColor: "white",
+                  border: "1px dashed black",
+                  padding: "8px 20px",
+                  margin: "10px 0",
+                }}
+              >
+                + Ajouter une tache
+              </button>
+            </div>
+          ))}
+
+        <div style={{ marginTop: "50px", flexShrink: 0 }}>
+          <button
+            onClick={handleShowColumnModale}
+            type="button"
+            style={{
+              width: "400px",
+              padding: "20px",
+              borderRadius: "20px",
+              backgroundColor: "transparent",
+              border: "2px dashed lightgray",
+              fontSize: "18px",
+              cursor: "pointer",
+              color: "gray",
+            }}
+          >
+            + Ajouter une colonne
+          </button>
         </div>
+      </div>
       </div>
       <Modal show={showTask} onHide={handleCloseTaskModale}>
         <Modal.Header closeButton>
@@ -682,4 +770,4 @@ export default function BoardDetails() {
       </Modal>
     </>
   );
-}
+</>)}
