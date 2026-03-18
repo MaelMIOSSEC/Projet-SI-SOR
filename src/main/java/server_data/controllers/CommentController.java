@@ -48,7 +48,7 @@ public class CommentController {
      * @param commentDto the DTO containing the details of the comment to add
      * @return the created comment DTO
      */
-    @PostMapping("/task/{idTask}")
+    @PostMapping("/tasks/{idTask}")
     public CommentDto addComment(@PathVariable String idTask, @RequestBody CommentDto commentDto) {
         return this.commentService.addComment(idTask, commentDto);
     }

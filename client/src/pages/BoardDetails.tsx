@@ -7,7 +7,7 @@ import { useParams } from "react-router/internal/react-server-client";
 import type { KanbanColumn } from "../types/kanbanColumnType.ts";
 import type { Task } from "../types/taskType.ts";
 import type { User, UserRow } from "../types/userType.ts";
-import { Trash2 } from "lucide-react";
+import { Trash2, MessagesSquare } from "lucide-react";
 
 type BoardState =
   | { status: "idle" }
@@ -28,6 +28,38 @@ const KanbanColumnItem = ({
   handleCloseTaskModale: () => void;
 }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+
+  const { token } = useAuth();
+
+  const [show, setShow] = useState(false);
+  const [Comments, setComments] = useState<Comment[]>([]);
+  
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
+
+  const fetchComments = async (taskId: string) => {
+    try {
+      if (!token) return;
+      const response = await fetch(`${API_URL}/comments/tasks/${taskId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if ( response.ok) {
+        const data = await response.json();
+        setComments(data);
+      }
+
+    } catch (err) {
+      console.error("Erreur lors de la récupération des commentaires: ", err);
+    }
+  };
 
   const fetchTasks = async () => {
     try {
@@ -146,6 +178,41 @@ const KanbanColumnItem = ({
             >
               {task.title}
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                handleShow();
+                fetchComments(task.id);
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: isExpired ? "#6c757d" : textColor,
+                padding: "5px",
+                display: "flex",
+                alignItems: "center",
+              }}>
+              <MessagesSquare size={18} />
+            </button>
+
+            <Modal show={show} onHide={handleClose}>
+              <Modal.Header closeButton>
+                <Modal.Title>Commentaires de la tache : {task.title}</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <p>Section de commentaires à implémenter...</p>
+              </Modal.Body>
+              <Modal.Footer>
+                <input></input>
+                <Button variant="primary" onClick={handleClose}>
+                  Ajouter le commantaire
+                </Button>
+                <Button variant="secondary" onClick={handleClose}>
+                  Fermer
+                </Button>
+              </Modal.Footer>
+            </Modal>
 
             <button
               onClick={(e) => {
@@ -516,6 +583,7 @@ export default function BoardDetails() {
     };
 
     console.log("Data => ", data);
+    console.log("taskId => ", taskId);
 
     if (!taskId) {
       console.error("Impossible de modifier : taskId est manquant");
@@ -853,5 +921,4 @@ export default function BoardDetails() {
         </Modal.Footer>
       </Modal>
     </>
-  );
 </>)}
