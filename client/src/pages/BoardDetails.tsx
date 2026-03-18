@@ -1,6 +1,6 @@
 import { Button, Form, Modal } from "react-bootstrap";
 import { useEffect, useState } from "react";
-import { API_URL } from "../config/api.ts";
+import { API_URL, URL_TOMCAT } from "../config/api.ts";
 import { useAuth } from "../hooks/useAuth.ts";
 import type { Board } from "../types/boardType.ts";
 import { useParams } from "react-router/internal/react-server-client";
@@ -8,6 +8,7 @@ import type { KanbanColumn } from "../types/kanbanColumnType.ts";
 import type { Task } from "../types/taskType.ts";
 import type { User, UserRow } from "../types/userType.ts";
 import { Trash2, MessagesSquare } from "lucide-react";
+import type {Comment as TaskComment} from "../types/commentType.ts"
 
 type BoardState =
   | { status: "idle" }
@@ -32,16 +33,41 @@ const KanbanColumnItem = ({
   const { token } = useAuth();
 
   const [show, setShow] = useState(false);
-  const [Comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<TaskComment[]>([]);
   
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  const [newCommentText, setNewCommentText] = useState("");
+
+  const handleCreateComment = async (taskId: string) => {
+  if (!newCommentText.trim()) return;
+
+  try {
+    const response = await fetch(`${URL_TOMCAT}/comments/tasks/${taskId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content: newCommentText }),
+    });
+
+    if (response.ok) {
+      setNewCommentText("");
+      fetchComments(taskId);
+    } else {
+      alert("Erreur lors de l'ajout du commentaire");
+    }
+  } catch (err) {
+    console.error("Erreur:", err);
+  }
+};
 
   const fetchComments = async (taskId: string) => {
     try {
       if (!token) return;
-      const response = await fetch(`${API_URL}/comments/tasks/${taskId}`,
+      const response = await fetch(`${URL_TOMCAT}/comments/tasks/${taskId}`,
         {
           method: "GET",
           headers: {
@@ -201,12 +227,28 @@ const KanbanColumnItem = ({
                 <Modal.Title>Commentaires de la tache : {task.title}</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                <p>Section de commentaires à implémenter...</p>
+                {Array.isArray(comments) &&
+                comments.map((comment) => (
+                  <div>
+                    <h6>{comment.userId}</h6>
+                    <p>{comment.content}</p>
+                  </div>
+                ))}
               </Modal.Body>
               <Modal.Footer>
-                <input></input>
-                <Button variant="primary" onClick={handleClose}>
-                  Ajouter le commantaire
+                <Form.Control
+                  type="text"
+                  placeholder="Écrivez un commentaire..."
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleCreateComment(task.id)}
+                />
+                <Button 
+                  variant="primary" 
+                  onClick={() => handleCreateComment(task.id)}
+                disabled={!newCommentText.trim()}
+                >
+                  Ajouter
                 </Button>
                 <Button variant="secondary" onClick={handleClose}>
                   Fermer
