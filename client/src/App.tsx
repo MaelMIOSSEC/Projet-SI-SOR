@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Login from "./pages/Authentification/Login.tsx";
 import Register from "./pages/Authentification/Register.tsx";

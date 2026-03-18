@@ -1,5 +1,5 @@
 import { useAuth } from "../hooks/useAuth.ts";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import {
   CircleUser,
   TableOfContents,

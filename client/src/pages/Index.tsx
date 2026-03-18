@@ -1,5 +1,5 @@
 import { Button, Form, Modal } from "react-bootstrap";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.ts";
 import { API_URL } from "../config/api.ts";
 import { useEffect, useState } from "react";
@@ -195,6 +195,7 @@ export default function Index() {
           {Array.isArray(getBoardsImPartOf(boards)) &&
             getBoardsImPartOf(boards).map((board) => (
               <div
+                key={board.id}
                 style={{
                   margin: "0 50px",
                   padding: "15px 40px",
@@ -210,7 +211,7 @@ export default function Index() {
                   <p>Membres :</p>
                   <ul>
                     {board.members?.map((member) => (
-                      <li>{member.userDto.username}</li>
+                      <li key={member.id}>{member.userDto.username}</li>
                     ))}
                   </ul>
                 </div>
