@@ -18,10 +18,14 @@ const KanbanColumnItem = ({
   kanbanColumn,
   onTasksLoaded,
   onTaskClick,
+  fetchBoard,
+  handleCloseTaskModale,
 }: {
   kanbanColumn: KanbanColumn;
   onTasksLoaded: (count: number) => void;
   onTaskClick: (kanbanColumn: KanbanColumn, task: Task) => void;
+  fetchBoard: () => void;
+  handleCloseTaskModale: () => void;
 }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -146,7 +150,7 @@ const KanbanColumnItem = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleDeleteTask(e, task.id);
+                handleDeleteTask(e, task.taskId);
               }}
               type="button"
               style={{
@@ -190,7 +194,7 @@ export default function BoardDetails() {
     idBoard: string;
   }
 
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const { boardId } = useParams();
 
   const [show, setShow] = useState(false);
@@ -233,7 +237,7 @@ export default function BoardDetails() {
         description: task.description || "",
         deadline: task.deadline || "",
         priority: task.priority || "",
-        user: task.user || null,
+        user: task.userId ? ({ id: task.userId } as any) : null,
         kanbanColumn: kanbanColumn,
       });
     } else {
@@ -260,11 +264,9 @@ export default function BoardDetails() {
   const fetchUsers = async () =>{
     try {
 
-      const token = localStorage.getItem("token");
-
       if (!token) return;
 
-      const response = await fetch(`${API_URL}/users/`, {
+      const response = await fetch(`${API_URL}/users`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -275,21 +277,75 @@ export default function BoardDetails() {
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
+      } else {
+      console.error("Erreur serveur API:", response.status);
       }
     } catch (error) { 
-
+      console.error("Erreur lors de la récupération des utilisateurs :", error);
     }
   }
 
-  const sortUser = (users: UserRow[]) => {
+  const sortUserForAddUserOfTask = (users: UserRow[]) => {
     const boardMembers = board?.members;
 
     if (!boardMembers) return [];
 
     return users.filter(user => 
+      boardMembers.some(member => member.userDto.id === user.id)
+    );
+  }
+
+  const sortUser = (users: UserRow[]) => {
+    const boardMembers = board?.members;
+
+    if (!boardMembers) return users;
+
+    return users.filter(user => 
       !boardMembers.some(member => member.userDto.id === user.id)
     );
   }
+
+  const handleAddUserToBoard = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setState({ status: "submitting" });
+
+    const data = {
+      id: formDataAddUser.userId,
+    };
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/boards/${boardId}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        alert("Erreur lors de l'invitation de l'utilisateur.");
+        setState({
+          status: "error",
+          error: `Insert failed (${response.status})`,
+        });
+        return;
+      }
+
+      fetchBoard();
+      alert("Utilisateur invité avec succès !");
+      setState({ status: "idle" });
+      handleClose();
+    } catch (error) {
+      setState({
+        status: "error",
+
+        error: error instanceof Error ? error.message : "Invitation failed.",
+      });
+    }
+  };
 
   const handleUpdateCount = (columnId: string, count: number) => {
     setTaskCounts((prev) => ({ ...prev, [columnId]: count }));
@@ -575,6 +631,9 @@ export default function BoardDetails() {
               <Button variant="secondary" onClick={handleClose}>
                 Close
               </Button>
+              <Button variant="primary" onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleAddUserToBoard(e)}>
+                Inviter
+              </Button>
             </Modal.Footer>
           </Modal>
         </>
@@ -628,7 +687,10 @@ export default function BoardDetails() {
               <KanbanColumnItem
                 kanbanColumn={kanbanColumn}
                 onTasksLoaded={(count) => handleUpdateCount(kanbanColumn.id, count)}
-                onTaskClick={handleShowTaskModale} />
+                onTaskClick={handleShowTaskModale} 
+                fetchBoard={fetchBoard}
+                handleCloseTaskModale={handleCloseTaskModale}
+              />
               <button
                 type="button"
                 onClick={() => handleShowTaskModale(kanbanColumn)}
@@ -721,6 +783,22 @@ export default function BoardDetails() {
                 <option value="Strong">Strong (Haute)</option>
                 <option value="Medium">Medium (Moyenne)</option>
                 <option value="Low">Low (Basse)</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="taskUser">
+              <Form.Label>Assignée à </Form.Label>
+              <Form.Select
+                name="assigned"
+                onChange={handleChangeTask}
+                value={formDataTask.user?.id || ""}
+                disabled={state.status === "submitting"}
+              >
+                <option value="">Sélectionnez un utilisateur</option>
+                {sortUserForAddUserOfTask(users).map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.username}
+                    </option>
+                  ))}
               </Form.Select>
             </Form.Group>
           </Form>
