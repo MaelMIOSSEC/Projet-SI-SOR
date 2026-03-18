@@ -18,10 +18,14 @@ const KanbanColumnItem = ({
   kanbanColumn,
   onTasksLoaded,
   onTaskClick,
+  fetchBoard,
+  handleCloseTaskModale,
 }: {
   kanbanColumn: KanbanColumn;
   onTasksLoaded: (count: number) => void;
   onTaskClick: (kanbanColumn: KanbanColumn, task: Task) => void;
+  fetchBoard: () => void;
+  handleCloseTaskModale: () => void;
 }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -146,7 +150,7 @@ const KanbanColumnItem = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleDeleteTask(e, task.id);
+                handleDeleteTask(e, task.taskId);
               }}
               type="button"
               style={{
@@ -233,7 +237,7 @@ export default function BoardDetails() {
         description: task.description || "",
         deadline: task.deadline || "",
         priority: task.priority || "",
-        user: task.user || null,
+        user: task.userId ? ({ id: task.userId } as any) : null,
         kanbanColumn: kanbanColumn,
       });
     } else {
@@ -279,6 +283,16 @@ export default function BoardDetails() {
     } catch (error) { 
       console.error("Erreur lors de la récupération des utilisateurs :", error);
     }
+  }
+
+  const sortUserForAddUserOfTask = (users: UserRow[]) => {
+    const boardMembers = board?.members;
+
+    if (!boardMembers) return [];
+
+    return users.filter(user => 
+      boardMembers.some(member => member.userDto.id === user.id)
+    );
   }
 
   const sortUser = (users: UserRow[]) => {
@@ -673,7 +687,10 @@ export default function BoardDetails() {
               <KanbanColumnItem
                 kanbanColumn={kanbanColumn}
                 onTasksLoaded={(count) => handleUpdateCount(kanbanColumn.id, count)}
-                onTaskClick={handleShowTaskModale} />
+                onTaskClick={handleShowTaskModale} 
+                fetchBoard={fetchBoard}
+                handleCloseTaskModale={handleCloseTaskModale}
+              />
               <button
                 type="button"
                 onClick={() => handleShowTaskModale(kanbanColumn)}
@@ -766,6 +783,22 @@ export default function BoardDetails() {
                 <option value="Strong">Strong (Haute)</option>
                 <option value="Medium">Medium (Moyenne)</option>
                 <option value="Low">Low (Basse)</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="taskUser">
+              <Form.Label>Assignée à </Form.Label>
+              <Form.Select
+                name="assigned"
+                onChange={handleChangeTask}
+                value={formDataTask.user?.id || ""}
+                disabled={state.status === "submitting"}
+              >
+                <option value="">Sélectionnez un utilisateur</option>
+                {sortUserForAddUserOfTask(users).map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.username}
+                    </option>
+                  ))}
               </Form.Select>
             </Form.Group>
           </Form>
