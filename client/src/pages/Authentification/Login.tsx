@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { API_URL } from "../../config/api.ts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.ts";
+import { ErrorHandling } from "../../utility/ErrorHandling.ts";
+import AlertDismissible from "../../components/AlertDismissible.tsx";
+import "../../index.css";
 
 type LoginState =
   | { status: "idle" }
@@ -13,28 +16,34 @@ export default function Login() {
   const { login } = useAuth();
 
   const [state, setState] = useState<LoginState>({ status: "idle" });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    setErrorMessage(null);
     setState({ status: "submitting" });
 
     const formData = new FormData(e.currentTarget);
     const username = formData.get("username");
     const password = formData.get("password");
 
+    if (!username || !password) {
+      setState({ status: "error", error: "Veuillez remplir tous les champs." });
+      return;
+    }
+
     try {
-      const res = await fetch(`${API_URL}/users/login`, {
+      const response = await fetch(`${API_URL}/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+      if (!response.ok) {
+        throw new ErrorHandling(response.status, `Erreur ${response.status}`);
       }
 
-      const apiResponse = await res.json();
+      const apiResponse = await response.json();
 
       if (apiResponse.success) {
         login(apiResponse.data);
@@ -42,143 +51,98 @@ export default function Login() {
       } else {
         setState({
           status: "error",
-          error: apiResponse.error.message,
+          error: apiResponse.error?.message ?? "Erreur inconnue.",
         });
       }
     } catch (err) {
-      setState({
-        status: "error",
-        error: err instanceof Error ? err.message : "Login failed.",
-      });
+      console.error("Échec handleSubmit:", err);
+      setState({ status: "idle" });
+
+      if (err instanceof ErrorHandling) {
+        switch (err.status) {
+          case 401:
+            setErrorMessage(
+              "Les identifiants saisis sont incorrects. Veuillez réessayer.",
+            );
+            break;
+          case 500:
+            setErrorMessage(
+              "Le serveur rencontre un problème. Réessayez plus tard.",
+            );
+            break;
+          default:
+            setErrorMessage(`Une erreur est survenue (Code: ${err.status})`);
+        }
+      } else {
+        setErrorMessage("Une erreur réseau ou inconnue est survenue.");
+      }
     }
   };
 
   return (
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-      }}
-    >
-      <div style={{ display: "flex", paddingBottom: "60px" }}>
-        <a
-          className="btn-link"
-          href="#"
-          style={{
-            border: "1px solid",
-            textDecoration: "none",
-            pointerEvents: "none",
-            cursor: "default",
-            backgroundColor: "#ccc",
-          }}
-        >
+    <main className="login-container">
+      {errorMessage && (
+        <div className="error-alert-container">
+          <AlertDismissible message={errorMessage} />
+        </div>
+      )}
+
+      <div className="auth-tabs">
+        <span className="auth-tab-link active" aria-current="page">
           Connexion
-        </a>
-        <div
-          style={{
-            width: "1px",
-            height: "50px",
-            backgroundColor: "black",
-            margin: "0 20px",
-          }}
-        ></div>
-        <a
-          className="btn-link"
-          href="/register"
-          style={{ border: "1px solid", textDecoration: "none" }}
-        >
+        </span>
+        <div className="auth-tab-divider"></div>
+        <Link to="/register" className="auth-tab-link">
           Inscription
-        </a>
+        </Link>
       </div>
-      <div
-        style={{
-          borderRadius: "30px",
-          padding: "40px 0 0 0",
-          backgroundColor: "white",
-          width: "650px",
-          height: "450px",
-        }}
-      >
-        <h1 style={{ textTransform: "uppercase" }}>Connexion au compte</h1>
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
-          }}
-        >
-          <div style={{ margin: "10px 0", width: "510px" }}>
-            <p
-              style={{
-                margin: "0",
-                textAlign: "left",
-                color: "grey",
-                fontSize: "14px",
-                opacity: "80%",
-              }}
-            >
+
+      <div className="login-card">
+        <h1 className="login-title">Connexion au compte</h1>
+
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="form-group">
+            <label htmlFor="username" className="form-label">
               Username*
-            </p>
+            </label>
             <input
-              style={{ width: "510px", height: "40px", fontSize: "16px" }}
+              className="form-input"
               type="text"
               name="username"
+              id="username"
               required
-              placeholder="Enter your Username"
+              aria-required="true"
+              placeholder="Entrez votre pseudo"
               disabled={state.status === "submitting"}
             />
           </div>
-          <div style={{ margin: "10px 0", width: "510px" }}>
-            <p
-              style={{
-                margin: "0",
-                textAlign: "left",
-                color: "grey",
-                fontSize: "14px",
-                opacity: "80%",
-              }}
-            >
+
+          <div className="form-group">
+            <label htmlFor="password" className="form-label">
               Password*
-            </p>
+            </label>
             <input
-              style={{ width: "510px", height: "40px", fontSize: "16px" }}
+              className="form-input"
               type="password"
               name="password"
+              id="password"
               required
-              placeholder="Enter your Password"
+              aria-required="true"
+              placeholder="Entrez votre mot de passe"
               disabled={state.status === "submitting"}
             />
           </div>
+
           <button
             type="submit"
             disabled={state.status === "submitting"}
-            style={{
-              width: "510px",
-              height: "50px",
-              fontSize: "16px",
-              margin: "15px 0",
-            }}
+            className="btn-submit"
           >
             {state.status === "submitting" ? "Connexion..." : "Se connecter"}
           </button>
+
           {state.status === "error" && (
-            <p
-              style={{
-                border: "1px solid",
-                padding: "10px",
-                borderRadius: "15px",
-                backgroundColor: "red",
-                color: "white",
-                opacity: "50%",
-              }}
-            >
-              Une erreur s'est produite à l'enregistrement du formulaire...
-            </p>
+            <p className="error-message">{state.error}</p>
           )}
         </form>
       </div>

@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { API_URL } from "../../config/api.ts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // Import de Link ajouté
 import { useAuth } from "../../hooks/useAuth.ts";
+import { ErrorHandling } from "../../utility/ErrorHandling.ts";
+import AlertDismissible from "../../components/AlertDismissible.tsx";
+import "../../index.css"; // Assurez-vous que le chemin est correct selon votre arborescence
 
 type RegisterState =
   | { status: "idle" }
@@ -13,10 +16,11 @@ export default function Register() {
   const { login } = useAuth();
 
   const [state, setState] = useState<RegisterState>({ status: "idle" });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    setErrorMessage(null);
     setState({ status: "submitting" });
 
     const formData = new FormData(e.currentTarget);
@@ -26,18 +30,30 @@ export default function Register() {
     const lastName = formData.get("lastName");
     const email = formData.get("email");
 
+    if (!username || !password || !name || !lastName || !email) {
+      setState({ status: "error", error: "Veuillez remplir tous les champs." });
+      return;
+    } else if ((password as string).length < 8) {
+      setState({
+        status: "error",
+        error: "Le mot de passe doit contenir au moins 8 caractères.",
+      });
+      return;
+    }
+
     try {
-      const res = await fetch(`${API_URL}/users/register`, {
+      const response = await fetch(`${API_URL}/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password, name, lastName, email }),
       });
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+      if (!response.ok) {
+        throw new ErrorHandling(response.status, `Erreur ${response.status}`);
       }
 
-      const apiResponse = await res.json();
+      // Correction : response au lieu de res
+      const apiResponse = await response.json();
 
       if (apiResponse.success) {
         login(apiResponse.data);
@@ -45,215 +61,147 @@ export default function Register() {
       } else {
         setState({
           status: "error",
-          error: apiResponse.error.message,
+          error: apiResponse.error?.message ?? "Erreur inconnue.",
         });
       }
-    } catch (error) {
-      setState({
-        status: "error",
-        error: error instanceof Error ? error.message : "Registration failed.",
-      });
+    } catch (err) {
+      console.error("Échec handleSubmit:", err);
+      setState({ status: "idle" });
+
+      if (err instanceof ErrorHandling) {
+        switch (err.status) {
+          case 401:
+            setErrorMessage(
+              "Certaines informations sont incorrectes. Veuillez réessayer.",
+            );
+            break;
+          case 500:
+            setErrorMessage(
+              "Le serveur rencontre un problème. Réessayez plus tard.",
+            );
+            break;
+          default:
+            setErrorMessage(`Une erreur est survenue (Code: ${err.status})`);
+        }
+      } else {
+        setErrorMessage("Une erreur réseau ou inconnue est survenue.");
+      }
     }
   };
 
   return (
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-      }}
-    >
-      <div style={{ display: "flex", paddingBottom: "60px" }}>
-        <a
-          className="btn-link"
-          href="/login"
-          style={{ border: "1px solid", textDecoration: "none" }}
-        >
+    <main className="login-container">
+      {errorMessage && (
+        <div className="error-alert-container">
+          <AlertDismissible message={errorMessage} />
+        </div>
+      )}
+
+      {/* --- ONGलेट्स DE NAVIGATION --- */}
+      <div className="auth-tabs">
+        <Link to="/login" className="auth-tab-link">
           Connexion
-        </a>
-        <div
-          style={{
-            width: "1px",
-            height: "50px",
-            backgroundColor: "black",
-            margin: "0 20px",
-          }}
-        ></div>
-        <a
-          href="#"
-          className="btn-link"
-          style={{
-            border: "1px solid",
-            textDecoration: "none",
-            pointerEvents: "none",
-            cursor: "default",
-            backgroundColor: "#ccc",
-          }}
-        >
+        </Link>
+        <div className="auth-tab-divider"></div>
+        <span className="auth-tab-link active" aria-current="page">
           Inscription
-        </a>
+        </span>
       </div>
-      <div
-        style={{
-          borderRadius: "30px",
-          padding: "40px 0 0 0",
-          backgroundColor: "white",
-          width: "650px",
-          height: "600px",
-        }}
-      >
-        <h1 style={{ textTransform: "uppercase" }}>Création d'un Compte</h1>
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
-          }}
-        >
-          <div style={{ margin: "10px 0", width: "510px" }}>
-            <p
-              style={{
-                margin: "0",
-                textAlign: "left",
-                color: "grey",
-                fontSize: "14px",
-                opacity: "80%",
-              }}
-            >
-              Username*
-            </p>
+
+      {/* --- CARTE D'INSCRIPTION --- */}
+      <div className="login-card">
+        <h1 className="login-title">Création d'un Compte</h1>
+        
+        <form onSubmit={handleSubmit} className="login-form">
+          
+          <div className="form-group">
+            <label htmlFor="username" className="form-label">
+              Pseudo*
+            </label>
             <input
-              style={{ width: "510px", height: "40px", fontSize: "16px" }}
+              className="form-input"
               type="text"
               name="username"
+              id="username"
               required
-              placeholder="Enter your Username"
+              placeholder="Entrez votre pseudo"
               disabled={state.status === "submitting"}
             />
           </div>
-          <div style={{ margin: "10px 0", width: "510px" }}>
-            <p
-              style={{
-                margin: "0",
-                textAlign: "left",
-                color: "grey",
-                fontSize: "14px",
-                opacity: "80%",
-              }}
-            >
-              Password*
-            </p>
-            <input
-              style={{ width: "510px", height: "40px", fontSize: "16px" }}
-              type="password"
-              name="password"
-              required
-              placeholder="Enter your Password"
-              disabled={state.status === "submitting"}
-            />
-          </div>
-          <div
-            style={{
-              display: "flex",
-              margin: "10px 0",
-              width: "510px",
-              flexDirection: "row",
-            }}
-          >
-            <div>
-              <p
-                style={{
-                  margin: "0",
-                  textAlign: "left",
-                  color: "grey",
-                  fontSize: "14px",
-                  opacity: "80%",
-                }}
-              >
-                Name*
-              </p>
+
+          {/* Ligne responsive pour Prénom et Nom de famille */}
+          <div className="form-row">
+            <div className="form-col">
+              <label htmlFor="name" className="form-label">
+                Prénom*
+              </label>
               <input
-                style={{ width: "230px", height: "40px", fontSize: "16px" }}
+                className="form-input"
                 type="text"
                 name="name"
+                id="name"
                 required
-                placeholder="Enter your Name"
+                placeholder="Entrez votre prénom"
                 disabled={state.status === "submitting"}
               />
             </div>
-            <div style={{ padding: "0 48px" }}>
-              <p
-                style={{
-                  margin: "0",
-                  textAlign: "left",
-                  color: "grey",
-                  fontSize: "14px",
-                  opacity: "80%",
-                }}
-              >
-                LastName*
-              </p>
+            
+            <div className="form-col">
+              <label htmlFor="lastname" className="form-label">
+                Nom de famille*
+              </label>
               <input
-                style={{ width: "230px", height: "40px", fontSize: "16px" }}
+                className="form-input"
                 type="text"
                 name="lastName"
+                id="lastname"
                 required
-                placeholder="Enter your Lastname"
+                placeholder="Entrez votre nom"
                 disabled={state.status === "submitting"}
               />
             </div>
           </div>
-          <div style={{ margin: "10px 0", width: "510px" }}>
-            <p
-              style={{
-                margin: "0",
-                textAlign: "left",
-                color: "grey",
-                fontSize: "14px",
-                opacity: "80%",
-              }}
-            >
+
+          <div className="form-group">
+            <label htmlFor="email" className="form-label">
               Email*
-            </p>
+            </label>
             <input
-              style={{ width: "510px", height: "40px", fontSize: "16px" }}
-              type="text"
+              className="form-input"
+              type="email"
               name="email"
+              id="email"
               required
-              placeholder="Enter your Email"
+              placeholder="Entrez votre email"
               disabled={state.status === "submitting"}
             />
           </div>
+
+          <div className="form-group">
+            <label htmlFor="password" className="form-label">
+              Mot de passe*
+            </label>
+            <input
+              className="form-input"
+              type="password"
+              name="password"
+              id="password"
+              required
+              placeholder="Entrez votre mot de passe (8 car. min)"
+              disabled={state.status === "submitting"}
+            />
+          </div>
+
           <button
             type="submit"
-            style={{
-              width: "510px",
-              height: "50px",
-              fontSize: "16px",
-              margin: "15px 0",
-            }}
+            className="btn-submit"
             disabled={state.status === "submitting"}
           >
             {state.status === "submitting" ? "Inscription..." : "S'inscrire"}
           </button>
+
           {state.status === "error" && (
-            <p
-              style={{
-                border: "1px solid",
-                padding: "10px",
-                borderRadius: "15px",
-                backgroundColor: "red",
-                color: "white",
-                opacity: "50%",
-              }}
-            >
-              Une erreur s'est produite à l'enregistrement du formulaire...
-            </p>
+            <p className="error-message">{state.error}</p>
           )}
         </form>
       </div>
