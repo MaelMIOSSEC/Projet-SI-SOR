@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { API_URL } from "../../config/api.ts";
-import { useNavigate, Link } from "react-router-dom"; // Import de Link ajouté
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { ErrorHandling } from "../../utility/ErrorHandling.ts";
 import AlertDismissible from "../../components/AlertDismissible.tsx";
-import "../../index.css"; // Assurez-vous que le chemin est correct selon votre arborescence
+import "../../index.css";
 
 type RegisterState =
   | { status: "idle" }
@@ -52,7 +52,6 @@ export default function Register() {
         throw new ErrorHandling(response.status, `Erreur ${response.status}`);
       }
 
-      // Correction : response au lieu de res
       const apiResponse = await response.json();
 
       if (apiResponse.success) {
@@ -97,7 +96,6 @@ export default function Register() {
         </div>
       )}
 
-      {/* --- ONGलेट्स DE NAVIGATION --- */}
       <div className="auth-tabs">
         <Link to="/login" className="auth-tab-link">
           Connexion
@@ -108,7 +106,6 @@ export default function Register() {
         </span>
       </div>
 
-      {/* --- CARTE D'INSCRIPTION --- */}
       <div className="login-card">
         <h1 className="login-title">Création d'un Compte</h1>
         
@@ -129,7 +126,6 @@ export default function Register() {
             />
           </div>
 
-          {/* Ligne responsive pour Prénom et Nom de famille */}
           <div className="form-row">
             <div className="form-col">
               <label htmlFor="name" className="form-label">
