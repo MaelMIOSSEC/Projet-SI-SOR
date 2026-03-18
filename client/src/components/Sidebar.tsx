@@ -7,11 +7,11 @@ import {
   ChartNoAxesColumn,
 } from "lucide-react";
 import { API_URL } from "../config/api.ts";
+import "../index.css";
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { logout } = useAuth();
+  const { user, logout, authFetch } = useAuth();
 
   const isConnected = user !== null;
 
@@ -27,25 +27,19 @@ const Sidebar = () => {
   const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
   
-    const token = localStorage.getItem("token");
     const userId = user?.userId;
   
-    if (!token || !userId) {
-      console.error("Token ou ID utilisateur manquant");
+    if (!userId) {
+      console.error("ID utilisateur manquant");
       return;
     }
   
     try {
-      const response = await fetch(`${API_URL}/users/${userId}`, {
+      const response = await authFetch(`${API_URL}/users/${userId}`, {
         method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
       });
   
       if (!response.ok) {
-        // essaye de lire le message d'erreur du serveur
         const errorData = await response.json().catch(() => ({}));
         alert(errorData.message || "Erreur lors de la suppression du profil.");
         return;
@@ -60,104 +54,37 @@ const Sidebar = () => {
   };
 
   return (
-    <div
-      style={{
-        width: "25%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-around",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          color: "black",
-          marginTop: "60px",
-          textAlign: "start",
-        }}
-      >
-        <a
-          href="/profil"
-          style={{
-            fontSize: "x-large",
-            textDecoration: "none",
-            color: "black",
-            margin: "10px 0",
-            paddingLeft: "60px",
-            textTransform: "uppercase",
-          }}
-        >
+    <div className="sidebar-container">
+      <div className="sidebar-nav">
+        <a href="/profil" className="sidebar-link">
           <CircleUser /> Informations
         </a>
-        <a
-          href="/boards"
-          style={{
-            fontSize: "x-large",
-            textDecoration: "none",
-            color: "black",
-            margin: "10px 0",
-            paddingLeft: "60px",
-            textTransform: "uppercase",
-          }}
-        >
+        <a href="/boards" className="sidebar-link">
           <TableOfContents /> Tableaux
         </a>
         {user?.isAdmin && (
           <>
-            <a
-              href="/accountManagment"
-              style={{
-                fontSize: "x-large",
-                textDecoration: "none",
-                color: "black",
-                margin: "10px 0",
-                paddingLeft: "60px",
-                textTransform: "uppercase",
-              }}
-            >
+            <a href="/accountManagment" className="sidebar-link">
               <ShieldUser /> Gestion des comptes
             </a>
-            <a
-              href="/statistics"
-              style={{
-                fontSize: "x-large",
-                textDecoration: "none",
-                color: "black",
-                margin: "10px 0",
-                paddingLeft: "60px",
-                textTransform: "uppercase",
-              }}
-            >
+            <a href="/statistics" className="sidebar-link">
               <ChartNoAxesColumn /> Statistiques
             </a>
           </>
         )}
       </div>
-      <div style={{ display: "flex", flexDirection: "column" }}>
+      <div className="sidebar-actions">
         <button
           onClick={logoutUser}
           type="button"
-          className="btn btn-primary"
-          style={{
-            margin: "10px",
-            borderRadius: "15px",
-            fontSize: "20px",
-            height: "50px",
-          }}
+          className="btn btn-primary sidebar-btn"
         >
           Déconnexion
         </button>
         <button
           onClick={handleDelete}
           type="submit"
-          className="btn btn-danger"
-          style={{
-            margin: "10px",
-            borderRadius: "15px",
-            fontSize: "20px",
-            height: "50px",
-          }}
+          className="btn btn-danger sidebar-btn"
         >
           Suppression du compte
         </button>

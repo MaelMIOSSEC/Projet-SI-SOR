@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.ts";
-import {Button, Modal} from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import React from "react";
 import { API_URL } from "../config/api.ts";
 import type { InvitationRow } from "../types/invitationType.ts";
@@ -41,23 +41,29 @@ const Navbar = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const accept = async (e: React.MouseEvent<HTMLButtonElement>, boardId: String) => {
+  const accept = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    boardId: String,
+  ) => {
     e.preventDefault();
-    setState({status: "submitting"});
+    setState({ status: "submitting" });
 
     const data = "Accept";
 
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/users/${user?.userId}/invitation/${boardId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${API_URL}/users/${user?.userId}/invitation/${boardId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(data),
         },
-        body: JSON.stringify(data),
-      });
+      );
 
       console.log("response => ", response);
 
@@ -77,9 +83,12 @@ const Navbar = () => {
         error: error instanceof Error ? error.message : "Fail.",
       });
     }
-  }
+  };
 
-  const reject = async (e: React.MouseEvent<HTMLButtonElement>, boardId: String) => {
+  const reject = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    boardId: String,
+  ) => {
     e.preventDefault();
     setState({ status: "submitting" });
 
@@ -88,14 +97,17 @@ const Navbar = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/users/${user?.userId}/invitation/${boardId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${API_URL}/users/${user?.userId}/invitation/${boardId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(data),
         },
-        body: JSON.stringify(data),
-      });
+      );
 
       if (!response.ok) {
         alert("Erreur lors de la suppression de l'invitation");
@@ -120,13 +132,16 @@ const Navbar = () => {
       if (!user?.userId || !token) return;
 
       if (user != null) {
-        const response = await fetch(`${API_URL}/users/${user.userId}/invitation`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+        const response = await fetch(
+          `${API_URL}/users/${user.userId}/invitation`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -136,7 +151,7 @@ const Navbar = () => {
     } catch (error) {
       console.error(
         "Échec de la récupération des informations utilisateurs: ",
-        error
+        error,
       );
     }
   };
@@ -151,7 +166,7 @@ const Navbar = () => {
     }
 
     return newBoards;
-  }
+  };
 
   console.log("getInvitation => ", getInvitation(invitations));
 
@@ -159,12 +174,13 @@ const Navbar = () => {
     fetchInvitation();
   }, [user?.userId, token]);
 
-  console.log("invitations => ", invitations)
+  console.log("invitations => ", invitations);
 
   return (
     <nav
-      className={`navbar navbar-expand-lg navbar-dark fixed-top ${isShrunk ? "navbar-shrink" : ""
-        }`}
+      className={`navbar navbar-expand-lg navbar-dark fixed-top ${
+        isShrunk ? "navbar-shrink" : ""
+      }`}
       id="mainNav"
     >
       <div className="container">
@@ -187,14 +203,13 @@ const Navbar = () => {
 
         <div className="collapse navbar-collapse" id="navbarResponsive">
           <ul className="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
-            <li className="nav-item drop-down-menu">
-              <a className="nav-link" style={{ fontSize: 17 }} href="/">
-                Mes tableaux
-              </a>
-            </li>
-
             {isConnected ? (
               <>
+                <li className="nav-item drop-down-menu">
+                  <a className="nav-link" style={{ fontSize: 17 }} href="/">
+                    Mes tableaux
+                  </a>
+                </li>
                 <li className="nav-item drop-down-menu">
                   <a
                     className="nav-link"
@@ -222,7 +237,7 @@ const Navbar = () => {
                     )}
                   </div>
                 </li>
-                <li>
+                <li className="nav-item drop-down-menu">
                   <a
                     className="nav-link"
                     style={{ fontSize: 17 }}
@@ -230,39 +245,6 @@ const Navbar = () => {
                   >
                     Messagerie
                   </a>
-                  <>
-                    <Modal show={show} onHide={handleClose}>
-                      <Modal.Header closeButton>
-                        <Modal.Title>Messagerie</Modal.Title>
-                      </Modal.Header>
-                      <Modal.Body>
-                        <div
-                          style={{ display: "flex", flexDirection: "column" }}
-                        >
-                          {Array.isArray(getInvitation(invitations)) &&
-                            getInvitation(invitations).map((inv) => (
-                              <div>
-                                <p>
-                                  Vous avez reçu une invitation pour rejoindre
-                                  le tableau {inv.boardTitle}
-                                </p>
-                                <Button variant="secondary" onClick={(e: React.MouseEvent<HTMLButtonElement>) => reject(e, inv.boardId)}>
-                                  Rejeter!
-                                </Button>
-                                <Button variant="primary" onClick={(e: React.MouseEvent<HTMLButtonElement>) => accept(e, inv.boardId)}>
-                                  Accepter!
-                                </Button>
-                              </div>
-                            ))}
-                        </div>
-                      </Modal.Body>
-                      <Modal.Footer>
-                        <Button variant="secondary" onClick={handleClose}>
-                          Close
-                        </Button>
-                      </Modal.Footer>
-                    </Modal>
-                  </>
                 </li>
               </>
             ) : (
@@ -290,6 +272,47 @@ const Navbar = () => {
           </ul>
         </div>
       </div>
+      <>
+        <Modal show={show} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Messagerie</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {Array.isArray(getInvitation(invitations)) &&
+                getInvitation(invitations).map((inv) => (
+                  <div>
+                    <p>
+                      Vous avez reçu une invitation pour rejoindre le tableau{" "}
+                      {inv.boardTitle}
+                    </p>
+                    <Button
+                      variant="secondary"
+                      onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+                        reject(e, inv.boardId)
+                      }
+                    >
+                      Rejeter!
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+                        accept(e, inv.boardId)
+                      }
+                    >
+                      Accepter!
+                    </Button>
+                  </div>
+                ))}
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </>
     </nav>
   );
 };

@@ -3,6 +3,9 @@ import { useAuth } from "../../hooks/useAuth.ts";
 import { API_URL } from "../../config/api.ts";
 import Sidebar from "../../components/Sidebar.tsx";
 import type { User } from "../../types/userType.ts";
+import { ErrorHandling } from "../../utility/ErrorHandling.ts";
+import AlertDismissible from "../../components/AlertDismissible.tsx";
+import "../../index.css";
 
 type ProfilState =
   | { status: "idle" }
@@ -15,9 +18,11 @@ interface UserFormData extends Partial<User> {
 }
 
 export default function Profil() {
-  const { user, setUser } = useAuth();
+  const { user, setUser, authFetch } = useAuth(); // Import de authFetch !
 
   const [state, setState] = useState<ProfilState>({ status: "idle" });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<UserFormData>(
     user ? { ...user, newPassword: "", confirmPassword: "" } : {},
@@ -30,6 +35,8 @@ export default function Profil() {
 
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
     setState({ status: "submitting" });
 
     const payload = {
@@ -44,7 +51,7 @@ export default function Profil() {
 
     if (formData.newPassword && formData.newPassword !== "") {
       if (formData.newPassword !== formData.confirmPassword) {
-        alert("Les nouveaux mots de passe ne correspondent pas");
+        setErrorMessage("Les nouveaux mots de passe ne correspondent pas.");
         setState({ status: "idle" });
         return;
       }
@@ -52,22 +59,14 @@ export default function Profil() {
     }
 
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/users/${user?.userId}`, {
+      // Utilisation propre de authFetch au lieu de fetch avec token manuel
+      const response = await authFetch(`${API_URL}/users/${user?.userId}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorMsg = "Erreur lors de la mise à jour du profil.";
-        alert(errorMsg);
-        setState({ status: "error", error: errorMsg });
-        return;
+        throw new ErrorHandling(response.status, `Erreur ${response.status}`);
       }
 
       const updatedUserFromServer = await response.json();
@@ -83,28 +82,61 @@ export default function Profil() {
         });
       }
 
-      alert("Profil mis à jour avec succès !");
+      setSuccessMessage("Profil mis à jour avec succès !");
+      setFormData((prev) => ({ ...prev, newPassword: "", confirmPassword: "" })); // On vide les champs mdp
       setState({ status: "idle" });
-    } catch (error) {
-      setState({
-        status: "error",
-        error: error instanceof Error ? error.message : "Update failed.",
-      });
+      
+      // Fait disparaître le message de succès après 4 secondes
+      setTimeout(() => setSuccessMessage(null), 4000);
+
+    } catch (err) {
+      console.error("Échec update profil:", err);
+      setState({ status: "idle" });
+
+      if (err instanceof ErrorHandling) {
+        switch (err.status) {
+          case 401:
+            setErrorMessage("Session expirée. Veuillez vous reconnecter.");
+            break;
+          case 403:
+            setErrorMessage("Vous n'êtes pas autorisé à modifier ce profil.");
+            break;
+          case 500:
+            setErrorMessage("Erreur serveur lors de la mise à jour.");
+            break;
+          default:
+            setErrorMessage(`Une erreur est survenue (Code: ${err.status})`);
+        }
+      } else {
+        setErrorMessage("Une erreur réseau ou inconnue est survenue.");
+      }
     }
   };
 
   return (
-    <main style={{ display: "flex", flexDirection: "row", marginTop: "63px", height: "800px" }}>
+    <main className="profil-page-container">
+      {errorMessage && (
+        <div className="error-alert-container">
+          <AlertDismissible message={errorMessage} />
+        </div>
+      )}
+
       <Sidebar />
-      <div style={{ width: "75%", margin: "40px" }}>
-        <h1>Bonjour, {user?.name}</h1>
-        <div style={{ borderRadius: "25px", margin: "60px 200px" }}>
-          <form onSubmit={handleUpdate} style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column" }}>
+      
+      <div className="profil-content">
+        
+        <div className="profil-header">
+          <h1>Bonjour, {user?.name}</h1>
+        </div>
+
+        <div className="profil-card">
+          <form onSubmit={handleUpdate} className="profil-form">
             
-            <div style={{ margin: "10px 0", width: "510px" }}>
-              <p style={{ margin: "0", textAlign: "left", color: "grey", fontSize: "14px", opacity: "0.8" }}>Username*</p>
+            <div className="form-group">
+              <label htmlFor="username" className="form-label">Username*</label>
               <input
-                style={{ width: "510px", height: "40px", fontSize: "16px" }}
+                id="username"
+                className="form-input"
                 type="text"
                 name="username"
                 required
@@ -114,35 +146,40 @@ export default function Profil() {
               />
             </div>
 
-            <div style={{ margin: "10px 0", width: "510px" }}>
-              <p style={{ margin: "0", textAlign: "left", color: "grey", fontSize: "14px", opacity: "0.8" }}>Nouveau mot de passe</p>
+            <div className="form-group">
+              <label htmlFor="newPassword" className="form-label">Nouveau mot de passe</label>
               <input
-                style={{ width: "510px", height: "40px", fontSize: "16px" }}
+                id="newPassword"
+                className="form-input"
                 type="password"
                 name="newPassword"
                 value={formData.newPassword || ""}
                 onChange={handleChange}
                 disabled={state.status === "submitting"}
+                placeholder="Laissez vide pour ne pas modifier"
               />
             </div>
 
-            <div style={{ margin: "10px 0", width: "510px" }}>
-              <p style={{ margin: "0", textAlign: "left", color: "grey", fontSize: "14px", opacity: "0.8" }}>Confirmer le mot de passe</p>
+            <div className="form-group">
+              <label htmlFor="confirmPassword" className="form-label">Confirmer le mot de passe</label>
               <input
-                style={{ width: "510px", height: "40px", fontSize: "16px" }}
+                id="confirmPassword"
+                className="form-input"
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword || ""}
                 onChange={handleChange}
                 disabled={state.status === "submitting"}
+                placeholder="Confirmez votre nouveau mot de passe"
               />
             </div>
 
-            <div style={{ display: "flex", margin: "10px 0", width: "510px", flexDirection: "row" }}>
-              <div>
-                <p style={{ margin: "0", textAlign: "left", color: "grey", fontSize: "14px", opacity: "0.8" }}>Prénom*</p>
+            <div className="form-row">
+              <div className="form-col">
+                <label htmlFor="name" className="form-label">Prénom*</label>
                 <input
-                  style={{ width: "230px", height: "40px", fontSize: "16px" }}
+                  id="name"
+                  className="form-input"
                   type="text"
                   name="name"
                   required
@@ -151,10 +188,11 @@ export default function Profil() {
                   disabled={state.status === "submitting"}
                 />
               </div>
-              <div style={{ padding: "0 48px" }}>
-                <p style={{ margin: "0", textAlign: "left", color: "grey", fontSize: "14px", opacity: "0.8" }}>Nom*</p>
+              <div className="form-col">
+                <label htmlFor="lastName" className="form-label">Nom*</label>
                 <input
-                  style={{ width: "230px", height: "40px", fontSize: "16px" }}
+                  id="lastName"
+                  className="form-input"
                   type="text"
                   name="lastName"
                   required
@@ -165,10 +203,11 @@ export default function Profil() {
               </div>
             </div>
 
-            <div style={{ margin: "10px 0", width: "510px" }}>
-              <p style={{ margin: "0", textAlign: "left", color: "grey", fontSize: "14px", opacity: "0.8" }}>Email*</p>
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">Email*</label>
               <input
-                style={{ width: "510px", height: "40px", fontSize: "16px" }}
+                id="email"
+                className="form-input"
                 type="email"
                 name="email"
                 required
@@ -178,13 +217,20 @@ export default function Profil() {
               />
             </div>
 
+            {successMessage && (
+              <div className="success-message">
+                {successMessage}
+              </div>
+            )}
+
             <button
               type="submit"
-              style={{ width: "510px", height: "50px", fontSize: "16px", margin: "15px 0", cursor: "pointer" }}
+              className="btn-submit"
               disabled={state.status === "submitting"}
             >
-              {state.status === "submitting" ? "Modification..." : "Modifier"}
+              {state.status === "submitting" ? "Modification..." : "Modifier le profil"}
             </button>
+            
           </form>
         </div>
       </div>

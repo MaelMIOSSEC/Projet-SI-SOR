@@ -1,142 +1,132 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Sidebar from "../../components/Sidebar.tsx";
-import { Table } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { Modal, Button, ListGroup, Badge } from "react-bootstrap";
 import { API_URL } from "../../config/api.ts";
 import type { Board } from "../../types/boardType.ts";
 import { useAuth } from "../../hooks/useAuth.ts";
-import { SquarePen, Trash2 } from "lucide-react";
-import { Modal, Button, ListGroup, Badge } from "react-bootstrap";
-import { Mail } from "lucide-react";
+import { SquarePen, Trash2, Mail } from "lucide-react";
 import type { BoardMember } from "../../types/boardMemberType.ts";
+import { ErrorHandling } from "../../utility/ErrorHandling.ts";
+import AlertDismissible from "../../components/AlertDismissible.tsx";
+import "../../index.css";
 
 type SelectedMember = BoardMember & { boardId: string };
 
-type BoardState =
-  | { status: "idle" }
-  | { status: "submitting" }
-  | { status: "error"; error: string };
-
 interface UserRowProps {
   board: Board;
-  index: number;
-  user: any;
-  boards: Board[];
+  user: ReturnType<typeof useAuth>["user"];
+  authFetch: ReturnType<typeof useAuth>["authFetch"];
   fetchBoards: () => void;
   handleShow: (member: SelectedMember) => void;
+  handleApiError: (err: unknown) => void;
 }
 
 const UserRowItem = ({
   board,
-  index,
   user,
-  boards,
+  authFetch,
   fetchBoards,
   handleShow,
+  handleApiError,
 }: UserRowProps) => {
   const [formData, setFormData] = useState(board.title);
-  const [state, setState] = useState<BoardState>({ status: "idle" });
 
   const handleDelete = async (
     e: React.MouseEvent<HTMLButtonElement>,
-    boardId: string
+    boardId: string,
   ) => {
     e.preventDefault();
+
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/boards/${boardId}`, {
+      const response = await authFetch(`${API_URL}/boards/${boardId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
       });
-      if (response.ok) fetchBoards();
-    } catch (error) {
-      console.error("Erreur suppression : ", error);
+
+      if (!response.ok) {
+        throw new ErrorHandling(response.status, `Erreur ${response.status}`);
+      }
+
+      fetchBoards();
+    } catch (err) {
+      console.error("Échec handleDelete:", err);
+      handleApiError(err);
     }
   };
 
-  const handleUpdate = async (e: React.MouseEvent<HTMLButtonElement>, boardId: string) => {
-        e.preventDefault();
+  const handleUpdate = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    boardId: string,
+  ) => {
+    e.preventDefault();
 
-        const data = {
-          title: formData,
-        };
-  
-        try {
-          const token = localStorage.getItem("token");
-  
-          const response = await fetch(`${API_URL}/boards/${boardId}`, {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
-  
-          if (!response.ok) {
-            alert("Erreur lors de la mise à jour du profil.");
-            setState({
-              status: "error",
-              error: `Update failed (${response.status})`,
-            });
-            return;
-          }
-  
-          fetchBoards();
-          setState({ status: "idle" });
-        } catch (error) {
-          setState({
-            status: "error",
-            error:
-              error instanceof Error ? error.message : "Registration failed.",
-          });
-        }
-      };
+    const data = {
+      title: formData,
+    };
 
-  const getRole = (idx: number) => {
-    const members = boards[idx]?.members;
-    return members?.find((m) => m.userDto.id === user?.userId)?.role || null;
+    try {
+      const response = await authFetch(`${API_URL}/boards/${boardId}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new ErrorHandling(response.status, `Erreur ${response.status}`);
+      }
+
+      fetchBoards();
+    } catch (err) {
+      console.error("Échec handleUpdate:", err);
+      handleApiError(err);
+    }
   };
 
-  const role = getRole(index);
+  const role = board.members?.find((m) => m.userDto.id === user?.userId)?.role ?? null;
 
   return (
-    <tr>
-      <td>
+    <div className="boards-grid-row">
+      {/* Utilisation de data-label pour l'affichage mobile */}
+      <div className="boards-grid-cell" data-label="Nom du tableau">
         {role === "Owner" ? (
           <input
-            className="form-control"
+            className="board-input"
             type="text"
             value={formData}
             onChange={(e) => setFormData(e.target.value)}
-            disabled={state.status === "submitting"}
           />
         ) : (
-          board.title
+          <span className="fw-medium text-main">{board.title}</span>
         )}
-      </td>
-      <td>
-        {board.members?.map((member) => (
-          <button
-            type="button"
-            key={member.userDto.id}
-            onClick={() => handleShow({ ...member, boardId: board.id })}
-            disabled={member.userDto.id === user?.userId || role !== "Owner"}
-            className="btn btn-outline-secondary btn-sm m-1 rounded-pill"
-          >
-            {member.userDto.username === user?.username
-              ? `${member.userDto.username} (vous)`
-              : member.userDto.username}
-          </button>
-        ))}
-      </td>
-      <td>{board.kanbanColumns?.length}</td>
-      <td>
-        <Badge bg="secondary">{role}</Badge>
-      </td>
-      <td>
+      </div>
+      
+      <div className="boards-grid-cell members-cell" data-label="Membres">
+        <div className="members-container">
+          {board.members?.map((member) => (
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              key={member.userDto.id}
+              onClick={() => handleShow({ ...member, boardId: board.id })}
+              disabled={member.userDto.id === user?.userId || role !== "Owner"}
+              className="member-btn"
+            >
+              {member.userDto.username === user?.username
+                ? `${member.userDto.username} (vous)`
+                : member.userDto.username}
+            </Button>
+          ))}
+        </div>
+      </div>
+      
+      <div className="boards-grid-cell cell-center" data-label="Colonnes">
+        {board.kanbanColumns?.length || 0}
+      </div>
+      
+      <div className="boards-grid-cell cell-center" data-label="Rôle">
+        <Badge bg={role === "Owner" ? "primary" : "secondary"}>{role}</Badge>
+      </div>
+      
+      <div className="boards-grid-cell cell-center" data-label="Supprimer">
         <Button
           variant="danger"
           size="sm"
@@ -145,8 +135,9 @@ const UserRowItem = ({
         >
           <Trash2 size={16} />
         </Button>
-      </td>
-      <td>
+      </div>
+      
+      <div className="boards-grid-cell cell-center" data-label="Modifier">
         <Button
           variant="primary"
           size="sm"
@@ -155,17 +146,47 @@ const UserRowItem = ({
         >
           <SquarePen size={16} />
         </Button>
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 };
 
-export default function Board() {
-  const { user } = useAuth();
+export default function Boards() {
+  const navigate = useNavigate();
+  const { user, authFetch } = useAuth();
   const [boards, setBoards] = useState<Board[]>([]);
   const [show, setShow] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<SelectedMember | null>(
-    null
+  const [selectedMember, setSelectedMember] = useState<SelectedMember | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleApiError = useCallback(
+    (err: unknown) => {
+      if (err instanceof Error && err.message === "Empty token...") {
+        navigate("/login");
+        return;
+      }
+      if (err instanceof ErrorHandling) {
+        switch (err.status) {
+          case 401:
+            navigate("/login");
+            break;
+          case 403:
+            setErrorMessage("Vous n'avez pas la permission d'effectuer cette action.");
+            break;
+          case 404:
+            setErrorMessage("Les tableaux sont introuvables.");
+            break;
+          case 500:
+            setErrorMessage("Le serveur rencontre un problème. Réessayez plus tard.");
+            break;
+          default:
+            setErrorMessage(`Une erreur imprévue (Code: ${err.status})`);
+        }
+      } else {
+        setErrorMessage("Une erreur réseau ou inconnue est survenue.");
+      }
+    },
+    [navigate],
   );
 
   const handleShow = (member: SelectedMember) => {
@@ -178,113 +199,110 @@ export default function Board() {
     setSelectedMember(null);
   };
 
-  const HandleDeleteFromBoard = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-    boardId: string,
-    userId: string
-  ) => {
-    e.preventDefault();
-
+  const fetchBoards = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `${API_URL}/boards/${boardId}/users/${userId}`,
+      const response = await authFetch(
+        `${API_URL}/users/${user?.userId}/boards`,
         {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+          method: "GET",
+        },
       );
 
       if (!response.ok) {
-        alert("Erreur lors de la mise à jour du profil.");
-        return;
+        throw new ErrorHandling(response.status, `Erreur ${response.status}`);
       }
 
-      alert("ok");
-      fetchBoards();
-    } catch (error) {
-      console.error(
-        "Erreur lors de la suppression d'un membre du tableau : ",
-        error
-      );
-    }
-  };
-
-  const fetchBoards = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/users/${user?.userId}/boards`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setBoards(data);
-      }
+      const data = await response.json();
+      setBoards(data);
     } catch (err) {
-      console.error(
-        "Échec de la récupération des informations utilisateurs: ",
-        err
+      console.error("Échec fetchBoards:", err);
+      handleApiError(err);
+    }
+  }, [authFetch, handleApiError, user?.userId]);
+
+  const handleDeleteFromBoard = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    boardId: string,
+    userId: string,
+  ) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    try {
+      const response = await authFetch(
+        `${API_URL}/boards/${boardId}/users/${userId}`,
+        {
+          method: "DELETE",
+        },
       );
+
+      if (!response.ok) {
+        throw new ErrorHandling(response.status, `Erreur ${response.status}`);
+      }
+
+      fetchBoards();
+    } catch (err) {
+      console.error("Échec handleDeleteFromBoard:", err);
+      handleApiError(err);
     }
   };
 
   useEffect(() => {
     fetchBoards();
-  }, []);
+  }, [fetchBoards]);
 
   return (
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        marginTop: "63px",
-        height: "800px",
-      }}
-    >
+    <main className="boards-page-container">
+      {errorMessage && (
+        <div className="error-alert-container">
+          <AlertDismissible message={errorMessage} />
+        </div>
+      )}
+      
       <Sidebar />
-      <div
-        style={{
-          width: "75%",
-          margin: "40px",
-        }}
-      >
-        <Table striped bordered hover style={{ marginTop: "75px" }}>
-          <thead>
-            <tr>
-              <th scope="col">Nom du tableau</th>
-              <th scope="col">Membres</th>
-              <th scope="col">Nombre de colonnes</th>
-              <th scope="col">Rôle</th>
-              <th scope="col"></th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.isArray(boards) &&
-              boards.map((board, index) => (
-                <UserRowItem
-                  key={board.id}
-                  board={board}
-                  index={index}
-                  user={user}
-                  boards={boards}
-                  fetchBoards={fetchBoards}
-                  handleShow={handleShow}
-                />
-              ))}
-          </tbody>
-        </Table>
+      
+      <div className="boards-content">
+        <h2 className="mb-4" style={{ color: 'var(--text-main)' }}>Gestion des Tableaux</h2>
+        
+        <div className="boards-grid-container">
+          {/* L'en-tête (Head) de notre tableau Grid */}
+          <div className="boards-grid-header">
+            <div>Nom du tableau</div>
+            <div>Membres</div>
+            <div className="text-center">Colonnes</div>
+            <div className="text-center">Rôle</div>
+            <div className="text-center">Supprimer</div>
+            <div className="text-center">Modifier</div>
+          </div>
+
+          {/* Le corps (Body) de notre tableau Grid */}
+          <div className="boards-grid-body">
+            {boards.map((board) => (
+              <UserRowItem
+                key={board.id}
+                board={board}
+                user={user}
+                authFetch={authFetch}
+                fetchBoards={fetchBoards}
+                handleShow={handleShow}
+                handleApiError={handleApiError}
+              />
+            ))}
+            
+            {boards.length === 0 && (
+              <div 
+                className="boards-grid-row" 
+                style={{ gridTemplateColumns: '1fr', justifyContent: 'center' }}
+              >
+                <div className="text-center py-4 text-muted w-100">
+                  Aucun tableau trouvé.
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+
       <Modal show={show} onHide={handleClose} centered>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -302,14 +320,16 @@ export default function Board() {
                 <div className="fw-bold text-muted small">Email</div>
                 <div className="d-flex align-items-center">
                   <Mail size={14} className="me-2" />{" "}
-                  {selectedMember.userDto.email}
+                  <a href={`mailto:${selectedMember.userDto.email}`} className="text-decoration-none">
+                    {selectedMember.userDto.email}
+                  </a>
                 </div>
               </ListGroup.Item>
               <ListGroup.Item>
                 <div className="fw-bold text-muted small">
                   Rôle sur le projet
                 </div>
-                <Badge bg="primary">{selectedMember.role}</Badge>
+                <Badge bg="primary" className="mt-1">{selectedMember.role}</Badge>
               </ListGroup.Item>
             </ListGroup>
           )}
@@ -320,12 +340,12 @@ export default function Board() {
           </Button>
           <Button
             variant="danger"
-            onClick={(e) => {
+            onClick={async (e) => {
               if (selectedMember) {
-                HandleDeleteFromBoard(
+                await handleDeleteFromBoard(
                   e,
                   selectedMember.boardId,
-                  selectedMember.userDto.id
+                  selectedMember.userDto.id,
                 );
                 handleClose();
               }

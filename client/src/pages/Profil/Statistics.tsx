@@ -1,25 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Sidebar from "../../components/Sidebar.tsx";
 import { API_URL } from "../../config/api.ts";
+import { useAuth } from "../../hooks/useAuth.ts";
 import type { UserRow } from "../../types/userType.ts";
 import type { BoardRow } from "../../types/boardType.ts";
 import type { TaskRow } from "../../types/taskType.ts";
+import "../../index.css";
 
 export default function Statistics() {
+  const { authFetch } = useAuth();
+  
   const [users, setUsers] = useState<UserRow[]>([]);
   const [boards, setBoards] = useState<BoardRow[]>([]);
   const [tasks, setTasks] = useState<TaskRow[]>([]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/users`, {
+      const response = await authFetch(`${API_URL}/users`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
       });
 
       if (response.ok) {
@@ -27,23 +25,14 @@ export default function Statistics() {
         setUsers(data);
       }
     } catch (err) {
-      console.error(
-        "Échec de la récupération des informations utilisateurs: ",
-        err,
-      );
+      console.error("Échec de la récupération des informations utilisateurs: ", err);
     }
-  };
+  }, [authFetch]);
 
-  const fetchBoards = async () => {
+  const fetchBoards = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/boards`, {
+      const response = await authFetch(`${API_URL}/boards`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
       });
 
       if (response.ok) {
@@ -51,23 +40,14 @@ export default function Statistics() {
         setBoards(data);
       }
     } catch (err) {
-      console.error(
-        "Échec de la récupération des informations tableaux: ",
-        err,
-      );
+      console.error("Échec de la récupération des informations tableaux: ", err);
     }
-  };
+  }, [authFetch]);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/tasks`, {
+      const response = await authFetch(`${API_URL}/tasks`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
       });
 
       if (response.ok) {
@@ -77,54 +57,38 @@ export default function Statistics() {
     } catch (err) {
       console.error("Échec de la récupération des informations Taches: ", err);
     }
-  };
+  }, [authFetch]);
 
   useEffect(() => {
     fetchUsers();
     fetchBoards();
     fetchTasks();
-  }, []);
+  }, [fetchUsers, fetchBoards, fetchTasks]);
 
   return (
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        marginTop: "63px",
-        height: "800px",
-      }}
-    >
+    <main className="statistics-page-container">
       <Sidebar />
-      <div
-        style={{
-          width: "75%",
-          margin: "40px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <h1>Statistiques globales</h1>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            width: "80%",
-            border: "1px solid",
-            marginTop: "50px",
-          }}
-        >
-          <div style={{ width: "33%", padding: "30px" }}>
-            <h2>Tableaux</h2>{" "}
-            <p style={{ fontSize: "25px" }}>{boards.length}</p>
+      
+      <div className="statistics-content">
+        <h1 className="statistics-title">Statistiques globales</h1>
+        
+        <div className="stats-cards-container">
+          
+          <div className="stat-card">
+            <h2>Tableaux</h2>
+            <p className="stat-number">{boards.length}</p>
           </div>
-          <div style={{ width: "33%", padding: "30px" }}>
-            <h2>Taches</h2> <p style={{ fontSize: "25px" }}>{tasks.length}</p>
+          
+          <div className="stat-card">
+            <h2>Tâches</h2>
+            <p className="stat-number">{tasks.length}</p>
           </div>
-          <div style={{ width: "33%", padding: "30px" }}>
-            <h2>Utilisateurs</h2>{" "}
-            <p style={{ fontSize: "25px" }}>{users.length}</p>
+          
+          <div className="stat-card">
+            <h2>Utilisateurs</h2>
+            <p className="stat-number">{users.length}</p>
           </div>
+          
         </div>
       </div>
     </main>
