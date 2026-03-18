@@ -152,3 +152,73 @@ button:hover {
 .subpage .nav-link:hover {
   background-color: #575757;
 }
+
+/* ==================================================================================================== */
+/* ===============================================Index.tsx============================================ */
+/* ==================================================================================================== */
+
+.error-alert-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.header-container {
+  margin-top: 100px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.header-title {
+  text-transform: uppercase;
+}
+
+.btn-create-board {
+  border-radius: 20px;
+  color: black;
+  background-color: white;
+  border: 1px dashed black;
+  padding: 10px 40px;
+  cursor: pointer;
+}
+
+.btn-create-board:hover {
+  background-color: #f8f9fa;
+}
+
+.boards-list-container {
+  margin: 100px 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.board-card {
+  margin: 0 50px 50px 50px;
+  padding: 15px 40px;
+  border-radius: 20px;
+  width: 250px;
+  box-shadow: -3px 3px 20px gray;
+}
+
+.board-card-info {
+  text-align: start;
+}
+
+.btn-open-board {
+  padding: 10px;
+  border: 1px solid black;
+  text-decoration: none;
+  border-radius: 15px;
+  color: black;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.btn-open-board:hover {
+  background-color: #f0f0f0;
+}
