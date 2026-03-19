@@ -12,8 +12,10 @@ import { isUserRow } from "../types/userType.ts";
 import { userRowToApi } from "../mappers/userMapper.ts";
 import { AuthResponse } from "../types/autentificationType.ts";
 
+/** Router for handling authentication-related routes. */
 const router = new Router({ prefix: "/users" });
 
+/** Route for user registration. It checks for duplicate usernames and emails, hashes the password, creates a new user in the database, and returns a JWT token along with user information. */
 router.post("/register", async (ctx: Context) => {
   try {
     const data = await ctx.request.body.json();
@@ -126,6 +128,7 @@ router.post("/register", async (ctx: Context) => {
   }
 });
 
+/** Route for user login. It verifies the provided credentials, and if valid, returns a JWT token along with user information. */ 
 router.post("/login", async (ctx: Context) => {
   try {
     const data = await ctx.request.body.json();
@@ -203,6 +206,7 @@ router.post("/login", async (ctx: Context) => {
   }
 });
 
+/** Route to get the authenticated user's information. It uses the authMiddleware to ensure the request is authenticated, and then retrieves and returns the user's information based on the user ID from the JWT token. */
 router.get("/me", authMiddleware, async (ctx: AuthContext) => {
   try {
     const userId = ctx.state.user?.userId;

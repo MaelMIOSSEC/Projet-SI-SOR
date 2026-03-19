@@ -1,5 +1,9 @@
 import {User, UserRow} from "../types/userType.ts";
 
+/** * Maps a UserRow object to a User object.
+ * @param row - The UserRow object to be mapped.
+ * @returns A User object with the corresponding properties from the UserRow.
+ */
 export function userRowToApi(row: UserRow): User {
     return {
         userId: row.user_id,

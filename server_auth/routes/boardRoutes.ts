@@ -2,6 +2,7 @@ import { Context, Router } from "@oak/oak";
 
 const router = new Router();
 
+/** Router for handling board-related routes. It includes routes for getting a board, creating a board for a user, updating a board, deleting a board, managing users on a board, and managing columns on a board. Each route checks for the presence of a valid JWT token in the Authorization header before making requests to the Spring backend. */
 router.get("/boards/:boardId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -46,6 +47,7 @@ router.get("/boards/:boardId", async (ctx: Context) => {
   }
 });
 
+/** Route for creating a new board for a user. It checks for a valid JWT token in the Authorization header, and then sends a POST request to the Spring backend to create the board. The board data is expected to be in the request body as JSON. */
 router.post("/users/:userId/boards", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -94,6 +96,7 @@ router.post("/users/:userId/boards", async (ctx: Context) => {
   }
 });
 
+/** Route for updating a board. It checks for a valid JWT token in the Authorization header, and then sends a PUT request to the Spring backend to update the board. The updated board data is expected to be in the request body as JSON. */
 router.put("/boards/:boardId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -142,6 +145,7 @@ router.put("/boards/:boardId", async (ctx: Context) => {
   }
 });
 
+/** Route for deleting a board. It checks for a valid JWT token in the Authorization header, and then sends a DELETE request to the Spring backend to delete the board. */
 router.delete("/boards/:boardId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -186,6 +190,7 @@ router.delete("/boards/:boardId", async (ctx: Context) => {
   }
 });
 
+/** Route for removing a user from a board. It checks for a valid JWT token in the Authorization header, and then sends a DELETE request to the Spring backend to remove the user from the board. */
 router.delete("/boards/:boardId/users/:userId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -230,6 +235,7 @@ router.delete("/boards/:boardId/users/:userId", async (ctx: Context) => {
   }
 });
 
+/** Route for removing a column from a board. It checks for a valid JWT token in the Authorization header, and then sends a DELETE request to the Spring backend to remove the column from the board. */
 router.delete("/boards/:boardId/columns/:columnId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -272,6 +278,7 @@ router.delete("/boards/:boardId/columns/:columnId", async (ctx: Context) => {
   }
 });
 
+/** Route for adding a user to a board. It checks for a valid JWT token in the Authorization header, and then sends a POST request to the Spring backend to add the user to the board. The user data is expected to be in the request body as JSON. */
 router.post("/boards/:boardId/users", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 

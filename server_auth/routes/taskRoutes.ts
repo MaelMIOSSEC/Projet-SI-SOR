@@ -2,6 +2,7 @@ import { Context, Router } from "@oak/oak";
 
 const router = new Router();
 
+/**Route for fetching task statistics. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the statistics. */
 router.post("/tasks", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -47,6 +48,7 @@ router.post("/tasks", async (ctx: Context) => {
   }
 });
 
+/**Route for fetching task statistics. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the statistics. */
 router.delete("/tasks/:taskId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -89,6 +91,7 @@ router.delete("/tasks/:taskId", async (ctx: Context) => {
   }
 });
 
+/**Route for fetching task statistics. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the statistics. */
 router.put("/tasks/:taskId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 

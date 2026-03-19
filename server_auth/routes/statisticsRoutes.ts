@@ -2,6 +2,7 @@ import { Router, Context } from "@oak/oak";
 
 const router = new Router();
 
+/**Route for fetching user statistics. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the statistics. */
 router.get("/users", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -38,6 +39,7 @@ router.get("/users", async (ctx: Context) => {
   }
 });
 
+/**Route for fetching board statistics. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the statistics. */
 router.get("/boards", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -74,6 +76,7 @@ router.get("/boards", async (ctx: Context) => {
   }
 });
 
+/**Route for fetching task statistics. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the statistics. */
 router.get("/tasks", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 

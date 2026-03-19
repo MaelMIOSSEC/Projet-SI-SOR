@@ -3,6 +3,7 @@ import { hashPassword } from "../lib/jwt.ts";
 
 const router = new Router({ prefix: "/users" });
 
+/**Route for fetching user information. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the user information. */
 router.get("/", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -39,6 +40,7 @@ router.get("/", async (ctx: Context) => {
   }
 });
 
+/**Route for fetching the boards associated with a specific user. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the boards information. */
 router.get("/:userId/boards", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -80,6 +82,7 @@ router.get("/:userId/boards", async (ctx: Context) => {
   }
 }) 
 
+/**Route for updating user information. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to update the user information. The password is hashed before being sent to the backend. */
 router.put("/:userId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -130,6 +133,7 @@ router.put("/:userId", async (ctx: Context) => {
   }
 });
 
+/**Route for deleting a user. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to delete the user. */
 router.delete("/:userId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -174,6 +178,7 @@ router.delete("/:userId", async (ctx: Context) => {
   }
 });
 
+/**Route for fetching the invitations associated with a specific user. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the invitations information. */
 router.get("/:userId/invitation", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -216,6 +221,7 @@ router.get("/:userId/invitation", async (ctx: Context) => {
   }
 });
 
+/**Route for accepting or declining an invitation. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to accept or decline the invitation. */
 router.delete("/:userId/invitation/:boardId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
@@ -258,6 +264,7 @@ router.delete("/:userId/invitation/:boardId", async (ctx: Context) => {
   }
 });
 
+/**Route for accepting or declining an invitation. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to accept or decline the invitation. */
 router.put("/:userId/invitation/:boardId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
