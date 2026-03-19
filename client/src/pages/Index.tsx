@@ -123,7 +123,7 @@ export default function Index() {
         setErrorMessage("Une erreur réseau ou inconnue est survenue.");
       }
     }
-  }, [authFetch, navigate, user?.userId]);
+  }, [navigate, user?.userId]);
 
   useEffect(() => {
     if (!isConnected) {
