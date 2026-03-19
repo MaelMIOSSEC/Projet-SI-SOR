@@ -127,13 +127,11 @@ export default function AccountManagement() {
     const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
 
-      if (connectedUser?.userId === user.id) {
-        const confirmation = globalThis.confirm(
-          "Voulez-vous vraiment supprimer votre propre compte ?",
-        );
+      const confirmation = globalThis.confirm(
+        "Voulez-vous vraiment supprimer ce compte ?",
+      );
 
-        if (!confirmation) return;
-      }
+      if (!confirmation) return;
 
       try {
         const token = localStorage.getItem("token");
@@ -185,15 +183,15 @@ export default function AccountManagement() {
           />
         </td>
         <td>
-        <input
-          style={{ width: "200px", textAlign: "center" }}
-          type="text"
-          name="lastName"
-          required
-          value={String(formData.lastName || "")} 
-          onChange={(e) => handleChange(e)}
-          disabled={state.status === "submitting"}
-        />
+          <input
+            style={{ width: "200px", textAlign: "center" }}
+            type="text"
+            name="lastName"
+            required
+            value={String(formData.lastName || "")}
+            onChange={(e) => handleChange(e)}
+            disabled={state.status === "submitting"}
+          />
         </td>
         <td>
           <input
@@ -221,7 +219,9 @@ export default function AccountManagement() {
           {user.isAdmin === 0 ? (
             <button
               type="button"
-              onClick={(e) => handleUpdateIsAdmin(e, Number(formData.isAdmin || 0))}
+              onClick={(e) =>
+                handleUpdateIsAdmin(e, Number(formData.isAdmin || 0))
+              }
               style={{
                 marginTop: "3px",
                 borderRadius: "10px",
@@ -233,7 +233,9 @@ export default function AccountManagement() {
           ) : (
             <button
               type="button"
-              onClick={(e) => handleUpdateIsAdmin(e, Number(formData.isAdmin || 0))}
+              onClick={(e) =>
+                handleUpdateIsAdmin(e, Number(formData.isAdmin || 0))
+              }
               style={{
                 marginTop: "3px",
                 borderRadius: "10px",
@@ -245,7 +247,11 @@ export default function AccountManagement() {
           )}
         </td>
         <td>
-          <button type="button" onClick={handleUpdate} style={{ borderRadius: "10px" }}>
+          <button
+            type="button"
+            onClick={handleUpdate}
+            style={{ borderRadius: "10px" }}
+          >
             <SquarePen />
           </button>
         </td>
@@ -273,7 +279,7 @@ export default function AccountManagement() {
           "Content-Type": "application/json",
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -326,7 +332,9 @@ export default function AccountManagement() {
           </thead>
           <tbody>
             {Array.isArray(users) &&
-              users.map((user) => <UserRowItem key={String(user.id)} user={user} />)}
+              users.map((user) => (
+                <UserRowItem key={String(user.id)} user={user} />
+              ))}
           </tbody>
         </Table>
       </div>

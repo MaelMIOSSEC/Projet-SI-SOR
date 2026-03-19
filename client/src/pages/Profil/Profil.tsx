@@ -4,7 +4,7 @@ import { API_URL } from "../../config/api.ts";
 import Sidebar from "../../components/Sidebar.tsx";
 import type { User } from "../../types/userType.ts";
 import { ErrorHandling } from "../../utility/ErrorHandling.ts";
-import AlertDismissible from "../../components/AlertDismissible.tsx";
+import { AlertDismissible } from "../../components/AlertDismissible.tsx";
 import "../../index.css";
 
 type ProfilState =

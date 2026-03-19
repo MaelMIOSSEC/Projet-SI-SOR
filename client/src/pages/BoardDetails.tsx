@@ -9,6 +9,7 @@ import type { Task } from "../types/taskType.ts";
 import type { User, UserRow } from "../types/userType.ts";
 import { Trash2, MessagesSquare } from "lucide-react";
 import type { Comment as TaskComment } from "../types/commentType.ts";
+import { useNavigate } from "react-router-dom";
 
 type BoardState =
   | { status: "idle" }
@@ -305,6 +306,7 @@ export default function BoardDetails() {
 
   const { user, token } = useAuth();
   const { boardId } = useParams();
+  const navigate = useNavigate();
 
   const [show, setShow] = useState(false);
 
@@ -684,6 +686,19 @@ export default function BoardDetails() {
     fetchBoard();
     fetchUsers();
   }, [fetchBoard, fetchUsers]);
+
+  useEffect(() => {
+    if (!board) return;
+
+    const isMember = board.members?.some(
+      (member) => member.userDto.id === user?.userId,
+    );
+
+    if (!isMember) {
+      navigate("/");
+    }
+  }, [board, navigate, user?.userId]);
+  
   const nextColumnPosition = board?.kanbanColumns
     ? Math.max(0, ...board.kanbanColumns.map((col) => col.position)) + 1
     : 1;

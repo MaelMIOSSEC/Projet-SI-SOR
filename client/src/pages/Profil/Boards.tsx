@@ -8,7 +8,10 @@ import { useAuth } from "../../hooks/useAuth.ts";
 import { SquarePen, Trash2, Mail } from "lucide-react";
 import type { BoardMember } from "../../types/boardMemberType.ts";
 import { ErrorHandling } from "../../utility/ErrorHandling.ts";
-import AlertDismissible from "../../components/AlertDismissible.tsx";
+import {
+  AlertDismissible,
+  ValidationAlert,
+} from "../../components/AlertDismissible.tsx";
 import "../../index.css";
 
 type SelectedMember = BoardMember & { boardId: string };
@@ -31,12 +34,21 @@ const UserRowItem = ({
   handleApiError,
 }: UserRowProps) => {
   const [formData, setFormData] = useState(board.title);
+  const [validationMessage, setValidationMessage] = useState<string | null>(
+    null,
+  );
 
   const handleDelete = async (
     e: React.MouseEvent<HTMLButtonElement>,
     boardId: string,
   ) => {
     e.preventDefault();
+
+    const confirmation = globalThis.confirm(
+      "Voulez-vous vraiment supprimer ce compte ?",
+    );
+
+    if (!confirmation) return;
 
     try {
       const response = await authFetch(`${API_URL}/boards/${boardId}`, {
@@ -48,6 +60,7 @@ const UserRowItem = ({
       }
 
       fetchBoards();
+      setValidationMessage("Tableau supprimé avec succès !");
     } catch (err) {
       console.error("Échec handleDelete:", err);
       handleApiError(err);
@@ -75,17 +88,23 @@ const UserRowItem = ({
       }
 
       fetchBoards();
+      setValidationMessage("Tableau modifié avec succès !");
     } catch (err) {
       console.error("Échec handleUpdate:", err);
       handleApiError(err);
     }
   };
 
-  const role = board.members?.find((m) => m.userDto.id === user?.userId)?.role ?? null;
+  const role =
+    board.members?.find((m) => m.userDto.id === user?.userId)?.role ?? null;
 
   return (
     <div className="boards-grid-row">
-      {/* Utilisation de data-label pour l'affichage mobile */}
+      {validationMessage && (
+        <div className="error-alert-container">
+          <ValidationAlert message={validationMessage} />
+        </div>
+      )}
       <div className="boards-grid-cell" data-label="Nom du tableau">
         {role === "Owner" ? (
           <input
@@ -98,7 +117,7 @@ const UserRowItem = ({
           <span className="fw-medium text-main">{board.title}</span>
         )}
       </div>
-      
+
       <div className="boards-grid-cell members-cell" data-label="Membres">
         <div className="members-container">
           {board.members?.map((member) => (
@@ -117,15 +136,15 @@ const UserRowItem = ({
           ))}
         </div>
       </div>
-      
+
       <div className="boards-grid-cell cell-center" data-label="Colonnes">
         {board.kanbanColumns?.length || 0}
       </div>
-      
+
       <div className="boards-grid-cell cell-center" data-label="Rôle">
         <Badge bg={role === "Owner" ? "primary" : "secondary"}>{role}</Badge>
       </div>
-      
+
       <div className="boards-grid-cell cell-center" data-label="Supprimer">
         <Button
           variant="danger"
@@ -136,7 +155,7 @@ const UserRowItem = ({
           <Trash2 size={16} />
         </Button>
       </div>
-      
+
       <div className="boards-grid-cell cell-center" data-label="Modifier">
         <Button
           variant="primary"
@@ -156,7 +175,9 @@ export default function Boards() {
   const { user, authFetch } = useAuth();
   const [boards, setBoards] = useState<Board[]>([]);
   const [show, setShow] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<SelectedMember | null>(null);
+  const [selectedMember, setSelectedMember] = useState<SelectedMember | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleApiError = useCallback(
@@ -171,13 +192,17 @@ export default function Boards() {
             navigate("/login");
             break;
           case 403:
-            setErrorMessage("Vous n'avez pas la permission d'effectuer cette action.");
+            setErrorMessage(
+              "Vous n'avez pas la permission d'effectuer cette action.",
+            );
             break;
           case 404:
             setErrorMessage("Les tableaux sont introuvables.");
             break;
           case 500:
-            setErrorMessage("Le serveur rencontre un problème. Réessayez plus tard.");
+            setErrorMessage(
+              "Le serveur rencontre un problème. Réessayez plus tard.",
+            );
             break;
           default:
             setErrorMessage(`Une erreur imprévue (Code: ${err.status})`);
@@ -258,12 +283,14 @@ export default function Boards() {
           <AlertDismissible message={errorMessage} />
         </div>
       )}
-      
+
       <Sidebar />
-      
+
       <div className="boards-content">
-        <h2 className="mb-4" style={{ color: 'var(--text-main)' }}>Gestion des Tableaux</h2>
-        
+        <h2 className="mb-4" style={{ color: "var(--text-main)" }}>
+          Gestion des Tableaux
+        </h2>
+
         <div className="boards-grid-container">
           {/* L'en-tête (Head) de notre tableau Grid */}
           <div className="boards-grid-header">
@@ -288,11 +315,11 @@ export default function Boards() {
                 handleApiError={handleApiError}
               />
             ))}
-            
+
             {boards.length === 0 && (
-              <div 
-                className="boards-grid-row" 
-                style={{ gridTemplateColumns: '1fr', justifyContent: 'center' }}
+              <div
+                className="boards-grid-row"
+                style={{ gridTemplateColumns: "1fr", justifyContent: "center" }}
               >
                 <div className="text-center py-4 text-muted w-100">
                   Aucun tableau trouvé.
@@ -320,7 +347,10 @@ export default function Boards() {
                 <div className="fw-bold text-muted small">Email</div>
                 <div className="d-flex align-items-center">
                   <Mail size={14} className="me-2" />{" "}
-                  <a href={`mailto:${selectedMember.userDto.email}`} className="text-decoration-none">
+                  <a
+                    href={`mailto:${selectedMember.userDto.email}`}
+                    className="text-decoration-none"
+                  >
                     {selectedMember.userDto.email}
                   </a>
                 </div>
@@ -329,7 +359,9 @@ export default function Boards() {
                 <div className="fw-bold text-muted small">
                   Rôle sur le projet
                 </div>
-                <Badge bg="primary" className="mt-1">{selectedMember.role}</Badge>
+                <Badge bg="primary" className="mt-1">
+                  {selectedMember.role}
+                </Badge>
               </ListGroup.Item>
             </ListGroup>
           )}

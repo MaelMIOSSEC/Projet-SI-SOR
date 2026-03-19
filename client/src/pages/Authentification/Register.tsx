@@ -3,7 +3,7 @@ import { API_URL } from "../../config/api.ts";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { ErrorHandling } from "../../utility/ErrorHandling.ts";
-import AlertDismissible from "../../components/AlertDismissible.tsx";
+import { AlertDismissible } from "../../components/AlertDismissible.tsx";
 import "../../index.css";
 
 type RegisterState =
