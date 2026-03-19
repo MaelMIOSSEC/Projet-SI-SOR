@@ -727,7 +727,9 @@ export default function BoardDetails() {
                   value={formDataAddUser.userId}
                   disabled={state.status === "submitting"}
                 >
-                  <option value="">Sélectionnez un utilisateur</option>
+                  <option value="">
+                    {formDataTask.user ? "Désassigner la tâche" : "Sélectionnez un utilisateur"}
+                  </option>
                   {sortUser(users).map((user) => (
                     <option key={user.id} value={user.id}>
                       {user.username}
