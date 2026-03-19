@@ -26,6 +26,12 @@ const Sidebar = () => {
 
   const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+
+    const confirmation = globalThis.confirm(
+      "Voulez-vous vraiment supprimer ce compte ?",
+    );
+
+    if (!confirmation) return;
   
     const userId = user?.userId;
   

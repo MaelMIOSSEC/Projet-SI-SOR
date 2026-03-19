@@ -85,7 +85,7 @@ const Navbar = () => {
 
   const reject = async (
     e: React.MouseEvent<HTMLButtonElement>,
-    boardId: String,
+    boardId: string,
   ) => {
     e.preventDefault();
     setState({ status: "submitting" });

@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { API_URL } from "../../config/api.ts";
 import Sidebar from "../../components/Sidebar.tsx";
 import type { User } from "../../types/userType.ts";
 import { ErrorHandling } from "../../utility/ErrorHandling.ts";
-import { AlertDismissible } from "../../components/AlertDismissible.tsx";
+import { AlertDismissible } from "../../components/AlertDismissible.tsx";
 import "../../index.css";
+import { useNavigate } from "react-router-dom";
 
 type ProfilState =
   | { status: "idle" }
@@ -18,15 +19,20 @@ interface UserFormData extends Partial<User> {
 }
 
 export default function Profil() {
-  const { user, setUser, authFetch } = useAuth(); // Import de authFetch !
+  const { user, setUser, authFetch } = useAuth();
+  const navigate = useNavigate();
 
   const [state, setState] = useState<ProfilState>({ status: "idle" });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState<UserFormData>(
     user ? { ...user, newPassword: "", confirmPassword: "" } : {},
   );
+
+  console.log("user => ", user);
+
+  if (user === null) navigate("/");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -59,7 +65,6 @@ export default function Profil() {
     }
 
     try {
-      // Utilisation propre de authFetch au lieu de fetch avec token manuel
       const response = await authFetch(`${API_URL}/users/${user?.userId}`, {
         method: "PUT",
         body: JSON.stringify(payload),
@@ -83,12 +88,14 @@ export default function Profil() {
       }
 
       setSuccessMessage("Profil mis à jour avec succès !");
-      setFormData((prev) => ({ ...prev, newPassword: "", confirmPassword: "" })); // On vide les champs mdp
+      setFormData((prev) => ({
+        ...prev,
+        newPassword: "",
+        confirmPassword: "",
+      }));
       setState({ status: "idle" });
-      
-      // Fait disparaître le message de succès après 4 secondes
-      setTimeout(() => setSuccessMessage(null), 4000);
 
+      setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err) {
       console.error("Échec update profil:", err);
       setState({ status: "idle" });
@@ -113,6 +120,10 @@ export default function Profil() {
     }
   };
 
+  useEffect(() => {
+    if (user === null) navigate("/");
+  }, [navigate, user]);
+
   return (
     <main className="profil-page-container">
       {errorMessage && (
@@ -122,18 +133,18 @@ export default function Profil() {
       )}
 
       <Sidebar />
-      
+
       <div className="profil-content">
-        
         <div className="profil-header">
           <h1>Bonjour, {user?.name}</h1>
         </div>
 
         <div className="profil-card">
           <form onSubmit={handleUpdate} className="profil-form">
-            
             <div className="form-group">
-              <label htmlFor="username" className="form-label">Username*</label>
+              <label htmlFor="username" className="form-label">
+                Username*
+              </label>
               <input
                 id="username"
                 className="form-input"
@@ -147,7 +158,9 @@ export default function Profil() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="newPassword" className="form-label">Nouveau mot de passe</label>
+              <label htmlFor="newPassword" className="form-label">
+                Nouveau mot de passe
+              </label>
               <input
                 id="newPassword"
                 className="form-input"
@@ -161,7 +174,9 @@ export default function Profil() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="confirmPassword" className="form-label">Confirmer le mot de passe</label>
+              <label htmlFor="confirmPassword" className="form-label">
+                Confirmer le mot de passe
+              </label>
               <input
                 id="confirmPassword"
                 className="form-input"
@@ -176,7 +191,9 @@ export default function Profil() {
 
             <div className="form-row">
               <div className="form-col">
-                <label htmlFor="name" className="form-label">Prénom*</label>
+                <label htmlFor="name" className="form-label">
+                  Prénom*
+                </label>
                 <input
                   id="name"
                   className="form-input"
@@ -189,7 +206,9 @@ export default function Profil() {
                 />
               </div>
               <div className="form-col">
-                <label htmlFor="lastName" className="form-label">Nom*</label>
+                <label htmlFor="lastName" className="form-label">
+                  Nom*
+                </label>
                 <input
                   id="lastName"
                   className="form-input"
@@ -204,7 +223,9 @@ export default function Profil() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="email" className="form-label">Email*</label>
+              <label htmlFor="email" className="form-label">
+                Email*
+              </label>
               <input
                 id="email"
                 className="form-input"
@@ -218,9 +239,7 @@ export default function Profil() {
             </div>
 
             {successMessage && (
-              <div className="success-message">
-                {successMessage}
-              </div>
+              <div className="success-message">{successMessage}</div>
             )}
 
             <button
@@ -228,9 +247,10 @@ export default function Profil() {
               className="btn-submit"
               disabled={state.status === "submitting"}
             >
-              {state.status === "submitting" ? "Modification..." : "Modifier le profil"}
+              {state.status === "submitting"
+                ? "Modification..."
+                : "Modifier le profil"}
             </button>
-            
           </form>
         </div>
       </div>

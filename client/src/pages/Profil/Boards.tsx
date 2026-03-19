@@ -283,8 +283,9 @@ export default function Boards() {
   };
 
   useEffect(() => {
-    fetchBoards();
-  }, [fetchBoards]);
+    if (user === null) navigate("/");
+    else fetchBoards();
+  }, [fetchBoards, navigate, user]);
 
   return (
     <main className="boards-page-container">

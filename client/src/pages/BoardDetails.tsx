@@ -1,81 +1,87 @@
-import { Button, Form, Modal } from "react-bootstrap";
 import { useEffect, useState, useCallback } from "react";
+import { Button, Form, Modal } from "react-bootstrap";
+import { useParams, useNavigate } from "react-router-dom";
+import { Trash2, MessagesSquare } from "lucide-react";
+
 import { API_URL, URL_TOMCAT } from "../config/api.ts";
 import { useAuth } from "../hooks/useAuth.ts";
 import type { Board } from "../types/boardType.ts";
-import { useParams } from "react-router/internal/react-server-client";
 import type { KanbanColumn } from "../types/kanbanColumnType.ts";
 import type { Task } from "../types/taskType.ts";
 import type { User, UserRow } from "../types/userType.ts";
-import { Trash2, MessagesSquare } from "lucide-react";
 import type { Comment as TaskComment } from "../types/commentType.ts";
-import { useNavigate } from "react-router-dom";
+import {
+  AlertDismissible,
+  ValidationAlert,
+} from "../components/AlertDismissible.tsx";
 
+import "../index.css";
+
+// ============================================================================
+// TYPES ET INTERFACES
+// ============================================================================
 type BoardState =
   | { status: "idle" }
   | { status: "submitting" }
   | { status: "error"; error: string };
 
+interface TaskFormData {
+  taskId: string;
+  title: string;
+  description: string;
+  deadline: string;
+  priority: string;
+  user: User | null;
+  kanbanColumn: KanbanColumn | null;
+}
+
+interface AddUserFormData {
+  userId: string;
+  boardId: string | undefined;
+}
+
+interface ColumnFormData {
+  title: string;
+  position: string;
+  idBoard: string;
+}
+
+// ============================================================================
+// COMPOSANT ENFANT : KanbanColumnItem
+// ============================================================================
 const KanbanColumnItem = ({
   kanbanColumn,
-  onTasksLoaded,
+  onUpdateTaskCount,
   onTaskClick,
   fetchBoard,
   handleCloseTaskModale,
 }: {
   kanbanColumn: KanbanColumn;
-  onTasksLoaded: (count: number) => void;
+  onUpdateTaskCount: (columnId: string, count: number) => void;
   onTaskClick: (kanbanColumn: KanbanColumn, task: Task) => void;
   fetchBoard: () => void;
   handleCloseTaskModale: () => void;
 }) => {
+  const { token, authFetch } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
-
-  const { token } = useAuth();
-
-  const [show, setShow] = useState(false);
   const [comments, setComments] = useState<TaskComment[]>([]);
+  const [show, setShow] = useState(false);
+  const [newCommentText, setNewCommentText] = useState("");
+  
+  // États pour les messages de succès et d'erreur
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const [newCommentText, setNewCommentText] = useState("");
-
-  const handleCreateComment = async (taskId: string) => {
-    if (!newCommentText.trim()) return;
-
-    try {
-      const response = await fetch(`${URL_TOMCAT}/comments/tasks/${taskId}`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content: newCommentText }),
-      });
-
-      if (response.ok) {
-        setNewCommentText("");
-        fetchComments(taskId);
-      } else {
-        alert("Erreur lors de l'ajout du commentaire");
-      }
-    } catch (err) {
-      console.error("Erreur:", err);
-    }
-  };
-
   const fetchComments = async (taskId: string) => {
     try {
       if (!token) return;
-      const response = await fetch(`${URL_TOMCAT}/comments/tasks/${taskId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
+      const response = await authFetch(
+        `${URL_TOMCAT}/comments/tasks/${taskId}`,
+        { method: "GET" },
+      );
       if (response.ok) {
         const data = await response.json();
         setComments(data);
@@ -85,65 +91,74 @@ const KanbanColumnItem = ({
     }
   };
 
-  const fetchTasks = useCallback(async () => {
+  const handleCreateComment = async (taskId: string) => {
+    if (!newCommentText.trim()) return;
+    
+    setErrorMessage(null);
+    setValidationMessage(null);
+    
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `${API_URL}/columns/${kanbanColumn.id}/tasks`,
+      const response = await authFetch(
+        `${URL_TOMCAT}/comments/tasks/${taskId}`,
         {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          method: "POST",
+          body: JSON.stringify({ content: newCommentText }),
         },
       );
+      if (response.ok) {
+        setNewCommentText("");
+        fetchComments(taskId);
+        setValidationMessage("Commentaire ajouté avec succès !");
+      } else {
+        setErrorMessage("Erreur lors de l'ajout du commentaire.");
+      }
+    } catch (err) {
+      console.error("Erreur:", err);
+      setErrorMessage("Erreur de connexion lors de l'ajout du commentaire.");
+    }
+  };
 
+  const fetchTasks = useCallback(async () => {
+    try {
+      const response = await authFetch(
+        `${API_URL}/columns/${kanbanColumn.id}/tasks`,
+        { method: "GET" },
+      );
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
-        onTasksLoaded(data.length);
+        onUpdateTaskCount(kanbanColumn.id, data.length);
       }
     } catch (err) {
-      console.error(
-        "Échec de la récupération des informations utilisateurs: ",
-        err,
-      );
+      console.error("Échec de la récupération des tâches: ", err);
     }
-  }, [kanbanColumn.id, onTasksLoaded]);
+  }, [kanbanColumn.id, onUpdateTaskCount]);
 
   const handleDeleteTask = async (
     e: React.MouseEvent<HTMLButtonElement>,
     taskId: string,
   ) => {
     e.preventDefault();
+    if (!taskId) return;
 
-    if (!taskId) {
-      console.error("Impossible de supprimer : taskId est manquant");
-      return;
-    }
+    setErrorMessage(null);
+    setValidationMessage(null);
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+      const response = await authFetch(`${API_URL}/tasks/${taskId}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
       });
-
       if (!response.ok) {
-        alert("Erreur lors de la suppression de la tache.");
+        setErrorMessage("Erreur lors de la suppression de la tâche.");
         return;
       }
 
-      alert("Tache supprimée !");
       fetchBoard();
       handleCloseTaskModale();
+      setValidationMessage("Tâche supprimée !");
     } catch (error) {
       console.error("Erreur suppression:", error);
+      setErrorMessage("Erreur de connexion lors de la suppression de la tâche.");
     }
   };
 
@@ -151,70 +166,53 @@ const KanbanColumnItem = ({
     fetchTasks();
   }, [fetchTasks]);
 
-  const actualDate = new Date().toISOString().split("T")[0];
+  const currentDate = new Date().toISOString().split("T")[0];
 
   return (
     <>
+      {errorMessage && (
+        <div className="error-alert-container" style={{ width: "90%", marginTop: "10px" }}>
+          <AlertDismissible message={errorMessage} />
+        </div>
+      )}
+      {validationMessage && (
+        <div className="success-alert-container" style={{ width: "90%", marginTop: "10px" }}>
+          <ValidationAlert message={validationMessage} />
+        </div>
+      )}
+      
       {tasks.map((task: Task) => {
         const isExpired =
-          actualDate > new Date(task.deadline).toISOString().split("T")[0];
-
-        const bgColor =
+          currentDate > new Date(task.deadline).toISOString().split("T")[0];
+        const expiredClass = isExpired ? "expired" : "";
+        const priorityClass =
           task.priority === "Strong"
-            ? "#dc3545"
+            ? "priority-strong"
             : task.priority === "Medium"
-              ? "#ffc107"
-              : "#198754";
-        const textColor = task.priority === "Medium" ? "#212529" : "white";
+              ? "priority-medium"
+              : "priority-low";
 
         return (
           <div
             key={task.id}
-            style={{
-              width: "300px",
-              padding: "10px",
-              borderRadius: "20px",
-              margin: "20px",
-              boxShadow: "gray -1px 1px 3px",
-              backgroundColor: isExpired ? "#e9ecef" : bgColor,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              opacity: isExpired ? "0.7" : "1",
-            }}
+            className={`task-container ${priorityClass} ${expiredClass}`}
           >
             <button
               type="button"
               disabled={isExpired}
               onClick={() => onTaskClick(kanbanColumn, task)}
-              style={{
-                flex: 1,
-                background: "none",
-                border: "none",
-                textAlign: "left",
-                color: isExpired ? "#6c757d" : textColor,
-                fontWeight: "600",
-                cursor: isExpired ? "default" : "pointer",
-                padding: "5px 10px",
-              }}
+              className={`task-title-btn ${expiredClass}`}
             >
               {task.title}
             </button>
+
             <button
               type="button"
               onClick={() => {
                 handleShow();
                 fetchComments(task.id);
               }}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: isExpired ? "#6c757d" : textColor,
-                padding: "5px",
-                display: "flex",
-                alignItems: "center",
-              }}
+              className={`task-action-btn ${expiredClass}`}
             >
               <MessagesSquare size={18} />
             </button>
@@ -222,13 +220,13 @@ const KanbanColumnItem = ({
             <Modal show={show} onHide={handleClose}>
               <Modal.Header closeButton>
                 <Modal.Title>
-                  Commentaires de la tache : {task.title}
+                  Commentaires de la tâche : {task.title}
                 </Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 {Array.isArray(comments) &&
-                  comments.map((comment) => (
-                    <div>
+                  comments.map((comment, idx) => (
+                    <div key={idx}>
                       <h6>{comment.userId}</h6>
                       <p>{comment.content}</p>
                     </div>
@@ -263,15 +261,7 @@ const KanbanColumnItem = ({
                 handleDeleteTask(e, task.id);
               }}
               type="button"
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: isExpired ? "#6c757d" : textColor,
-                padding: "5px",
-                display: "flex",
-                alignItems: "center",
-              }}
+              className={`task-action-btn ${expiredClass}`}
             >
               <Trash2 size={18} />
             </button>
@@ -282,46 +272,35 @@ const KanbanColumnItem = ({
   );
 };
 
+// ============================================================================
+// COMPOSANT PRINCIPAL : BoardDetails
+// ============================================================================
 export default function BoardDetails() {
-  interface TaskFormData {
-    taskId: string;
-    title: string;
-    description: string;
-    deadline: string;
-    priority: string;
-    user: User | null;
-    kanbanColumn: KanbanColumn | null;
-  }
-
-  interface AddUserFromData {
-    userId: string;
-    boardId: string | undefined;
-  }
-
-  interface ColumnFormData {
-    title: string;
-    position: string;
-    idBoard: string;
-  }
-
-  const { user, token } = useAuth();
-  const { boardId } = useParams();
   const navigate = useNavigate();
+  const { boardId } = useParams();
+  const { user, authFetch } = useAuth();
 
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-
-  const [showTask, setShowTask] = useState(false);
-  const [showColumn, setShowColumn] = useState(false);
+  // --- States ---
   const [board, setBoard] = useState<Board>();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [taskCounts, setTaskCounts] = useState<Record<string, number>>({});
   const [state, setState] = useState<BoardState>({ status: "idle" });
-  const [formDataAddUser, setFormDataAddUser] = useState<AddUserFromData>({
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
+
+  // Modals visibility
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showColumnModal, setShowColumnModal] = useState(false);
+
+  // Forms data
+  const [formDataAddUser, setFormDataAddUser] = useState<AddUserFormData>({
     userId: "",
     boardId: boardId,
+  });
+  const [formDataColumn, setFormDataColumn] = useState<ColumnFormData>({
+    title: "",
+    position: "",
+    idBoard: boardId || "",
   });
   const [formDataTask, setFormDataTask] = useState<TaskFormData>({
     taskId: "",
@@ -332,13 +311,62 @@ export default function BoardDetails() {
     user: null,
     kanbanColumn: null,
   });
-  const [formDataColumn, setFormDataColumn] = useState<ColumnFormData>({
-    title: "",
-    position: "",
-    idBoard: "",
-  });
 
-  const handleCloseTaskModale = () => setShowTask(false);
+  // --- Fetchers ---
+  const fetchBoard = useCallback(async () => {
+    try {
+      const response = await authFetch(`${API_URL}/boards/${boardId}`, {
+        method: "GET",
+      });
+      if (response.ok) setBoard(await response.json());
+    } catch (err) {
+      console.error("Échec récupération board: ", err);
+    }
+  }, [boardId]);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const response = await authFetch(`${API_URL}/users`, { method: "GET" });
+      if (response.ok) setUsers(await response.json());
+    } catch (error) {
+      console.error("Erreur récupération utilisateurs :", error);
+    }
+  }, []);
+
+  // --- Effects ---
+  useEffect(() => {
+    fetchBoard();
+    fetchUsers();
+  }, [fetchBoard, fetchUsers]);
+
+  useEffect(() => {
+    if (!board) return;
+    const isMember = board.members?.some(
+      (member) => member.userDto.id === user?.userId,
+    );
+    if (!isMember) navigate("/");
+  }, [board, navigate, user?.userId]);
+
+  // --- Helpers ---
+  const sortUserForAddUserOfTask = (usersList: UserRow[]) => {
+    if (!board?.members) return [];
+    return usersList.filter((u) =>
+      board.members.some((m) => m.userDto.id === u.id),
+    );
+  };
+
+  const sortUser = (usersList: UserRow[]) => {
+    if (!board?.members) return usersList;
+    return usersList.filter(
+      (u) => !board.members.some((m) => m.userDto.id === u.id),
+    );
+  };
+
+  const handleUpdateCount = useCallback((columnId: string, count: number) => {
+    setTaskCounts((prev) => ({ ...prev, [columnId]: count }));
+  }, []);
+
+  // --- Handlers ---
   const handleShowTaskModale = (kanbanColumn: KanbanColumn, task?: Task) => {
     if (task) {
       setFormDataTask({
@@ -347,7 +375,7 @@ export default function BoardDetails() {
         description: task.description || "",
         deadline: task.deadline || "",
         priority: task.priority || "",
-        user: task.user.id ? ({ id: task.user.id } as string) : null,
+        user: task.user?.id ? ({ id: task.user.id } as string) : null,
         kanbanColumn: kanbanColumn,
       });
     } else {
@@ -361,103 +389,7 @@ export default function BoardDetails() {
         kanbanColumn: kanbanColumn,
       });
     }
-    setShowTask(true);
-  };
-
-  const handleCloseColumnModale = () => setShowColumn(false);
-  const handleShowColumnModale = () => {
-    setShowColumn(true);
-  };
-
-  const fetchUsers = useCallback(async () => {
-    try {
-      if (!token) return;
-
-      const response = await fetch(`${API_URL}/users`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
-      } else {
-        console.error("Erreur serveur API:", response.status);
-      }
-    } catch (error) {
-      console.error("Erreur lors de la récupération des utilisateurs :", error);
-    }
-  }, [token]);
-
-  const sortUserForAddUserOfTask = (users: UserRow[]) => {
-    const boardMembers = board?.members;
-
-    if (!boardMembers) return [];
-
-    return users.filter((user) =>
-      boardMembers.some((member) => member.userDto.id === user.id),
-    );
-  };
-
-  const sortUser = (users: UserRow[]) => {
-    const boardMembers = board?.members;
-
-    if (!boardMembers) return users;
-
-    return users.filter(
-      (user) => !boardMembers.some((member) => member.userDto.id === user.id),
-    );
-  };
-
-  const handleAddUserToBoard = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    e.preventDefault();
-    setState({ status: "submitting" });
-
-    const data = {
-      id: formDataAddUser.userId,
-    };
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/boards/${boardId}/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        alert("Erreur lors de l'invitation de l'utilisateur.");
-        setState({
-          status: "error",
-          error: `Insert failed (${response.status})`,
-        });
-        return;
-      }
-
-      fetchBoard();
-      alert("Utilisateur invité avec succès !");
-      setState({ status: "idle" });
-      handleClose();
-    } catch (error) {
-      setState({
-        status: "error",
-
-        error: error instanceof Error ? error.message : "Invitation failed.",
-      });
-    }
-  };
-
-  const handleUpdateCount = (columnId: string, count: number) => {
-    setTaskCounts((prev) => ({ ...prev, [columnId]: count }));
+    setShowTaskModal(true);
   };
 
   const handleChangeTask = (
@@ -465,8 +397,7 @@ export default function BoardDetails() {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
   ) => {
-    const { name, value } = e.target;
-    setFormDataTask((prevState) => ({ ...prevState, [name]: value }));
+    setFormDataTask((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleChangeColumn = (
@@ -474,137 +405,61 @@ export default function BoardDetails() {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
   ) => {
-    const { name, value } = e.target;
-    setFormDataColumn((prevState) => ({ ...prevState, [name]: value }));
+    setFormDataColumn((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  // --- API Calls ---
+  const handleAddUserToBoard = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    e.preventDefault();
+    setState({ status: "submitting" });
+    setValidationMessage(null);
+    try {
+      const response = await authFetch(`${API_URL}/boards/${boardId}/users`, {
+        method: "POST",
+        body: JSON.stringify({ id: formDataAddUser.userId }),
+      });
+      if (!response.ok) throw new Error(`Insert failed (${response.status})`);
+
+      fetchBoard();
+      setValidationMessage("Utilisateur invité avec succès !");
+      setState({ status: "idle" });
+      setShowShareModal(false);
+    } catch (error) {
+      setState({
+        status: "error",
+        error: "Erreur lors de l'invitation de l'utilisateur.",
+      });
+    }
   };
 
   const handleCreateTask = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setState({ status: "submitting" });
-
+    setValidationMessage(null);
     const data = {
-      title: formDataTask?.title,
-      description: formDataTask?.description,
-      deadline: formDataTask?.deadline,
-      priority: formDataTask?.priority,
+      title: formDataTask.title,
+      description: formDataTask.description,
+      deadline: formDataTask.deadline,
+      priority: formDataTask.priority,
       user: formDataTask.user ? { id: formDataTask.user.id } : null,
       kanbanColumn: { id: formDataTask.kanbanColumn?.id },
     };
 
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/tasks`, {
+      const response = await authFetch(`${API_URL}/tasks`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        alert("Erreur lors de la création de la tache.");
-        setState({
-          status: "error",
-          error: `Insert failed (${response.status})`,
-        });
-        return;
-      }
+      if (!response.ok) throw new Error(`Insert failed (${response.status})`);
 
       fetchBoard();
-      alert("Tache ajoutée avec succès !");
+      setValidationMessage("Tâche ajoutée avec succès !");
       setState({ status: "idle" });
-      handleCloseTaskModale();
+      setShowTaskModal(false);
     } catch (error) {
-      setState({
-        status: "error",
-
-        error: error instanceof Error ? error.message : "Registration failed.",
-      });
-    }
-  };
-
-  const handleCreateColumn = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    setState({ status: "submitting" });
-
-    const data = {
-      title: formDataColumn?.title,
-      position: nextColumnPosition,
-      idBoard: boardId,
-    };
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/columns`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        alert("Erreur lors de la création de la colonne.");
-        setState({
-          status: "error",
-          error: `Insert failed (${response.status})`,
-        });
-        return;
-      }
-
-      fetchBoard();
-      alert("Colonne ajoutée avec succès !");
-      setState({ status: "idle" });
-      handleCloseColumnModale();
-    } catch (error) {
-      setState({
-        status: "error",
-
-        error: error instanceof Error ? error.message : "Registration failed.",
-      });
-    }
-  };
-
-  const handleDeleteColumn = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-    columnId: string,
-  ) => {
-    e.preventDefault();
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `${API_URL}/boards/${boardId}/columns/${columnId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        alert("Erreur lors de la suppression de la colonne.");
-        setState({
-          status: "error",
-          error: `Delete failed (${response.status})`,
-        });
-        return;
-      }
-
-      fetchBoard();
-    } catch (error) {
-      setState({
-        status: "error",
-
-        error: error instanceof Error ? error.message : "Registration failed.",
-      });
+      setState({ status: "error", error: "Erreur lors de la création de la tâche." });
     }
   };
 
@@ -613,392 +468,347 @@ export default function BoardDetails() {
     taskId: string,
   ) => {
     e.preventDefault();
+    if (!taskId) return;
     setState({ status: "submitting" });
-
+    setValidationMessage(null);
     const data = {
-      title: formDataTask?.title,
-      description: formDataTask?.description,
-      deadline: formDataTask?.deadline,
-      priority: formDataTask?.priority,
+      title: formDataTask.title,
+      description: formDataTask.description,
+      deadline: formDataTask.deadline,
+      priority: formDataTask.priority,
       user: formDataTask.user ? { id: formDataTask.user.id } : null,
       kanbanColumn: { id: formDataTask.kanbanColumn?.id },
     };
 
-    if (!taskId) {
-      console.error("Impossible de modifier : taskId est manquant");
-      return;
-    }
-
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+      const response = await authFetch(`${API_URL}/tasks/${taskId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error(`Update failed (${response.status})`);
 
-      if (!response.ok) {
-        alert("Erreur lors de la mise à jour de la tache.");
-        setState({
-          status: "error",
-          error: `Update failed (${response.status})`,
-        });
-        return;
-      }
-
-      alert("Tache modifiée !");
+      setValidationMessage("Tâche modifiée avec succès !");
       fetchBoard();
       setState({ status: "idle" });
-      handleCloseTaskModale();
+      setShowTaskModal(false);
     } catch (error) {
-      console.error("Erreur suppression:", error);
+      setState({ status: "error", error: "Erreur lors de la mise à jour de la tâche." });
     }
   };
 
-  const fetchBoard = useCallback(async () => {
+  const handleCreateColumn = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setState({ status: "submitting" });
+    setValidationMessage(null);
+    const data = {
+      title: formDataColumn.title,
+      position: nextColumnPosition,
+      idBoard: boardId,
+    };
+
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/boards/${boardId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+      const response = await authFetch(`${API_URL}/columns`, {
+        method: "POST",
+        body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error(`Insert failed (${response.status})`);
 
-      if (response.ok) {
-        const data = await response.json();
-        setBoard(data);
-      }
-    } catch (err) {
-      console.error(
-        "Échec de la récupération des informations utilisateurs: ",
-        err,
-      );
+      fetchBoard();
+      setValidationMessage("Colonne ajoutée avec succès !");
+      setState({ status: "idle" });
+      setShowColumnModal(false);
+    } catch (error) {
+      setState({ status: "error", error: "Erreur lors de la création de la colonne." });
     }
-  }, [boardId]);
+  };
 
-  useEffect(() => {
-    fetchBoard();
-    fetchUsers();
-  }, [fetchBoard, fetchUsers]);
+  const handleDeleteColumn = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    columnId: string,
+  ) => {
+    e.preventDefault();
+    setValidationMessage(null);
 
-  useEffect(() => {
-    if (!board) return;
-
-    const isMember = board.members?.some(
-      (member) => member.userDto.id === user?.userId,
+    const confirmation = globalThis.confirm(
+      "Voulez-vous vraiment supprimer cette colonne ?",
     );
 
-    if (!isMember) {
-      navigate("/");
+    if (!confirmation) return;
+
+    try {
+      const response = await authFetch(
+        `${API_URL}/boards/${boardId}/columns/${columnId}`,
+        { method: "DELETE" },
+      );
+
+      if (!response.ok) throw new Error(`Delete failed (${response.status})`);
+
+      fetchBoard();
+      setValidationMessage("Colonne supprimée avec succès !");
+      setState({ status: "idle" });
+    } catch (error) {
+      console.error("X. Erreur catchée :", error);
+      setState({ status: "error", error: "Erreur lors de la suppression de la colonne." });
     }
-  }, [board, navigate, user?.userId]);
-  
+  };
+
   const nextColumnPosition = board?.kanbanColumns
     ? Math.max(0, ...board.kanbanColumns.map((col) => col.position)) + 1
     : 1;
 
+  // --- Render ---
   return (
-    <>
-      <>
-        <div
-          style={{
-            marginTop: "100px",
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-          }}
-        >
-          <h3>
-            {board?.title}
-            <button type="button" className="btn btn-info" onClick={handleShow}>
-              Partager
-            </button>
-          </h3>
-          <>
-            <Modal show={show} onHide={handleClose}>
-              <Modal.Header closeButton>
-                <Modal.Title>Partager</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <Form.Group className="mb-3" controlId="addUser">
-                    <Form.Label>utilisateurs</Form.Label>
-                    <Form.Select
-                      name="userId"
-                      onChange={(e) =>
-                        setFormDataAddUser({
-                          ...formDataAddUser,
-                          userId: e.target.value,
-                        })
-                      }
-                      value={formDataAddUser.userId}
-                      disabled={state.status === "submitting"}
-                    >
-                      <option value="">Sélectionnez un utilisateur</option>
-                      {sortUser(users).map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {user.username}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-                </div>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                  Close
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                    handleAddUserToBoard(e)
-                  }
-                >
-                  Inviter
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: "30px",
-              alignItems: "flex-start",
-              overflowX: "auto",
-              paddingBottom: "20px",
-            }}
-          >
-            {Array.isArray(board?.kanbanColumns) &&
-              board?.kanbanColumns.map((kanbanColumn) => (
-                <div
-                  key={kanbanColumn.id}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    width: "400px",
-                    padding: "30px 0",
-                    borderRadius: "20px",
-                    boxShadow: "lightgray -1px 1px 10px",
-                    margin: "50px 0 0 10px",
-                    flexShrink: 0,
-                    position: "relative",
-                  }}
-                >
-                  <strong style={{ display: "flex", flexDirection: "row" }}>
-                    <button
-                      onClick={(e) => handleDeleteColumn(e, kanbanColumn.id)}
-                      type="button"
-                      style={{
-                        position: "absolute",
-                        top: "8px",
-                        right: "8px",
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
-                        borderRadius: "10px",
-                        backgroundColor: "red",
-                      }}
-                    >
-                      <Trash2 />
-                    </button>
-                    <h3>{kanbanColumn.title}</h3>{" "}
-                    <h6>({taskCounts[kanbanColumn.id] || 0})</h6>
-                  </strong>
-                  <KanbanColumnItem
-                    kanbanColumn={kanbanColumn}
-                    onTasksLoaded={(count) =>
-                      handleUpdateCount(kanbanColumn.id, count)
-                    }
-                    onTaskClick={handleShowTaskModale}
-                    fetchBoard={fetchBoard}
-                    handleCloseTaskModale={handleCloseTaskModale}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleShowTaskModale(kanbanColumn)}
-                    style={{
-                      borderRadius: "20px",
-                      color: "black",
-                      backgroundColor: "white",
-                      border: "1px dashed black",
-                      padding: "8px 20px",
-                      margin: "10px 0",
-                    }}
-                  >
-                    + Ajouter une tache
-                  </button>
-                </div>
-              ))}
+    <div className="board-container">
+      {/* Alertes globales du tableau */}
+      {state.status === "error" && (
+        <div style={{ marginBottom: "20px" }}>
+          <AlertDismissible message={state.error} />
+        </div>
+      )}
+      {validationMessage && (
+        <div style={{ marginBottom: "20px" }}>
+          <ValidationAlert message={validationMessage} />
+        </div>
+      )}
 
-            <div style={{ marginTop: "50px", flexShrink: 0 }}>
-              <button
-                onClick={handleShowColumnModale}
-                type="button"
-                style={{
-                  width: "400px",
-                  padding: "20px",
-                  borderRadius: "20px",
-                  backgroundColor: "transparent",
-                  border: "2px dashed lightgray",
-                  fontSize: "18px",
-                  cursor: "pointer",
-                  color: "gray",
-                }}
+      {/* En-tête du tableau */}
+      <div className="board-header">
+        <h3>{board?.title}</h3>
+        <button
+          type="button"
+          className="btn btn-info"
+          onClick={() => setShowShareModal(true)}
+        >
+          Partager
+        </button>
+      </div>
+
+      {/* Modal Partage */}
+      <Modal show={showShareModal} onHide={() => setShowShareModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Partager</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-3" controlId="addUser">
+            <Form.Label>Utilisateurs</Form.Label>
+            <Form.Select
+              name="userId"
+              onChange={(e) =>
+                setFormDataAddUser({
+                  ...formDataAddUser,
+                  userId: e.target.value,
+                })
+              }
+              value={formDataAddUser.userId}
+              disabled={state.status === "submitting"}
+            >
+              <option value="">Sélectionnez un utilisateur</option>
+              {sortUser(users).map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.username}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowShareModal(false)}>
+            Fermer
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleAddUserToBoard}
+            disabled={!formDataAddUser.userId || state.status === "submitting"}
+          >
+            Inviter
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Conteneur des Colonnes */}
+      <div className="columns-wrapper">
+        {Array.isArray(board?.kanbanColumns) &&
+          board?.kanbanColumns.map((kanbanColumn) => (
+            <div key={kanbanColumn.id} className="column-container">
+              <div
+                className="column-header"
+                style={{ display: "flex", alignItems: "center" }}
               >
-                + Ajouter une colonne
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteColumn(e, kanbanColumn.id);
+                  }}
+                  className="delete-column-btn"
+                  title="Supprimer la colonne"
+                >
+                  <Trash2 size={16} />
+                </button>
+                <h3>{kanbanColumn.title}</h3>
+                <h6 className="column-count">
+                  ({taskCounts[kanbanColumn.id] || 0})
+                </h6>
+              </div>
+
+              <KanbanColumnItem
+                kanbanColumn={kanbanColumn}
+                onUpdateTaskCount={handleUpdateCount}
+                onTaskClick={handleShowTaskModale}
+                fetchBoard={fetchBoard}
+                handleCloseTaskModale={() => setShowTaskModal(false)}
+              />
+
+              <button
+                type="button"
+                onClick={() => handleShowTaskModale(kanbanColumn)}
+                className="add-task-btn"
+              >
+                + Ajouter une tâche
               </button>
             </div>
-          </div>
-        </div>
-        <Modal show={showTask} onHide={handleCloseTaskModale}>
-          <Modal.Header closeButton>
-            <Modal.Title>Ajouter une tache</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group
-                className="mb-3"
-                controlId="exampleForm.ControlInput1"
-              >
-                <Form.Label>Titre*</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="title"
-                  placeholder="Entrez le titre içi"
-                  required
-                  autoFocus
-                  value={formDataTask.title}
-                  onChange={(e) => handleChangeTask(e)}
-                  disabled={state.status === "submitting"}
-                />
-              </Form.Group>
-              <Form.Group
-                className="mb-3"
-                controlId="exampleForm.ControlInput1"
-              >
-                <Form.Label>Description</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="description"
-                  placeholder="Entrez la description içi"
-                  autoFocus
-                  value={formDataTask.description}
-                  onChange={(e) => handleChangeTask(e)}
-                  disabled={state.status === "submitting"}
-                />
-              </Form.Group>
-              <Form.Group
-                className="mb-3"
-                controlId="exampleForm.ControlInput1"
-              >
-                <Form.Label>Deadline</Form.Label>
-                <Form.Control
-                  type="date"
-                  name="deadline"
-                  placeholder="Entrez la deadline içi"
-                  autoFocus
-                  onChange={handleChangeTask}
-                  value={formDataTask.deadline}
-                  disabled={state.status === "submitting"}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3" controlId="taskPriority">
-                <Form.Label>Priorité</Form.Label>
-                <Form.Select
-                  name="priority"
-                  onChange={handleChangeTask}
-                  value={formDataTask.priority}
-                  disabled={state.status === "submitting"}
-                >
-                  <option value="">Sélectionnez une priorité</option>
-                  <option value="Strong">Strong (Haute)</option>
-                  <option value="Medium">Medium (Moyenne)</option>
-                  <option value="Low">Low (Basse)</option>
-                </Form.Select>
-              </Form.Group>
-              <Form.Group className="mb-3" controlId="taskUser">
-                <Form.Label>Assignée à </Form.Label>
-                <Form.Select
-                  name="user"
-                  onChange={(e) => {
-                    const selectedUserId = e.target.value;
-                    setFormDataTask((prev) => ({
-                      ...prev,
-                      user: selectedUserId
-                        ? ({ id: selectedUserId } as string)
-                        : null,
-                    }));
-                  }}
-                  value={formDataTask.user?.id || ""}
-                  disabled={state.status === "submitting"}
-                >
-                  <option value="">Sélectionnez un utilisateur</option>
-                  {sortUserForAddUserOfTask(users).map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.username}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            {formDataTask.taskId !== "" && (
-              <>
-                <Button
-                  variant="warning"
-                  onClick={(e) => handleUpdateTask(e, formDataTask.taskId)}
-                >
-                  {state.status === "submitting"
-                    ? "Modification..."
-                    : "Modifier"}
-                </Button>
-              </>
-            )}
-            <Button variant="primary" onClick={(e) => handleCreateTask(e)}>
-              {state.status === "submitting" ? "Création..." : "Créer"}
-            </Button>
-          </Modal.Footer>
-        </Modal>
+          ))}
 
-        <Modal show={showColumn} onHide={handleCloseColumnModale}>
-          <Modal.Header closeButton>
-            <Modal.Title>Ajouter une colonne</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group
-                className="mb-3"
-                controlId="exampleForm.ControlInput1"
+        {/* Bouton Ajouter Colonne */}
+        <div className="add-column-container">
+          <button
+            onClick={() => setShowColumnModal(true)}
+            type="button"
+            className="add-column-btn"
+          >
+            + Ajouter une colonne
+          </button>
+        </div>
+      </div>
+
+      {/* Modal Tâche */}
+      <Modal show={showTaskModal} onHide={() => setShowTaskModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {formDataTask.taskId ? "Modifier la tâche" : "Ajouter une tâche"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Titre*</Form.Label>
+              <Form.Control
+                type="text"
+                name="title"
+                required
+                autoFocus
+                value={formDataTask.title}
+                onChange={handleChangeTask}
+                disabled={state.status === "submitting"}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                type="text"
+                name="description"
+                value={formDataTask.description}
+                onChange={handleChangeTask}
+                disabled={state.status === "submitting"}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Deadline</Form.Label>
+              <Form.Control
+                type="date"
+                name="deadline"
+                value={formDataTask.deadline}
+                onChange={handleChangeTask}
+                disabled={state.status === "submitting"}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Priorité</Form.Label>
+              <Form.Select
+                name="priority"
+                value={formDataTask.priority}
+                onChange={handleChangeTask}
+                disabled={state.status === "submitting"}
               >
-                <Form.Label>Titre de la colonne</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="title"
-                  placeholder="Entrez le titre içi"
-                  required
-                  autoFocus
-                  onChange={(e) => handleChangeColumn(e)}
-                  disabled={state.status === "submitting"}
-                />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="primary" onClick={(e) => handleCreateColumn(e)}>
+                <option value="">Sélectionnez une priorité</option>
+                <option value="Strong">Strong (Haute)</option>
+                <option value="Medium">Medium (Moyenne)</option>
+                <option value="Low">Low (Basse)</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Assignée à</Form.Label>
+              <Form.Select
+                name="user"
+                value={formDataTask.user?.id || ""}
+                onChange={(e) =>
+                  setFormDataTask((prev) => ({
+                    ...prev,
+                    user: e.target.value
+                      ? ({ id: e.target.value } as any)
+                      : null,
+                  }))
+                }
+                disabled={state.status === "submitting"}
+              >
+                <option value="">Sélectionnez un utilisateur</option>
+                {sortUserForAddUserOfTask(users).map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.username}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          {formDataTask.taskId ? (
+            <Button
+              variant="warning"
+              onClick={(e) => handleUpdateTask(e, formDataTask.taskId)}
+              disabled={state.status === "submitting"}
+            >
+              {state.status === "submitting" ? "Modification..." : "Modifier"}
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              onClick={handleCreateTask}
+              disabled={state.status === "submitting"}
+            >
               {state.status === "submitting" ? "Création..." : "Créer"}
             </Button>
-          </Modal.Footer>
-        </Modal>
-      </>
-    </>
+          )}
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal Colonne */}
+      <Modal show={showColumnModal} onHide={() => setShowColumnModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Ajouter une colonne</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-3">
+            <Form.Label>Titre de la colonne</Form.Label>
+            <Form.Control
+              type="text"
+              name="title"
+              required
+              autoFocus
+              onChange={handleChangeColumn}
+              disabled={state.status === "submitting"}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            onClick={handleCreateColumn}
+            disabled={!formDataColumn.title || state.status === "submitting"}
+          >
+            {state.status === "submitting" ? "Création..." : "Créer"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
   );
 }
