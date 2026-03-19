@@ -15,10 +15,28 @@ import { AuthResponse } from "../types/autentificationType.ts";
 /** Router for handling authentication-related routes. */
 const router = new Router({ prefix: "/users" });
 
+/** Utility function to validate email format. It uses a regular expression to check if the provided email string matches a valid email pattern. */
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 /** Route for user registration. It checks for duplicate usernames and emails, hashes the password, creates a new user in the database, and returns a JWT token along with user information. */
 router.post("/register", async (ctx: RouterContext<"/register">) => {
   try {
     const data = await ctx.request.body.json();
+
+    if (!data.email || !isValidEmail(data.email)) {
+      ctx.response.status = 451;
+      ctx.response.body = {
+        success: false,
+        error: {
+          code: ApiErrorCode.BAD_REQUEST,
+          message: "L'adresse email fournie n'est pas valide.",
+        },
+      };
+      return;
+    }
 
     const existingUsername = await connection.query(
       `SELECT username FROM User WHERE username = ?`,
