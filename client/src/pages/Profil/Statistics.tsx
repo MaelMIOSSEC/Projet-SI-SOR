@@ -74,7 +74,7 @@ export default function Statistics() {
       fetchBoards();
       fetchTasks();
     }
-  }, [fetchUsers, fetchBoards, fetchTasks, user, navigate]);
+  }, [fetchUsers, fetchBoards, fetchTasks]);
 
   return (
     <main className="statistics-page-container">

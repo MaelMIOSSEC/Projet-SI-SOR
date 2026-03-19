@@ -733,6 +733,14 @@ button:hover {
   text-transform: uppercase;
 }
 
+.statistics-select {
+  width: 27%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
 .stats-cards-container {
   display: flex;
   flex-direction: row;
@@ -740,6 +748,16 @@ button:hover {
   width: 100%;
   max-width: 900px;
   gap: 20px;
+}
+
+.stats-cards-second-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 900px;
+  gap: 20px;
+  margin-top: 20px;
 }
 
 .stat-card {
