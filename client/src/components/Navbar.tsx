@@ -13,7 +13,7 @@ const Navbar = () => {
     | { status: "submitting" }
     | { status: "error"; error: string };
 
-  const { user, token } = useAuth();
+  const { user, token, authFetch } = useAuth();
 
   const [isShrunk, setIsShrunk] = useState(false);
 
@@ -43,7 +43,7 @@ const Navbar = () => {
 
   const accept = async (
     e: React.MouseEvent<HTMLButtonElement>,
-    boardId: String,
+    boardId: string,
   ) => {
     e.preventDefault();
     setState({ status: "submitting" });
@@ -51,16 +51,10 @@ const Navbar = () => {
     const data = "Accept";
 
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/users/${user?.userId}/invitation/${boardId}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
           body: JSON.stringify(data),
         },
       );
@@ -93,16 +87,10 @@ const Navbar = () => {
     const data = "Reject";
 
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/users/${user?.userId}/invitation/${boardId}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
           body: JSON.stringify(data),
         },
       );
@@ -127,17 +115,13 @@ const Navbar = () => {
 
   const fetchInvitation = async () => {
     try {
-      if (!user?.userId || !token) return;
+      if (!user?.userId) return;
 
       if (user != null) {
-        const response = await fetch(
+        const response = await authFetch(
           `${API_URL}/users/${user.userId}/invitation`,
           {
             method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
           },
         );
 
@@ -168,7 +152,9 @@ const Navbar = () => {
 
   useEffect(() => {
     fetchInvitation();
-  }, [user?.userId, token]);
+  }, [user?.userId]);
+
+  console.log("Invitations => ", invitations)
 
   return (
     <nav
@@ -291,7 +277,7 @@ const Navbar = () => {
                     <Button
                       variant="primary"
                       onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                        accept(e, inv.boardId)
+                        accept(e, `${inv.boardId}`)
                       }
                     >
                       Accepter!
