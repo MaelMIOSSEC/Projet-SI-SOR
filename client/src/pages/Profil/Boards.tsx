@@ -179,6 +179,9 @@ export default function Boards() {
     null,
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [validationMessage, setValidationMessage] = useState<string | null>(
+    null,
+  );
 
   const handleApiError = useCallback(
     (err: unknown) => {
@@ -253,6 +256,12 @@ export default function Boards() {
     e.preventDefault();
     setErrorMessage(null);
 
+    const confirmation = globalThis.confirm(
+      "Voulez-vous vraiment supprimer ce compte du tableau ?",
+    );
+
+    if (!confirmation) return;
+
     try {
       const response = await authFetch(
         `${API_URL}/boards/${boardId}/users/${userId}`,
@@ -266,6 +275,7 @@ export default function Boards() {
       }
 
       fetchBoards();
+      setValidationMessage("Utilisateur supprimé du tableau avec succès !");
     } catch (err) {
       console.error("Échec handleDeleteFromBoard:", err);
       handleApiError(err);
@@ -278,6 +288,11 @@ export default function Boards() {
 
   return (
     <main className="boards-page-container">
+      {validationMessage && (
+        <div className="error-alert-container">
+          <ValidationAlert message={validationMessage} />
+        </div>
+      )}
       {errorMessage && (
         <div className="error-alert-container">
           <AlertDismissible message={errorMessage} />
