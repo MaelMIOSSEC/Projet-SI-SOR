@@ -5,7 +5,7 @@ interface AlertProps {
   message: string;
 }
 
-function AlertDismissible({ message }: AlertProps) {
+export function AlertDismissible({ message }: AlertProps) {
   const [show, setShow] = useState(true);
 
   if (show) {
@@ -18,4 +18,15 @@ function AlertDismissible({ message }: AlertProps) {
   return null;
 }
 
-export default AlertDismissible;
+export function ValidationAlert({ message }: AlertProps) {
+  const [show, setShow] = useState(true);
+
+  if (show) {
+    return (
+      <Alert variant="success" onClose={() => setShow(false)} dismissible>
+        <p>{message}</p>
+      </Alert>
+    );
+  }
+  return null;
+}

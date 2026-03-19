@@ -5,7 +5,7 @@ import { API_URL } from "../config/api.ts";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import type { Board } from "../types/boardType.ts";
 import { ErrorHandling } from "../utility/ErrorHandling.ts";
-import AlertDismissible from "../components/AlertDismissible.tsx";
+import { AlertDismissible, ValidationAlert } from "../components/AlertDismissible.tsx";
 import "../index.css";
 
 type BoardState =
@@ -24,6 +24,7 @@ export default function Index() {
   const [state, setState] = useState<BoardState>({ status: "idle" });
   const [title, setTitle] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
 
   const handleClose = useCallback(() => setShow(false), []);
   const handleShow = useCallback(() => setShow(true), []);
@@ -50,24 +51,52 @@ export default function Index() {
       );
 
       if (!response.ok) {
-        setErrorMessage("Erreur lors de la création du tableau.");
-        setState({
-          status: "error",
-          error: `Update failed (${response.status})`,
-        });
-        return;
+        throw new ErrorHandling(response.status, `Erreur ${response.status}`);
       }
 
-      alert("Tableau ajouté avec succès !");
+      setValidationMessage("Tableau ajouté avec succès !");
       setState({ status: "idle" });
       fetchBoards();
       handleClose();
-    } catch (error) {
-      setState({
-        status: "error",
-        error: error instanceof Error ? error.message : "Registration failed.",
-      });
-      navigate("/login");
+      setTitle("");
+    } catch (err) {
+      console.error("Échec fetchBoards:", err);
+
+      if (err instanceof Error && err.message === "Empty token...") {
+        navigate("/login");
+        return;
+      }
+
+      if (err instanceof ErrorHandling) {
+        switch (err.status) {
+          case 400:
+            setErrorMessage(
+              "Veuillez renseignez le titre du tableau ou  saisir un titre d'une longueur maximale de 100 caractères.",
+            );
+            break;
+          case 401:
+            navigate("/login");
+            break;
+          case 403:
+            setErrorMessage(
+              "Vous n'avez pas la permission d'accéder à ces tableaux.",
+            );
+            break;
+          case 404:
+            setErrorMessage("L'utilisateur ou les tableaux sont introuvables.");
+            break;
+          case 500:
+            setErrorMessage(
+              "Le serveur rencontre un problème. Réessayez plus tard.",
+            );
+            break;
+          default:
+            setErrorMessage(`Une erreur imprévue (Code: ${err.status})`);
+        }
+      } else {
+        setErrorMessage("Une erreur réseau ou inconnue est survenue.");
+      }
+      setState({ status: "idle" });
     }
   };
 
@@ -152,6 +181,11 @@ export default function Index() {
 
   return (
     <>
+      {validationMessage && (
+        <div className="error-alert-container">
+          <ValidationAlert message={validationMessage} />
+        </div>
+      )}
       {errorMessage && (
         <div className="error-alert-container">
           <AlertDismissible message={errorMessage} />
@@ -176,6 +210,7 @@ export default function Index() {
                   name="title"
                   placeholder="Entrez le titre içi"
                   required
+                  aria-required="true"
                   autoFocus
                   onChange={handleChange}
                   disabled={state.status === "submitting"}
