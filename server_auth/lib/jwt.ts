@@ -65,11 +65,31 @@ export function verifyPassword(
     password: string,
     storedHash: string
 ): Promise<boolean> {
-    const [hash, salt] = storedHash.split(".");
-
+    
+    if (!storedHash) {
+        return Promise.reject(new Error("storedHash est vide ou manquant"));
+    }
+ 
+    const parts = storedHash.split(".");
+ 
+    if (parts.length !== 2) {
+        return Promise.reject(
+            new Error(`Format de storedHash invalide : attendu "hash.salt", reçu ${parts.length} partie(s)`)
+        );
+    }
+ 
+    const [hash, salt] = parts;
+ 
+    if (!hash) {
+        return Promise.reject(new Error("La partie hash de storedHash est vide"));
+    }
+ 
+    if (!salt) {
+        return Promise.reject(new Error("La partie salt de storedHash est vide"));
+    }
+ 
     return new Promise((resolve, reject) => {
-        //scrypt(password, salt, 64, (err: any, derivedKey: { toString: (arg0: string) => string; }) => {
-        scrypt(password, salt, 64, (err: any, derivedKey: any) => { 
+        scrypt(password, salt, 64, (err: any, derivedKey: any) => {
             if (err) reject(err);
             else resolve(hash === derivedKey.toString("hex"));
         });

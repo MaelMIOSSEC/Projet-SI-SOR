@@ -350,9 +350,12 @@ export default function BoardDetails() {
   // --- Helpers ---
   const sortUserForAddUserOfTask = (usersList: UserRow[]) => {
     if (!board?.members) return [];
-    return usersList.filter((u) =>
-      board.members.some((m) => m.userDto.id === u.id),
+    const allowedIds = new Set(
+    board.members
+      .filter(m => m.role !== "Invited")
+      .map(m => m.userDto.id)
     );
+    return usersList.filter(u => allowedIds.has(u.id));
   };
 
   const sortUser = (usersList: UserRow[]) => {
