@@ -1,4 +1,4 @@
-import { Router, Context } from "@oak/oak";
+import { Router, Context, type RouterContext } from "@oak/oak";
 import connection from "../config/db.ts";
 import { createJWT, hashPassword, verifyPassword } from "../lib/jwt.ts";
 import {
@@ -16,7 +16,7 @@ import { AuthResponse } from "../types/autentificationType.ts";
 const router = new Router({ prefix: "/users" });
 
 /** Route for user registration. It checks for duplicate usernames and emails, hashes the password, creates a new user in the database, and returns a JWT token along with user information. */
-router.post("/register", async (ctx: Context) => {
+router.post("/register", async (ctx: RouterContext<"/register">) => {
   try {
     const data = await ctx.request.body.json();
 
@@ -129,7 +129,7 @@ router.post("/register", async (ctx: Context) => {
 });
 
 /** Route for user login. It verifies the provided credentials, and if valid, returns a JWT token along with user information. */ 
-router.post("/login", async (ctx: Context) => {
+router.post("/login", async (ctx: RouterContext<"/login">) => {
   try {
     const data = await ctx.request.body.json();
 
