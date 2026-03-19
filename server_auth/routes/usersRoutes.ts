@@ -51,13 +51,16 @@ router.get("/:userId/boards", async (ctx: RouterContext<"/:userId/boards">) => {
   }
 
   try {
-    const response = await fetch(`http://localhost:8080/users/${ctx.params.userId}/boards`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
+    const response = await fetch(
+      `http://localhost:8080/users/${ctx.params.userId}/boards`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`Spring a répondu avec un statut ${response.status}`);
@@ -80,48 +83,7 @@ router.get("/:userId/boards", async (ctx: RouterContext<"/:userId/boards">) => {
       error: errorMessage,
     };
   }
-}) 
-
-router.get("/:userId/invitation", async (ctx: RouterContext<"/:userId/boards">) => {
-  const authHeader = ctx.request.headers.get("Authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    ctx.response.status = 401;
-    ctx.response.body = { message: "Non authentifié" };
-    return;
-  }
-
-  try {
-    const response = await fetch(`http://localhost:8080/users/${userId}/invitation`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Spring a répondu avec un statut ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    ctx.response.status = 200;
-    ctx.response.body = data;
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Erreur inconnue";
-
-    console.error("Erreur lors de l'appel à Spring : ", errorMessage);
-
-    ctx.response.status = 502;
-    ctx.response.body = {
-      success: false,
-      message: "Le serveur de données est injoignable ou erreur interne",
-      error: errorMessage,
-    };
-  }
-}) 
+});
 
 /**Route for updating user information. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to update the user information. The password is hashed before being sent to the backend. */
 router.put("/:userId", async (ctx: RouterContext<"/:userId">) => {
@@ -137,7 +99,11 @@ router.put("/:userId", async (ctx: RouterContext<"/:userId">) => {
     const body = ctx.request.body;
     const userData = await body.json();
 
-    userData.password = await hashPassword(userData.password);
+    if (userData.password && userData.password.trim() !== "") {
+      userData.password = await hashPassword(userData.password);
+    } else {
+      delete userData.password;
+    }
 
     const response = await fetch(
       `http://localhost:8080/users/${ctx.params.userId}`,
@@ -220,132 +186,147 @@ router.delete("/:userId", async (ctx: RouterContext<"/:userId">) => {
 });
 
 /**Route for fetching the invitations associated with a specific user. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the invitations information. */
-router.get("/:userId/invitation", async (ctx: RouterContext<"/:userId/invitation">) => {
-  const authHeader = ctx.request.headers.get("Authorization");
+router.get(
+  "/:userId/invitation",
+  async (ctx: RouterContext<"/:userId/invitation">) => {
+    const authHeader = ctx.request.headers.get("Authorization");
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    ctx.response.status = 401;
-    ctx.response.body = { message: "Non authentifié" };
-    return;
-  }
-
-  try {
-    const response = await fetch(`http://localhost:8080/users/${ctx.params.userId}/invitation`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Spring a répondu avec un statut ${response.status}`);
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      ctx.response.status = 401;
+      ctx.response.body = { message: "Non authentifié" };
+      return;
     }
 
-    const data = await response.json();
+    try {
+      const response = await fetch(
+        `http://localhost:8080/users/${ctx.params.userId}/invitation`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authHeader,
+          },
+        },
+      );
 
-    ctx.response.status = 200;
-    ctx.response.body = data;
+      if (!response.ok) {
+        throw new Error(`Spring a répondu avec un statut ${response.status}`);
+      }
 
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Erreur inconnue";
+      const data = await response.json();
 
-    console.error("Erreur lors de l'appel à Spring : ", errorMessage);
+      ctx.response.status = 200;
+      ctx.response.body = data;
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Erreur inconnue";
 
-    ctx.response.status = 502;
-    ctx.response.body = {
-      success: false,
-      message: "Le serveur de données est injoignable ou erreur interne",
-      error: errorMessage,
-    };
-  }
-});
+      console.error("Erreur lors de l'appel à Spring : ", errorMessage);
+
+      ctx.response.status = 502;
+      ctx.response.body = {
+        success: false,
+        message: "Le serveur de données est injoignable ou erreur interne",
+        error: errorMessage,
+      };
+    }
+  },
+);
 
 /**Route for accepting or declining an invitation. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to accept or decline the invitation. */
-router.delete("/:userId/invitation/:boardId", async (ctx: RouterContext<"/:userId/invitation/:boardId">) => {
-  const authHeader = ctx.request.headers.get("Authorization");
+router.delete(
+  "/:userId/invitation/:boardId",
+  async (ctx: RouterContext<"/:userId/invitation/:boardId">) => {
+    const authHeader = ctx.request.headers.get("Authorization");
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    ctx.response.status = 401;
-    ctx.response.body = { message: "Non authentifié" };
-    return;
-  }
-
-  try {
-    const response = await fetch(`http://localhost:8080/users/${ctx.params.userId}/invitation/${ctx.params.boardId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Spring a répondu avec un statut ${response.status}`);
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      ctx.response.status = 401;
+      ctx.response.body = { message: "Non authentifié" };
+      return;
     }
 
-    const data = await response.json();
+    try {
+      const response = await fetch(
+        `http://localhost:8080/users/${ctx.params.userId}/invitation/${ctx.params.boardId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authHeader,
+          },
+        },
+      );
 
-    ctx.response.status = 200;
-    ctx.response.body = data;
+      if (!response.ok) {
+        throw new Error(`Spring a répondu avec un statut ${response.status}`);
+      }
 
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Erreur inconnue";
+      const data = await response.json();
 
-    console.error("Erreur lors de l'appel à Spring : ", errorMessage);
+      ctx.response.status = 200;
+      ctx.response.body = data;
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Erreur inconnue";
 
-    ctx.response.status = 502;
-    ctx.response.body = {
-      success: false,
-      message: "Le serveur de données est injoignable ou erreur interne",
-      error: errorMessage,
-    };
-  }
-});
+      console.error("Erreur lors de l'appel à Spring : ", errorMessage);
+
+      ctx.response.status = 502;
+      ctx.response.body = {
+        success: false,
+        message: "Le serveur de données est injoignable ou erreur interne",
+        error: errorMessage,
+      };
+    }
+  },
+);
 
 /**Route for accepting or declining an invitation. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to accept or decline the invitation. */
-router.put("/:userId/invitation/:boardId", async (ctx: RouterContext<"/:userId/invitation/:boardId">) => {
-  const authHeader = ctx.request.headers.get("Authorization");
+router.put(
+  "/:userId/invitation/:boardId",
+  async (ctx: RouterContext<"/:userId/invitation/:boardId">) => {
+    const authHeader = ctx.request.headers.get("Authorization");
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    ctx.response.status = 401;
-    ctx.response.body = { message: "Non authentifié" };
-    return;
-  }
-
-  try {
-    const response = await fetch(`http://localhost:8080/users/${ctx.params.userId}/invitation/${ctx.params.boardId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Spring a répondu avec un statut ${response.status}`);
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      ctx.response.status = 401;
+      ctx.response.body = { message: "Non authentifié" };
+      return;
     }
 
-    const data = await response.json();
+    try {
+      const response = await fetch(
+        `http://localhost:8080/users/${ctx.params.userId}/invitation/${ctx.params.boardId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authHeader,
+          },
+        },
+      );
 
-    ctx.response.status = 200;
-    ctx.response.body = data;
+      if (!response.ok) {
+        throw new Error(`Spring a répondu avec un statut ${response.status}`);
+      }
 
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Erreur inconnue";
+      const data = await response.json();
 
-    console.error("Erreur lors de l'appel à Spring : ", errorMessage);
+      ctx.response.status = 200;
+      ctx.response.body = data;
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Erreur inconnue";
 
-    ctx.response.status = 502;
-    ctx.response.body = {
-      success: false,
-      message: "Le serveur de données est injoignable ou erreur interne",
-      error: errorMessage,
-    };
-  }
-});
+      console.error("Erreur lors de l'appel à Spring : ", errorMessage);
+
+      ctx.response.status = 502;
+      ctx.response.body = {
+        success: false,
+        message: "Le serveur de données est injoignable ou erreur interne",
+        error: errorMessage,
+      };
+    }
+  },
+);
 
 export default router;

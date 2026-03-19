@@ -117,12 +117,19 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto createTask(TaskDto taskDto) {
         var task = this.taskMapper.toEntity(taskDto);
+        
         KanbanColumn kanbanColumn = this.kanbanColumnRepository.findById(taskDto.getKanbanColumn().getId())
             .orElseThrow(() -> new EntityNotFoundException("Column not found!"));
         task.setKanbanColumn(kanbanColumn);
-        User user = userRepository.findById(taskDto.getUser().getId())
-            .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        task.setUser(user);
+
+        if (taskDto.getUser() != null && taskDto.getUser().getId() != null) {
+            User user = userRepository.findById(taskDto.getUser().getId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            task.setUser(user);
+        } else {
+            task.setUser(null);
+        }
+        
         return this.taskMapper.toDto(this.taskRepository.save(task));
     }
 
@@ -138,12 +145,27 @@ public class TaskServiceImpl implements TaskService {
     public TaskDto updateTask(String idTask, TaskDto taskDto) {
         Task taskToUpdate = this.taskRepository.findById(idTask)
             .orElseThrow(() -> new EntityNotFoundException("Task not found!"));
+
         taskToUpdate.setTitle(taskDto.getTitle());
         taskToUpdate.setDescription(taskDto.getDescription());
         taskToUpdate.setPosition(taskDto.getPosition());
         taskToUpdate.setPriority(taskDto.getPriority());
-        taskToUpdate.setKanbanColumn(this.kanbanColumnMapper.toEntity(taskDto.getKanbanColumn()));
-        taskToUpdate.setUser(this.userMapper.toEntity(taskDto.getUser()));
+        taskToUpdate.setDeadline(taskDto.getDeadline()); 
+
+        if (taskDto.getKanbanColumn() != null && taskDto.getKanbanColumn().getId() != null) {
+            KanbanColumn kanbanColumn = this.kanbanColumnRepository.findById(taskDto.getKanbanColumn().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Column not found!"));
+            taskToUpdate.setKanbanColumn(kanbanColumn);
+        }
+
+        if (taskDto.getUser() != null && taskDto.getUser().getId() != null) {
+            User user = this.userRepository.findById(taskDto.getUser().getId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+            taskToUpdate.setUser(user);
+        } else {
+            taskToUpdate.setUser(null);
+        }
+
         return this.taskMapper.toDto(this.taskRepository.save(taskToUpdate));
     }
 

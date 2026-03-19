@@ -388,9 +388,7 @@ export default function BoardDetails() {
         description: task.description || "",
         deadline: task.deadline || "",
         priority: task.priority || "",
-        user: task.userId
-          ? ({ id: task.userId } as unknown as User)
-          : null,
+        user: task.userId ? ({ id: task.userId } as unknown as User) : null,
         kanbanColumn: kanbanColumn,
       });
     } else {

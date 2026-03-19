@@ -45,9 +45,8 @@ export default function Profil() {
     setSuccessMessage(null);
     setState({ status: "submitting" });
 
-    const payload = {
+    const payload: any = {
       username: formData.username || user?.username,
-      password: user?.password,
       name: formData.name || user?.name,
       lastName: formData.lastName || user?.lastName,
       email: formData.email || user?.email,
@@ -55,7 +54,7 @@ export default function Profil() {
       createdAt: formData.createdAt || user?.createdAt,
     };
 
-    if (formData.newPassword && formData.newPassword !== "") {
+    if (formData.newPassword && formData.newPassword.trim() !== "") {
       if (formData.newPassword !== formData.confirmPassword) {
         setErrorMessage("Les nouveaux mots de passe ne correspondent pas.");
         setState({ status: "idle" });

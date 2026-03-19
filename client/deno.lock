@@ -7,7 +7,7 @@
     "npm:@fortawesome/free-solid-svg-icons@^7.2.0": "7.2.0",
     "npm:@fortawesome/react-fontawesome@^3.2.0": "3.2.0_@fortawesome+fontawesome-svg-core@7.2.0_react@19.2.4",
     "npm:@types/node@^24.12.0": "24.12.0",
-    "npm:@types/react-dom@^19.2.3": "19.2.3_@types+react@18.3.20",
+    "npm:@types/react-dom@^19.2.3": "19.2.3_@types+react@19.2.14",
     "npm:@types/react@18.3.20": "18.3.20",
     "npm:@types/react@19.2.14": "19.2.14",
     "npm:@vitejs/plugin-react@^5.1.4": "5.2.0_vite@7.3.1__@types+node@24.12.0__picomatch@4.0.3_@babel+core@7.29.0_@types+node@24.12.0",
@@ -17,8 +17,8 @@
     "npm:eslint@^9.39.1": "9.39.4",
     "npm:globals@^16.5.0": "16.5.0",
     "npm:lucide-react@0.577": "0.577.0_react@19.2.4",
-    "npm:react-bootstrap@^2.10.10": "2.10.10_@types+react@18.3.20_react@19.2.4_react-dom@19.2.4__react@19.2.4",
-    "npm:react-bootstrap@latest": "2.10.10_@types+react@18.3.20_react@19.2.4_react-dom@19.2.4__react@19.2.4",
+    "npm:react-bootstrap@^2.10.10": "2.10.10_@types+react@19.2.14_react@19.2.4_react-dom@19.2.4__react@19.2.4",
+    "npm:react-bootstrap@latest": "2.10.10_@types+react@19.2.14_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:react-dom@19.2.4": "19.2.4_react@19.2.4",
     "npm:react-dom@latest": "19.2.4_react@19.2.4",
     "npm:react-router-dom@^7.13.1": "7.13.1_react@19.2.4_react-dom@19.2.4__react@19.2.4",
@@ -27,6 +27,7 @@
     "npm:react@latest": "19.2.4",
     "npm:typescript-eslint@^8.48.0": "8.57.0_eslint@9.39.4_typescript@5.9.3_@typescript-eslint+parser@8.57.0__eslint@9.39.4__typescript@5.9.3",
     "npm:typescript@~5.9.3": "5.9.3",
+    "npm:vite@*": "7.3.1_@types+node@24.12.0_picomatch@4.0.3",
     "npm:vite@^7.3.1": "7.3.1_@types+node@24.12.0_picomatch@4.0.3"
   },
   "npm": {
@@ -646,16 +647,16 @@
     "@types/prop-types@15.7.15": {
       "integrity": "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw=="
     },
-    "@types/react-dom@19.2.3_@types+react@18.3.20": {
+    "@types/react-dom@19.2.3_@types+react@19.2.14": {
       "integrity": "sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==",
       "dependencies": [
-        "@types/react@18.3.20"
+        "@types/react@19.2.14"
       ]
     },
-    "@types/react-transition-group@4.4.12_@types+react@18.3.20": {
+    "@types/react-transition-group@4.4.12_@types+react@19.2.14": {
       "integrity": "sha512-8TV6R3h2j7a91c+1DXdJi3Syo69zzIZbz7Lg5tORM5LEJG7X/E6a1V3drRyBRZq7/utz7A+c4OgYLiLcYGHG6w==",
       "dependencies": [
-        "@types/react@18.3.20"
+        "@types/react@19.2.14"
       ]
     },
     "@types/react@18.3.20": {
@@ -1331,14 +1332,14 @@
     "punycode@2.3.1": {
       "integrity": "sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg=="
     },
-    "react-bootstrap@2.10.10_@types+react@18.3.20_react@19.2.4_react-dom@19.2.4__react@19.2.4": {
+    "react-bootstrap@2.10.10_@types+react@19.2.14_react@19.2.4_react-dom@19.2.4__react@19.2.4": {
       "integrity": "sha512-gMckKUqn8aK/vCnfwoBpBVFUGT9SVQxwsYrp9yDHt0arXMamxALerliKBxr1TPbntirK/HGrUAHYbAeQTa9GHQ==",
       "dependencies": [
         "@babel/runtime",
         "@restart/hooks@0.4.16_react@19.2.4",
         "@restart/ui",
         "@types/prop-types",
-        "@types/react@18.3.20",
+        "@types/react@19.2.14",
         "@types/react-transition-group",
         "classnames",
         "dom-helpers",
@@ -1352,7 +1353,7 @@
         "warning"
       ],
       "optionalPeers": [
-        "@types/react@18.3.20"
+        "@types/react@19.2.14"
       ]
     },
     "react-dom@19.2.4_react@19.2.4": {
@@ -1519,7 +1520,7 @@
       "integrity": "sha512-svtcfoTADIB0nT9nltgjujTi7BzVmwjZClOmskKu/E8FW9BXzg9os8OLr4f8Dlnk0rYWJIWr4wv9eKUXiQvQwQ==",
       "dependencies": [
         "@babel/runtime",
-        "@types/react@18.3.20",
+        "@types/react@19.2.14",
         "invariant",
         "react",
         "react-lifecycles-compat"

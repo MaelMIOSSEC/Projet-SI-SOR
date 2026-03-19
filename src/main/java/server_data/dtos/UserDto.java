@@ -38,7 +38,6 @@ public class UserDto {
     /**
      * The password of the user.
      */
-    @NotBlank(message = "The password is required.")
     private String password;
 
     /**
