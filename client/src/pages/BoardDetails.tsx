@@ -65,23 +65,26 @@ const KanbanColumnItem = ({
   const { token, authFetch } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [comments, setComments] = useState<TaskComment[]>([]);
-  const [show, setShow] = useState(false);
+  const [activeTaskModalId, setActiveTaskModalId] = useState<string | null>(
+    null,
+  );
   const [newCommentText, setNewCommentText] = useState("");
-  
+
   // États pour les messages de succès et d'erreur
-  const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const [validationMessage, setValidationMessage] = useState<string | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleClose = () => setActiveTaskModalId(null);
+  const handleShow = (taskId: string) => setActiveTaskModalId(taskId);
 
   const fetchComments = async (taskId: string) => {
     try {
       if (!token) return;
-      const response = await authFetch(
-        `${URL_TOMCAT}/comments/tasks/${taskId}`,
-        { method: "GET" },
-      );
+      const response = await authFetch(`${API_URL}/comments/tasks/${taskId}`, {
+        method: "GET",
+      });
       if (response.ok) {
         const data = await response.json();
         setComments(data);
@@ -93,18 +96,15 @@ const KanbanColumnItem = ({
 
   const handleCreateComment = async (taskId: string) => {
     if (!newCommentText.trim()) return;
-    
+
     setErrorMessage(null);
     setValidationMessage(null);
-    
+
     try {
-      const response = await authFetch(
-        `${URL_TOMCAT}/comments/tasks/${taskId}`,
-        {
-          method: "POST",
-          body: JSON.stringify({ content: newCommentText }),
-        },
-      );
+      const response = await authFetch(`${API_URL}/comments/tasks/${taskId}`, {
+        method: "POST",
+        body: JSON.stringify({ content: newCommentText }),
+      });
       if (response.ok) {
         setNewCommentText("");
         fetchComments(taskId);
@@ -158,7 +158,9 @@ const KanbanColumnItem = ({
       setValidationMessage("Tâche supprimée !");
     } catch (error) {
       console.error("Erreur suppression:", error);
-      setErrorMessage("Erreur de connexion lors de la suppression de la tâche.");
+      setErrorMessage(
+        "Erreur de connexion lors de la suppression de la tâche.",
+      );
     }
   };
 
@@ -171,19 +173,26 @@ const KanbanColumnItem = ({
   return (
     <>
       {errorMessage && (
-        <div className="error-alert-container" style={{ width: "90%", marginTop: "10px" }}>
+        <div
+          className="error-alert-container"
+          style={{ width: "90%", marginTop: "10px" }}
+        >
           <AlertDismissible message={errorMessage} />
         </div>
       )}
       {validationMessage && (
-        <div className="success-alert-container" style={{ width: "90%", marginTop: "10px" }}>
+        <div
+          className="success-alert-container"
+          style={{ width: "90%", marginTop: "10px" }}
+        >
           <ValidationAlert message={validationMessage} />
         </div>
       )}
-      
+
       {tasks.map((task: Task) => {
-        const isExpired =
-          currentDate > new Date(task.deadline).toISOString().split("T")[0];
+        const isExpired = task.deadline
+          ? currentDate > new Date(task.deadline).toISOString().split("T")[0]
+          : false;
         const expiredClass = isExpired ? "expired" : "";
         const priorityClass =
           task.priority === "Strong"
@@ -199,7 +208,6 @@ const KanbanColumnItem = ({
           >
             <button
               type="button"
-              disabled={isExpired}
               onClick={() => onTaskClick(kanbanColumn, task)}
               className={`task-title-btn ${expiredClass}`}
             >
@@ -209,7 +217,7 @@ const KanbanColumnItem = ({
             <button
               type="button"
               onClick={() => {
-                handleShow();
+                handleShow(task.id);
                 fetchComments(task.id);
               }}
               className={`task-action-btn ${expiredClass}`}
@@ -217,7 +225,7 @@ const KanbanColumnItem = ({
               <MessagesSquare size={18} />
             </button>
 
-            <Modal show={show} onHide={handleClose}>
+            <Modal show={activeTaskModalId === task.id} onHide={handleClose}>
               <Modal.Header closeButton>
                 <Modal.Title>
                   Commentaires de la tâche : {task.title}
@@ -285,7 +293,9 @@ export default function BoardDetails() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [taskCounts, setTaskCounts] = useState<Record<string, number>>({});
   const [state, setState] = useState<BoardState>({ status: "idle" });
-  const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const [validationMessage, setValidationMessage] = useState<string | null>(
+    null,
+  );
 
   // Modals visibility
   const [showShareModal, setShowShareModal] = useState(false);
@@ -351,11 +361,11 @@ export default function BoardDetails() {
   const sortUserForAddUserOfTask = (usersList: UserRow[]) => {
     if (!board?.members) return [];
     const allowedIds = new Set(
-    board.members
-      .filter(m => m.role !== "Invited")
-      .map(m => m.userDto.id)
+      board.members
+        .filter((m) => m.role !== "Invited")
+        .map((m) => m.userDto.id),
     );
-    return usersList.filter(u => allowedIds.has(u.id));
+    return usersList.filter((u) => allowedIds.has(u.id));
   };
 
   const sortUser = (usersList: UserRow[]) => {
@@ -378,7 +388,9 @@ export default function BoardDetails() {
         description: task.description || "",
         deadline: task.deadline || "",
         priority: task.priority || "",
-        user: task.user?.id ? ({ id: task.user.id } as unknown as string) : null,
+        user: task.user?.id
+          ? ({ id: task.user.id } as unknown as string)
+          : null,
         kanbanColumn: kanbanColumn,
       });
     } else {
@@ -443,10 +455,13 @@ export default function BoardDetails() {
     setValidationMessage(null);
     const data = {
       title: formDataTask.title,
-      description: formDataTask.description,
-      deadline: formDataTask.deadline,
-      priority: formDataTask.priority,
-      user: formDataTask.user ? { id: formDataTask.user.id } : null,
+      description: formDataTask.description || null,
+      deadline: formDataTask.deadline || null,
+      priority: formDataTask.priority || null,
+      user:
+        formDataTask.user && formDataTask.user.id
+          ? { id: formDataTask.user.id }
+          : null,
       kanbanColumn: { id: formDataTask.kanbanColumn?.id },
     };
 
@@ -462,7 +477,10 @@ export default function BoardDetails() {
       setState({ status: "idle" });
       setShowTaskModal(false);
     } catch (error) {
-      setState({ status: "error", error: "Erreur lors de la création de la tâche." });
+      setState({
+        status: "error",
+        error: "Erreur lors de la création de la tâche.",
+      });
     }
   };
 
@@ -476,10 +494,13 @@ export default function BoardDetails() {
     setValidationMessage(null);
     const data = {
       title: formDataTask.title,
-      description: formDataTask.description,
-      deadline: formDataTask.deadline,
-      priority: formDataTask.priority,
-      user: formDataTask.user ? { id: formDataTask.user.id } : null,
+      description: formDataTask.description || null,
+      deadline: formDataTask.deadline || null,
+      priority: formDataTask.priority || null,
+      user:
+        formDataTask.user && formDataTask.user.id
+          ? { id: formDataTask.user.id }
+          : null,
       kanbanColumn: { id: formDataTask.kanbanColumn?.id },
     };
 
@@ -495,7 +516,10 @@ export default function BoardDetails() {
       setState({ status: "idle" });
       setShowTaskModal(false);
     } catch (error) {
-      setState({ status: "error", error: "Erreur lors de la mise à jour de la tâche." });
+      setState({
+        status: "error",
+        error: "Erreur lors de la mise à jour de la tâche.",
+      });
     }
   };
 
@@ -521,7 +545,10 @@ export default function BoardDetails() {
       setState({ status: "idle" });
       setShowColumnModal(false);
     } catch (error) {
-      setState({ status: "error", error: "Erreur lors de la création de la colonne." });
+      setState({
+        status: "error",
+        error: "Erreur lors de la création de la colonne.",
+      });
     }
   };
 
@@ -551,7 +578,10 @@ export default function BoardDetails() {
       setState({ status: "idle" });
     } catch (error) {
       console.error("X. Erreur catchée :", error);
-      setState({ status: "error", error: "Erreur lors de la suppression de la colonne." });
+      setState({
+        status: "error",
+        error: "Erreur lors de la suppression de la colonne.",
+      });
     }
   };
 

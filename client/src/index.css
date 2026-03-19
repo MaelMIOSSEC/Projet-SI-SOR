@@ -1044,6 +1044,10 @@ button:hover {
   cursor: pointer;
 }
 
+.task-title-btn:hover {
+  background-color: none;
+}
+
 .task-title-btn.expired {
   color: #6c757d !important;
   cursor: default;
@@ -1087,4 +1091,29 @@ button:hover {
 .priority-low .task-title-btn,
 .priority-low .task-action-btn {
   color: white;
+}
+
+/* ==================================================================================================== */
+/* Exceptions de survol (hover) UNIQUEMENT pour BoardDetails                                            */
+/* ==================================================================================================== */
+
+/* Garde le fond rouge pour le bouton de suppression */
+.board-container .delete-column-btn:hover {
+  background-color: red;
+}
+
+/* Garde le fond blanc pour le bouton "+ Ajouter une tâche" */
+.board-container .add-task-btn:hover {
+  background-color: white;
+}
+
+/* Garde le fond transparent pour le bouton "+ Ajouter une colonne" */
+.board-container .add-column-btn:hover {
+  background-color: transparent;
+}
+
+/* Corrige et garde le fond transparent pour le texte et les actions des tâches */
+.board-container .task-title-btn:hover,
+.board-container .task-action-btn:hover {
+  background-color: transparent; 
 }
