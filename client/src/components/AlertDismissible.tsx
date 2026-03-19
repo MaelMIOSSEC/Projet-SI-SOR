@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import Alert from 'react-bootstrap/Alert';
+import AlertBS from 'react-bootstrap/Alert';
 
 interface AlertProps {
   message: string;
 }
+
+const Alert = AlertBS as any;
 
 export function AlertDismissible({ message }: AlertProps) {
   const [show, setShow] = useState(true);

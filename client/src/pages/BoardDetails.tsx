@@ -292,7 +292,7 @@ export default function BoardDetails() {
 
   // --- States ---
   const [board, setBoard] = useState<Board>();
-  const [users, setUsers] = useState<UserRow[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [taskCounts, setTaskCounts] = useState<Record<string, number>>({});
   const [state, setState] = useState<BoardState>({ status: "idle" });
   const [validationMessage, setValidationMessage] = useState<string | null>(
@@ -361,7 +361,7 @@ export default function BoardDetails() {
   }, [board, navigate, user?.userId]);
 
   // --- Helpers ---
-  const sortUserForAddUserOfTask = (usersList: UserRow[]) => {
+  const sortUserForAddUserOfTask = (usersList: User[]) => {
     if (!board?.members) return [];
     const allowedIds = new Set(
       board.members
@@ -371,7 +371,7 @@ export default function BoardDetails() {
     return usersList.filter((u) => allowedIds.has(u.id));
   };
 
-  const sortUser = (usersList: UserRow[]) => {
+  const sortUser = (usersList: User[]) => {
     if (!board?.members) return usersList;
     return usersList.filter(
       (u) => !board.members.some((m) => m.userDto.id === u.id),
@@ -391,8 +391,8 @@ export default function BoardDetails() {
         description: task.description || "",
         deadline: task.deadline || "",
         priority: task.priority || "",
-        user: task.user?.id
-          ? ({ id: task.user.id } as unknown as string)
+        user: task.userId
+          ? ({ id: task.userId } as unknown as User)
           : null,
         kanbanColumn: kanbanColumn,
       });
