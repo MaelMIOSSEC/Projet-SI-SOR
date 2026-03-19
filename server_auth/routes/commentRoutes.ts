@@ -46,3 +46,48 @@ router.get("/comments/tasks/:taskId", async (ctx: RouterContext<"/comments/tasks
     };
   }
 });
+
+/** Route pour ajouter un commentaire */
+router.post("/comments/tasks/:taskId", async (ctx: RouterContext<"/comments/tasks/:taskId">) => {
+  const authHeader = ctx.request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    ctx.response.status = 401; return;
+  }
+  try {
+    const body = ctx.request.body;
+    const commentData = await body.json();
+    const response = await fetch(`http://localhost:8080/comments/tasks/${ctx.params.taskId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: authHeader },
+      body: JSON.stringify(commentData),
+    });
+    if (!response.ok) throw new Error(`Statut ${response.status}`);
+    ctx.response.status = 200;
+    ctx.response.body = await response.json();
+  } catch (error: any) {
+    ctx.response.status = 502;
+    ctx.response.body = { error: error.message };
+  }
+});
+
+/** Route pour supprimer un commentaire */
+router.delete("/comments/:commentId", async (ctx: RouterContext<"/comments/:commentId">) => {
+  const authHeader = ctx.request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    ctx.response.status = 401; return;
+  }
+  try {
+    const response = await fetch(`http://localhost:8080/comments/${ctx.params.commentId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", Authorization: authHeader },
+    });
+    if (!response.ok) throw new Error(`Statut ${response.status}`);
+    ctx.response.status = 200;
+    ctx.response.body = await response.json();
+  } catch (error: any) {
+    ctx.response.status = 502;
+    ctx.response.body = { error: error.message };
+  }
+});
+
+export default router;

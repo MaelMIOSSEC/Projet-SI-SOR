@@ -6,6 +6,7 @@ import usersRouter from "./routes/usersRoutes.ts";
 import boardsRouter from "./routes/boardRoutes.ts";
 import kanbanColumnRouter from "./routes/kanbanColumnRoutes.ts";
 import TaskRouter from "./routes/taskRoutes.ts";
+import commentRouter from "./routes/commentRoutes.ts";
 
 // ---------- Application --------------------------------
 
@@ -34,6 +35,9 @@ app.use(kanbanColumnRouter.allowedMethods());
 
 app.use(TaskRouter.routes());
 app.use(TaskRouter.allowedMethods());
+
+app.use(commentRouter.routes());
+app.use(commentRouter.allowedMethods());
 
 app.addEventListener("listen", () =>
   console.log(`Server listening on ${ADDRESS}`),

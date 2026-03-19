@@ -54,12 +54,14 @@ const KanbanColumnItem = ({
   onUpdateTaskCount,
   onTaskClick,
   fetchBoard,
+  refreshTrigger,
   handleCloseTaskModale,
 }: {
   kanbanColumn: KanbanColumn;
   onUpdateTaskCount: (columnId: string, count: number) => void;
   onTaskClick: (kanbanColumn: KanbanColumn, task: Task) => void;
   fetchBoard: () => void;
+  refreshTrigger: number;
   handleCloseTaskModale: () => void;
 }) => {
   const { token, authFetch } = useAuth();
@@ -166,7 +168,7 @@ const KanbanColumnItem = ({
 
   useEffect(() => {
     fetchTasks();
-  }, [fetchTasks]);
+  }, [fetchTasks, refreshTrigger]);
 
   const currentDate = new Date().toISOString().split("T")[0];
 
@@ -296,6 +298,7 @@ export default function BoardDetails() {
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null,
   );
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Modals visibility
   const [showShareModal, setShowShareModal] = useState(false);
@@ -471,6 +474,7 @@ export default function BoardDetails() {
       if (!response.ok) throw new Error(`Insert failed (${response.status})`);
 
       fetchBoard();
+      setRefreshTrigger(prev => prev + 1);
       setValidationMessage("Tâche ajoutée avec succès !");
       setState({ status: "idle" });
       setShowTaskModal(false);
@@ -511,6 +515,7 @@ export default function BoardDetails() {
 
       setValidationMessage("Tâche modifiée avec succès !");
       fetchBoard();
+      setRefreshTrigger(prev => prev + 1);
       setState({ status: "idle" });
       setShowTaskModal(false);
     } catch (error) {
@@ -572,6 +577,7 @@ export default function BoardDetails() {
       if (!response.ok) throw new Error(`Delete failed (${response.status})`);
 
       fetchBoard();
+      setRefreshTrigger(prev => prev + 1);
       setValidationMessage("Colonne supprimée avec succès !");
       setState({ status: "idle" });
     } catch (error) {
@@ -683,6 +689,7 @@ export default function BoardDetails() {
 
               <KanbanColumnItem
                 kanbanColumn={kanbanColumn}
+                refreshTrigger={refreshTrigger}
                 onUpdateTaskCount={handleUpdateCount}
                 onTaskClick={handleShowTaskModale}
                 fetchBoard={fetchBoard}
