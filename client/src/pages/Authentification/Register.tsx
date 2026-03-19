@@ -79,6 +79,11 @@ export default function Register() {
               "Cette adresse email ou ce nom d'utilisateur sont déjà utilisés. Veuillez les modifier.",
             );
             break;
+          case 451:
+            setErrorMessage(
+              "L'adresse email fournie n'est pas valide. Veuillez en fournir une autre.",
+            );
+            break;
           case 500:
             setErrorMessage(
               "Le serveur rencontre un problème. Réessayez plus tard.",
