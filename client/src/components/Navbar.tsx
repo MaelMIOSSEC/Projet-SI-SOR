@@ -65,8 +65,6 @@ const Navbar = () => {
         },
       );
 
-      console.log("response => ", response);
-
       if (!response.ok) {
         alert("Erreur lors de l'acceptation de l'invitation");
         setState({
@@ -168,13 +166,9 @@ const Navbar = () => {
     return newBoards;
   };
 
-  console.log("getInvitation => ", getInvitation(invitations));
-
   useEffect(() => {
     fetchInvitation();
   }, [user?.userId, token]);
-
-  console.log("invitations => ", invitations);
 
   return (
     <nav

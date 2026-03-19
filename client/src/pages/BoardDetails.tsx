@@ -152,8 +152,6 @@ const KanbanColumnItem = ({
 
   const actualDate = new Date().toISOString().split("T")[0];
 
-  console.log("Tasks => ", tasks);
-
   return (
     <>
       {tasks.map((task: Task) => {
@@ -340,7 +338,6 @@ export default function BoardDetails() {
 
   const handleCloseTaskModale = () => setShowTask(false);
   const handleShowTaskModale = (kanbanColumn: KanbanColumn, task?: Task) => {
-    console.log("task => ", task);
     if (task) {
       setFormDataTask({
         taskId: task.id,
@@ -364,8 +361,6 @@ export default function BoardDetails() {
     }
     setShowTask(true);
   };
-
-  console.log("board => ", board);
 
   const handleCloseColumnModale = () => setShowColumn(false);
   const handleShowColumnModale = () => {
@@ -627,9 +622,6 @@ export default function BoardDetails() {
       kanbanColumn: { id: formDataTask.kanbanColumn?.id },
     };
 
-    console.log("Data => ", data);
-    console.log("taskId => ", taskId);
-
     if (!taskId) {
       console.error("Impossible de modifier : taskId est manquant");
       return;
@@ -692,12 +684,9 @@ export default function BoardDetails() {
     fetchBoard();
     fetchUsers();
   }, [fetchBoard, fetchUsers]);
-  console.log("users => ", users);
   const nextColumnPosition = board?.kanbanColumns
     ? Math.max(0, ...board.kanbanColumns.map((col) => col.position)) + 1
     : 1;
-
-  console.log("Board => ", board);
 
   return (
     <>
