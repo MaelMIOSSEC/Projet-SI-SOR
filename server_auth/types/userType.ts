@@ -1,5 +1,6 @@
 import { SQLOutputValue } from "node:sqlite";
 
+/**Types for user-related data structures, including the User interface, UserRow interface for database rows, and a type guard function to check if an object is a UserRow. */
 export interface User {
     userId: string;
     username: string;
@@ -11,6 +12,7 @@ export interface User {
     createdAt: string;
 }
 
+/**Types for user-related data structures, including the User interface, UserRow interface for database rows, and a type guard function to check if an object is a UserRow. */
 export interface UserRow {
     user_id: string;
     username: string;
@@ -23,6 +25,7 @@ export interface UserRow {
     [key: string]: SQLOutputValue | Date;
 }
 
+/**Type guard function to check if an object is of type UserRow. */
 export function isUserRow(obj: Record<string, any>): obj is UserRow {
     return (
         "user_id" in obj && typeof obj.user_id === "string" &&

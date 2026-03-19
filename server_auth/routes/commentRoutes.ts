@@ -2,6 +2,7 @@ import { Context, Router } from "@oak/oak";
 
 const router = new Router();
 
+/** Router for handling comment-related routes. It includes a route for getting comments for a specific task. The route checks for the presence of a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the comments. */
 router.get("/comments/tasks/:taskId", async (ctx: Context) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
