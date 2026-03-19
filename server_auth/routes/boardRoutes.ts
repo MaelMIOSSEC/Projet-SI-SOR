@@ -1,6 +1,6 @@
 import { Context, Router, type RouterContext } from "@oak/oak";
 import { Board } from "../types/boardType.ts";
-import { ApiErrorCode } from "../types/exceptionType.ts";
+import { ApiErrorCode, ApiResponse } from "../types/exceptionType.ts";
 
 const router = new Router();
 
