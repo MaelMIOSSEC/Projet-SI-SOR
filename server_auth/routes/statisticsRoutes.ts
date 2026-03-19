@@ -1,9 +1,9 @@
-import { Router, Context } from "@oak/oak";
+import { Router, Context, type RouterContext } from "@oak/oak";
 
 const router = new Router();
 
 /**Route for fetching user statistics. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the statistics. */
-router.get("/users", async (ctx: Context) => {
+router.get("/users", async (ctx: RouterContext<"/users">) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -40,7 +40,7 @@ router.get("/users", async (ctx: Context) => {
 });
 
 /**Route for fetching board statistics. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the statistics. */
-router.get("/boards", async (ctx: Context) => {
+router.get("/boards", async (ctx: RouterContext<"/boards">) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -77,7 +77,7 @@ router.get("/boards", async (ctx: Context) => {
 });
 
 /**Route for fetching task statistics. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the statistics. */
-router.get("/tasks", async (ctx: Context) => {
+router.get("/tasks", async (ctx: RouterContext<"/tasks">) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {

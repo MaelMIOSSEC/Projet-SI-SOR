@@ -1,8 +1,8 @@
-import { Router, Context } from "@oak/oak";
+import { Router, Context, type RouterContext } from "@oak/oak";
 
 const router = new Router();
 /** Route for handling kanban column-related routes. It includes a route for creating a new column. The route checks for the presence of a valid JWT token in the Authorization header before making a request to the Spring backend to create the column. */
-router.post("/columns", async (ctx: Context) => {
+router.post("/columns", async (ctx: RouterContext<"/columns">) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -48,7 +48,7 @@ router.post("/columns", async (ctx: Context) => {
 });
 
 /** Route for fetching tasks associated with a specific kanban column. It checks for a valid JWT token in the Authorization header before making a request to the Spring backend to retrieve the tasks for the specified column. */
-router.get(`/columns/:columnId/tasks`, async (ctx: Context) => {
+router.get(`/columns/:columnId/tasks`, async (ctx: RouterContext<"/columns/:columnId/tasks">) => {
   const authHeader = ctx.request.headers.get("Authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
