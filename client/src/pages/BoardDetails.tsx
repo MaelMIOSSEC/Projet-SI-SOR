@@ -378,7 +378,7 @@ export default function BoardDetails() {
         description: task.description || "",
         deadline: task.deadline || "",
         priority: task.priority || "",
-        user: task.user?.id ? ({ id: task.user.id } as string) : null,
+        user: task.user?.id ? ({ id: task.user.id } as unknown as string) : null,
         kanbanColumn: kanbanColumn,
       });
     } else {
@@ -755,7 +755,7 @@ export default function BoardDetails() {
               >
                 <option value="">Sélectionnez un utilisateur</option>
                 {sortUserForAddUserOfTask(users).map((u) => (
-                  <option key={u.id} value={u.id}>
+                  <option key={String(u.id ?? "")} value={String(u.id ?? "")}>
                     {u.username}
                   </option>
                 ))}
