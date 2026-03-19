@@ -283,7 +283,7 @@ const Navbar = () => {
                     <Button
                       variant="secondary"
                       onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                        reject(e, inv.boardId)
+                        reject(e, `${inv.boardId}`)
                       }
                     >
                       Rejeter!
