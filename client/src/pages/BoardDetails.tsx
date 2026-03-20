@@ -1,15 +1,21 @@
+// Imports React et hooks
 import { useEffect, useState, useCallback } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import { Trash2, MessagesSquare } from "lucide-react";
 
-import { API_URL, URL_TOMCAT } from "../config/api.ts";
+// Imports configuration et authentification
+import { API_URL } from "../config/api.ts";
 import { useAuth } from "../hooks/useAuth.ts";
+
+// Imports types TypeScript
 import type { Board } from "../types/boardType.ts";
 import type { KanbanColumn } from "../types/kanbanColumnType.ts";
 import type { Task } from "../types/taskType.ts";
-import type { User, UserRow } from "../types/userType.ts";
+import type { User } from "../types/userType.ts";
 import type { Comment as TaskComment } from "../types/commentType.ts";
+
+// Imports composants et styles
 import {
   AlertDismissible,
   ValidationAlert,
@@ -20,11 +26,13 @@ import "../index.css";
 // ============================================================================
 // TYPES ET INTERFACES
 // ============================================================================
+// Type union pour gérer les états de soumission du formulaire
 type BoardState =
   | { status: "idle" }
   | { status: "submitting" }
   | { status: "error"; error: string };
 
+// Interface pour les données du formulaire de création/modification de tâche
 interface TaskFormData {
   taskId: string;
   title: string;
@@ -35,11 +43,13 @@ interface TaskFormData {
   kanbanColumn: KanbanColumn | null;
 }
 
+// Interface pour les données d'ajout d'utilisateur au tableau
 interface AddUserFormData {
   userId: string;
   boardId: string | undefined;
 }
 
+// Interface pour les données du formulaire de création de colonne
 interface ColumnFormData {
   title: string;
   position: string;
@@ -48,6 +58,7 @@ interface ColumnFormData {
 
 // ============================================================================
 // COMPOSANT ENFANT : KanbanColumnItem
+// Affiche les tâches d'une colonne Kanban avec gestion des commentaires et suppression
 // ============================================================================
 const KanbanColumnItem = ({
   kanbanColumn,
@@ -65,6 +76,8 @@ const KanbanColumnItem = ({
   handleCloseTaskModale: () => void;
 }) => {
   const { token, authFetch } = useAuth();
+  
+  // États pour les tâches et commentaires de cette colonne
   const [tasks, setTasks] = useState<Task[]>([]);
   const [comments, setComments] = useState<TaskComment[]>([]);
   const [activeTaskModalId, setActiveTaskModalId] = useState<string | null>(
@@ -78,9 +91,11 @@ const KanbanColumnItem = ({
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Fonctions pour gérer la visibilité de la modale des commentaires
   const handleClose = () => setActiveTaskModalId(null);
   const handleShow = (taskId: string) => setActiveTaskModalId(taskId);
 
+  // Récupère les commentaires d'une tâche spécifique
   const fetchComments = async (taskId: string) => {
     try {
       if (!token) return;
@@ -96,6 +111,7 @@ const KanbanColumnItem = ({
     }
   };
 
+  // Crée un nouveau commentaire pour une tâche
   const handleCreateComment = async (taskId: string) => {
     if (!newCommentText.trim()) return;
 
@@ -120,6 +136,7 @@ const KanbanColumnItem = ({
     }
   };
 
+  // Récupère les tâches de cette colonne via l'API
   const fetchTasks = useCallback(async () => {
     try {
       const response = await authFetch(
@@ -136,6 +153,7 @@ const KanbanColumnItem = ({
     }
   }, [kanbanColumn.id, onUpdateTaskCount]);
 
+  // Supprime une tâche
   const handleDeleteTask = async (
     e: React.MouseEvent<HTMLButtonElement>,
     taskId: string,
@@ -166,14 +184,17 @@ const KanbanColumnItem = ({
     }
   };
 
+  // Récupère les tâches lors du montage du composant et lors des mises à jour
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks, refreshTrigger]);
 
   const currentDate = new Date().toISOString().split("T")[0];
 
+  // Rendu des tâches avec gestion des alertes
   return (
     <>
+      {/* Affichage de l'alerte d'erreur si présente */}
       {errorMessage && (
         <div
           className="error-alert-container"
@@ -182,6 +203,7 @@ const KanbanColumnItem = ({
           <AlertDismissible message={errorMessage} />
         </div>
       )}
+      {/* Affichage de l'alerte de succès si présente */}
       {validationMessage && (
         <div
           className="success-alert-container"
@@ -191,11 +213,15 @@ const KanbanColumnItem = ({
         </div>
       )}
 
+      {/* Boucle sur les tâches et affichage de chacune */}
       {tasks.map((task: Task) => {
+        // Vérifie si la tâche a dépassé sa date limite
         const isExpired = task.deadline
           ? currentDate > new Date(task.deadline).toISOString().split("T")[0]
           : false;
         const expiredClass = isExpired ? "expired" : "";
+        
+        // Détermine la classe CSS en fonction de la priorité
         const priorityClass =
           task.priority === "Strong"
             ? "priority-strong"
@@ -208,6 +234,7 @@ const KanbanColumnItem = ({
             key={task.id}
             className={`task-container ${priorityClass} ${expiredClass}`}
           >
+            {/* Bouton pour afficher les détails de la tâche */}
             <button
               type="button"
               onClick={() => onTaskClick(kanbanColumn, task)}
@@ -216,6 +243,7 @@ const KanbanColumnItem = ({
               {task.title}
             </button>
 
+            {/* Bouton pour ouvrir la modale des commentaires */}
             <button
               type="button"
               onClick={() => {
@@ -227,6 +255,7 @@ const KanbanColumnItem = ({
               <MessagesSquare size={18} />
             </button>
 
+            {/* Modale pour afficher et ajouter les commentaires */}
             <Modal show={activeTaskModalId === task.id} onHide={handleClose}>
               <Modal.Header closeButton>
                 <Modal.Title>
@@ -234,6 +263,7 @@ const KanbanColumnItem = ({
                 </Modal.Title>
               </Modal.Header>
               <Modal.Body>
+                {/* Affichage des commentaires existants */}
                 {Array.isArray(comments) &&
                   comments.map((comment, idx) => (
                     <div key={idx}>
@@ -243,6 +273,7 @@ const KanbanColumnItem = ({
                   ))}
               </Modal.Body>
               <Modal.Footer>
+                {/* Champ pour saisir un nouveau commentaire */}
                 <Form.Control
                   type="text"
                   placeholder="Écrivez un commentaire..."
@@ -252,6 +283,7 @@ const KanbanColumnItem = ({
                     e.key === "Enter" && handleCreateComment(task.id)
                   }
                 />
+                {/* Bouton pour soumettre le commentaire */}
                 <Button
                   variant="primary"
                   onClick={() => handleCreateComment(task.id)}
@@ -259,12 +291,14 @@ const KanbanColumnItem = ({
                 >
                   Ajouter
                 </Button>
+                {/* Bouton pour fermer la modale */}
                 <Button variant="secondary" onClick={handleClose}>
                   Fermer
                 </Button>
               </Modal.Footer>
             </Modal>
 
+            {/* Bouton pour supprimer la tâche */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -284,37 +318,51 @@ const KanbanColumnItem = ({
 
 // ============================================================================
 // COMPOSANT PRINCIPAL : BoardDetails
+// Gère l'affichage principal du tableau Kanban avec ses colonnes et tâches
 // ============================================================================
 export default function BoardDetails() {
+  // Hooks pour la navigation et les paramètres d'URL
   const navigate = useNavigate();
   const { boardId } = useParams();
   const { user, authFetch } = useAuth();
 
-  // --- States ---
+  // ========== États du composant ==========
+  // État du tableau (données principales)
   const [board, setBoard] = useState<Board>();
+  // Liste des utilisateurs disponibles
   const [users, setUsers] = useState<User[]>([]);
+  // Compteur de tâches par colonne pour affichage
   const [taskCounts, setTaskCounts] = useState<Record<string, number>>({});
+  // État général de soumission des formulaires
   const [state, setState] = useState<BoardState>({ status: "idle" });
+  // Message de validation à afficher à l'utilisateur
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null,
   );
+  // Trigger pour forcer le rafraîchissement des tâches
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Modals visibility
+  // ========== États des modales ==========
+  // Contrôle la visibilité de la modale de partage
   const [showShareModal, setShowShareModal] = useState(false);
+  // Contrôle la visibilité de la modale de tâche
   const [showTaskModal, setShowTaskModal] = useState(false);
+  // Contrôle la visibilité de la modale de colonne
   const [showColumnModal, setShowColumnModal] = useState(false);
 
-  // Forms data
+  // ========== États des formulaires ==========
+  // Données du formulaire d'ajout d'utilisateur
   const [formDataAddUser, setFormDataAddUser] = useState<AddUserFormData>({
     userId: "",
     boardId: boardId,
   });
+  // Données du formulaire de création de colonne
   const [formDataColumn, setFormDataColumn] = useState<ColumnFormData>({
     title: "",
     position: "",
     idBoard: boardId || "",
   });
+  // Données du formulaire de création/modification de tâche
   const [formDataTask, setFormDataTask] = useState<TaskFormData>({
     taskId: "",
     title: "",
@@ -325,7 +373,8 @@ export default function BoardDetails() {
     kanbanColumn: null,
   });
 
-  // --- Fetchers ---
+  // ========== Fonctions de récupération de données ==========
+  // Récupère les données complètes du tableau Kanban
   const fetchBoard = useCallback(async () => {
     try {
       const response = await authFetch(`${API_URL}/boards/${boardId}`, {
@@ -337,6 +386,7 @@ export default function BoardDetails() {
     }
   }, [boardId]);
 
+  // Récupère la liste de tous les utilisateurs
   const fetchUsers = useCallback(async () => {
     try {
       const response = await authFetch(`${API_URL}/users`, { method: "GET" });
@@ -346,12 +396,14 @@ export default function BoardDetails() {
     }
   }, []);
 
-  // --- Effects ---
+  // ========== Effects du cycle de vie ==========
+  // Récupère le tableau et les utilisateurs au montage du composant
   useEffect(() => {
     fetchBoard();
     fetchUsers();
   }, [fetchBoard, fetchUsers]);
 
+  // Vérifie que l'utilisateur est membre du tableau (pour redirection si non-autorisé)
   useEffect(() => {
     if (!board) return;
     const isMember = board.members?.some(
@@ -360,7 +412,8 @@ export default function BoardDetails() {
     if (!isMember) navigate("/");
   }, [board, navigate, user?.userId]);
 
-  // --- Helpers ---
+  // ========== Fonctions utilitaires ==========
+  // Filtre les utilisateurs pour les assigner à une tâche (seulement les membres non-invités)
   const sortUserForAddUserOfTask = (usersList: User[]) => {
     if (!board?.members) return [];
     const allowedIds = new Set(
@@ -371,6 +424,7 @@ export default function BoardDetails() {
     return usersList.filter((u) => allowedIds.has(u.id));
   };
 
+  // Filtre les utilisateurs non encore membres du tableau
   const sortUser = (usersList: User[]) => {
     if (!board?.members) return usersList;
     return usersList.filter(
@@ -378,16 +432,22 @@ export default function BoardDetails() {
     );
   };
 
+  // Met à jour le compteur de tâches pour une colonne
   const handleUpdateCount = useCallback((columnId: string, count: number) => {
     setTaskCounts((prev) => ({ ...prev, [columnId]: count }));
   }, []);
 
-  // --- Handlers ---
+  // ========== Handlers des modales et formulaires ==========
+  // Ouvre la modale de tâche (création ou modification)
   const handleShowTaskModale = (kanbanColumn: KanbanColumn, task?: Task) => {
     if (task) {
+<<<<<<< Updated upstream
       // On utilise (task as any).user ou on met à jour l'interface Task
       const taskUser = (task as any).user;
 
+=======
+      // Pré-remplir le formulaire si modification
+>>>>>>> Stashed changes
       setFormDataTask({
         taskId: task.id,
         title: task.title,
@@ -399,6 +459,7 @@ export default function BoardDetails() {
         kanbanColumn: kanbanColumn,
       });
     } else {
+      // Réinitialiser le formulaire si création
       setFormDataTask({
         taskId: "",
         title: "",
@@ -412,6 +473,7 @@ export default function BoardDetails() {
     setShowTaskModal(true);
   };
 
+  // Gère le changement dans le formulaire de tâche
   const handleChangeTask = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -420,6 +482,7 @@ export default function BoardDetails() {
     setFormDataTask((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // Gère le changement dans le formulaire de colonne
   const handleChangeColumn = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -428,7 +491,8 @@ export default function BoardDetails() {
     setFormDataColumn((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // --- API Calls ---
+  // ========== Appels API ==========
+  // Ajoute un utilisateur (l'invite) au tableau
   const handleAddUserToBoard = async (
     e: React.MouseEvent<HTMLButtonElement>,
   ) => {
@@ -454,6 +518,7 @@ export default function BoardDetails() {
     }
   };
 
+  // Crée une nouvelle tâche
   const handleCreateTask = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setState({ status: "submitting" });
@@ -490,6 +555,7 @@ export default function BoardDetails() {
     }
   };
 
+  // Modifie une tâche existante
   const handleUpdateTask = async (
     e: React.MouseEvent<HTMLButtonElement>,
     taskId: string,
@@ -530,6 +596,7 @@ export default function BoardDetails() {
     }
   };
 
+  // Crée une nouvelle colonne Kanban
   const handleCreateColumn = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setState({ status: "submitting" });
@@ -559,6 +626,7 @@ export default function BoardDetails() {
     }
   };
 
+  // Supprime une colonne Kanban (après confirmation)
   const handleDeleteColumn = async (
     e: React.MouseEvent<HTMLButtonElement>,
     columnId: string,
@@ -566,6 +634,7 @@ export default function BoardDetails() {
     e.preventDefault();
     setValidationMessage(null);
 
+    // Demande confirmation à l'utilisateur
     const confirmation = globalThis.confirm(
       "Voulez-vous vraiment supprimer cette colonne ?",
     );
@@ -593,14 +662,15 @@ export default function BoardDetails() {
     }
   };
 
+  // Calcule la position du prochain colonne à ajouter
   const nextColumnPosition = board?.kanbanColumns
     ? Math.max(0, ...board.kanbanColumns.map((col) => col.position)) + 1
     : 1;
 
-  // --- Render ---
+  // ========== Rendu du composant ==========
   return (
     <div className="board-container">
-      {/* Alertes globales du tableau */}
+      {/* Affichage des alertes globales du tableau */}
       {state.status === "error" && (
         <div style={{ marginBottom: "20px" }}>
           <AlertDismissible message={state.error} />
@@ -612,7 +682,7 @@ export default function BoardDetails() {
         </div>
       )}
 
-      {/* En-tête du tableau */}
+      {/* En-tête du tableau avec titre et bouton de partage */}
       <div className="board-header">
         <h3>{board?.title}</h3>
         <button
@@ -624,7 +694,7 @@ export default function BoardDetails() {
         </button>
       </div>
 
-      {/* Modal Partage */}
+      {/* Modale de partage pour inviter des utilisateurs */}
       <Modal show={showShareModal} onHide={() => setShowShareModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Partager</Modal.Title>
@@ -666,11 +736,13 @@ export default function BoardDetails() {
         </Modal.Footer>
       </Modal>
 
-      {/* Conteneur des Colonnes */}
+      {/* Conteneur principal des colonnes Kanban */}
       <div className="columns-wrapper">
+        {/* Affichage de chaque colonne avec ses tâches */}
         {Array.isArray(board?.kanbanColumns) &&
           board?.kanbanColumns.map((kanbanColumn) => (
             <div key={kanbanColumn.id} className="column-container">
+              {/* En-tête de colonne avec bouton de suppression et compteur */}
               <div
                 className="column-header"
                 style={{ display: "flex", alignItems: "center" }}
@@ -686,11 +758,13 @@ export default function BoardDetails() {
                   <Trash2 size={16} />
                 </button>
                 <h3>{kanbanColumn.title}</h3>
+                {/* Affiche le nombre de tâches dans la colonne */}
                 <h6 className="column-count">
                   ({taskCounts[kanbanColumn.id] || 0})
                 </h6>
               </div>
 
+              {/* Composant enfant affichant les tâches de cette colonne */}
               <KanbanColumnItem
                 kanbanColumn={kanbanColumn}
                 refreshTrigger={refreshTrigger}
@@ -700,6 +774,7 @@ export default function BoardDetails() {
                 handleCloseTaskModale={() => setShowTaskModal(false)}
               />
 
+              {/* Bouton pour ajouter une nouvelle tâche à cette colonne */}
               <button
                 type="button"
                 onClick={() => handleShowTaskModale(kanbanColumn)}
@@ -710,7 +785,7 @@ export default function BoardDetails() {
             </div>
           ))}
 
-        {/* Bouton Ajouter Colonne */}
+        {/* Bouton pour ajouter une nouvelle colonne */}
         <div className="add-column-container">
           <button
             onClick={() => setShowColumnModal(true)}
@@ -722,7 +797,7 @@ export default function BoardDetails() {
         </div>
       </div>
 
-      {/* Modal Tâche */}
+      {/* Modale pour créer ou modifier une tâche */}
       <Modal show={showTaskModal} onHide={() => setShowTaskModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -731,6 +806,7 @@ export default function BoardDetails() {
         </Modal.Header>
         <Modal.Body>
           <Form>
+            {/* Champ titre (obligatoire) */}
             <Form.Group className="mb-3">
               <Form.Label>Titre*</Form.Label>
               <Form.Control
@@ -743,6 +819,8 @@ export default function BoardDetails() {
                 disabled={state.status === "submitting"}
               />
             </Form.Group>
+            
+            {/* Champ description */}
             <Form.Group className="mb-3">
               <Form.Label>Description</Form.Label>
               <Form.Control
@@ -753,6 +831,8 @@ export default function BoardDetails() {
                 disabled={state.status === "submitting"}
               />
             </Form.Group>
+            
+            {/* Champ deadline */}
             <Form.Group className="mb-3">
               <Form.Label>Deadline</Form.Label>
               <Form.Control
@@ -763,6 +843,8 @@ export default function BoardDetails() {
                 disabled={state.status === "submitting"}
               />
             </Form.Group>
+            
+            {/* Champ priorité */}
             <Form.Group className="mb-3">
               <Form.Label>Priorité</Form.Label>
               <Form.Select
@@ -777,6 +859,8 @@ export default function BoardDetails() {
                 <option value="Low">Low (Basse)</option>
               </Form.Select>
             </Form.Group>
+            
+            {/* Champ assignation d'utilisateur */}
             <Form.Group className="mb-3">
               <Form.Label>Assignée à</Form.Label>
               <Form.Select
@@ -803,6 +887,7 @@ export default function BoardDetails() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
+          {/* Bouton de modification ou création selon le contexte */}
           {formDataTask.taskId ? (
             <Button
               variant="warning"
@@ -823,7 +908,7 @@ export default function BoardDetails() {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal Colonne */}
+      {/* Modale pour créer une colonne */}
       <Modal show={showColumnModal} onHide={() => setShowColumnModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Ajouter une colonne</Modal.Title>
