@@ -444,13 +444,9 @@ export default function BoardDetails() {
   // Ouvre la modale de tâche (création ou modification)
   const handleShowTaskModale = (kanbanColumn: KanbanColumn, task?: Task) => {
     if (task) {
-<<<<<<< Updated upstream
       // On utilise (task as any).user ou on met à jour l'interface Task
       const taskUser = (task as any).user;
 
-=======
-      // Pré-remplir le formulaire si modification
->>>>>>> Stashed changes
       setFormDataTask({
         taskId: task.id,
         title: task.title,
