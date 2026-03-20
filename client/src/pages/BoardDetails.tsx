@@ -385,13 +385,17 @@ export default function BoardDetails() {
   // --- Handlers ---
   const handleShowTaskModale = (kanbanColumn: KanbanColumn, task?: Task) => {
     if (task) {
+      // On utilise (task as any).user ou on met à jour l'interface Task
+      const taskUser = (task as any).user;
+
       setFormDataTask({
         taskId: task.id,
         title: task.title,
         description: task.description || "",
         deadline: task.deadline || "",
         priority: task.priority || "",
-        user: task.userId ? ({ id: task.userId } as unknown as User) : null,
+        // On récupère l'id depuis l'objet user s'il existe
+        user: taskUser ? taskUser : null,
         kanbanColumn: kanbanColumn,
       });
     } else {
@@ -474,7 +478,7 @@ export default function BoardDetails() {
       if (!response.ok) throw new Error(`Insert failed (${response.status})`);
 
       fetchBoard();
-      setRefreshTrigger(prev => prev + 1);
+      setRefreshTrigger((prev) => prev + 1);
       setValidationMessage("Tâche ajoutée avec succès !");
       setState({ status: "idle" });
       setShowTaskModal(false);
@@ -515,7 +519,7 @@ export default function BoardDetails() {
 
       setValidationMessage("Tâche modifiée avec succès !");
       fetchBoard();
-      setRefreshTrigger(prev => prev + 1);
+      setRefreshTrigger((prev) => prev + 1);
       setState({ status: "idle" });
       setShowTaskModal(false);
     } catch (error) {
@@ -577,7 +581,7 @@ export default function BoardDetails() {
       if (!response.ok) throw new Error(`Delete failed (${response.status})`);
 
       fetchBoard();
-      setRefreshTrigger(prev => prev + 1);
+      setRefreshTrigger((prev) => prev + 1);
       setValidationMessage("Colonne supprimée avec succès !");
       setState({ status: "idle" });
     } catch (error) {
