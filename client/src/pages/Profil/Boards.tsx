@@ -206,9 +206,11 @@ export default function Boards() {
             setErrorMessage(
               "Le serveur rencontre un problème. Réessayez plus tard.",
             );
+            navigate("/login");
             break;
           default:
-            setErrorMessage(`Une erreur imprévue (Code: ${err.status})`);
+            setErrorMessage(`Une erreur réseau ou inconnue est survenue (Code: ${err.status})`);
+            navigate("/login");
         }
       } else {
         setErrorMessage("Une erreur réseau ou inconnue est survenue.");

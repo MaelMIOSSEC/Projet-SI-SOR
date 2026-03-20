@@ -154,8 +154,6 @@ const Navbar = () => {
     fetchInvitation();
   }, [user?.userId]);
 
-  console.log("Invitations => ", invitations)
-
   return (
     <nav
       className={`navbar navbar-expand-lg navbar-dark fixed-top ${

@@ -246,7 +246,8 @@ export default function Index() {
                 <p>Membres :</p>
                 <ul>
                   {board.members?.map((member) => (
-                    <li key={member.userDto.id}>{member.userDto.username}</li>
+                    member.role !== "Invited" && 
+                      <li key={member.userDto.id}>{member.userDto.username}</li>
                   ))}
                 </ul>
               </div>

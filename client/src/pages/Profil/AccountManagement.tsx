@@ -6,6 +6,10 @@ import type { UserRow } from "../../types/userType.ts";
 import { Table } from "react-bootstrap";
 import { SquarePen, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router/internal/react-server-client";
+import {
+  AlertDismissible,
+  ValidationAlert,
+} from "../../components/AlertDismissible.tsx";
 
 type AdminState =
   | { status: "idle" }
@@ -25,6 +29,10 @@ export default function AccountManagement() {
   const UserRowItem = ({ user }: { user: UserRow }) => {
     const [formData, setFormData] = useState(user);
     const [state, setState] = useState<AdminState>({ status: "idle" });
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [validationMessage, setValidationMessage] = useState<string | null>(
+      null,
+    );
 
     const handleChange = (e: React.FormEvent<HTMLInputElement>) => {
       const { name, value } = e.currentTarget;
@@ -57,24 +65,36 @@ export default function AccountManagement() {
         });
 
         if (!response.ok) {
-          alert("Erreur lors de la mise à jour du profil.");
-          setState({
-            status: "error",
-            error: `Update failed (${response.status})`,
-          });
-          return;
+          throw new ErrorHandling(response.status, `Erreur ${response.status}`);
         }
 
         fetchUsers();
-        alert("Profil mis à jour avec succès !");
+        setValidationMessage("Profil modifié avec succès !");
         setState({ status: "idle" });
-      } catch (error) {
-        setState({
-          status: "error",
+      } catch (err) {
+        console.error("Échec update profil:", err);
+        setState({ status: "idle" });
 
-          error:
-            error instanceof Error ? error.message : "Registration failed.",
-        });
+        if (err instanceof ErrorHandling) {
+          switch (err.status) {
+            case 401:
+              setErrorMessage("Session expirée. Veuillez vous reconnecter.");
+              break;
+            case 403:
+              setErrorMessage("Vous n'êtes pas autorisé à modifier ce profil.");
+              break;
+            case 500:
+              setErrorMessage("Erreur serveur lors de la mise à jour.");
+              navigate("/login");
+              break;
+            default:
+              setErrorMessage(
+                `Une erreur réseau ou inconnue est survenue (Code: ${err.status})`,
+              );
+          }
+        } else {
+          setErrorMessage("Une erreur réseau ou inconnue est survenue.");
+        }
       }
     };
 
@@ -104,23 +124,36 @@ export default function AccountManagement() {
         });
 
         if (!response.ok) {
-          alert("Erreur lors de la mise à jour du profil.");
-          setState({
-            status: "error",
-            error: `Update failed (${response.status})`,
-          });
-          return;
+          throw new ErrorHandling(response.status, `Erreur ${response.status}`);
         }
 
         fetchUsers();
+        setValidationMessage("Profil modifié avec succès !");
         setState({ status: "idle" });
-      } catch (error) {
-        setState({
-          status: "error",
+      } catch (err) {
+        console.error("Échec update profil:", err);
+        setState({ status: "idle" });
 
-          error:
-            error instanceof Error ? error.message : "Registration failed.",
-        });
+        if (err instanceof ErrorHandling) {
+          switch (err.status) {
+            case 401:
+              setErrorMessage("Session expirée. Veuillez vous reconnecter.");
+              break;
+            case 403:
+              setErrorMessage("Vous n'êtes pas autorisé à modifier ce profil.");
+              break;
+            case 500:
+              setErrorMessage("Erreur serveur lors de la mise à jour.");
+              navigate("/login");
+              break;
+            default:
+              setErrorMessage(
+                `Une erreur réseau ou inconnue est survenue (Code: ${err.status})`,
+              );
+          }
+        } else {
+          setErrorMessage("Une erreur réseau ou inconnue est survenue.");
+        }
       }
     };
 

@@ -30,8 +30,6 @@ export default function Profil() {
     user ? { ...user, newPassword: "", confirmPassword: "" } : {},
   );
 
-  console.log("user => ", user);
-
   if (user === null) navigate("/");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
