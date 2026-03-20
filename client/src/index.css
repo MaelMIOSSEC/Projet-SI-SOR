@@ -1030,7 +1030,7 @@ button:hover {
 }
 
 .task-container.expired {
-  background-color: #e9ecef !important;
+  background-color: #FF0000 !important;
   opacity: 0.7;
 }
 
@@ -1049,7 +1049,7 @@ button:hover {
 }
 
 .task-title-btn.expired {
-  color: #6c757d !important;
+  color: white !important;
   cursor: default;
 }
 
@@ -1063,11 +1063,11 @@ button:hover {
 }
 
 .task-action-btn.expired {
-  color: #6c757d !important;
+  color: white !important;
 }
 
 .priority-strong {
-  background-color: #dc3545;
+  background-color: #F39C12;
   color: white;
 }
 .priority-strong .task-title-btn,
@@ -1076,16 +1076,16 @@ button:hover {
 }
 
 .priority-medium {
-  background-color: #ffc107;
+  background-color: #2980B9;
   color: #212529;
 }
 .priority-medium .task-title-btn,
 .priority-medium .task-action-btn {
-  color: #212529;
+  color: white;
 }
 
 .priority-low {
-  background-color: #198754;
+  background-color: #95A5A6;
   color: white;
 }
 .priority-low .task-title-btn,

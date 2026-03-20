@@ -55,6 +55,7 @@ const KanbanColumnItem = ({
   onTaskClick,
   fetchBoard,
   refreshTrigger,
+  setRefreshTrigger,
   handleCloseTaskModale,
 }: {
   kanbanColumn: KanbanColumn;
@@ -62,6 +63,7 @@ const KanbanColumnItem = ({
   onTaskClick: (kanbanColumn: KanbanColumn, task: Task) => void;
   fetchBoard: () => void;
   refreshTrigger: number;
+  setRefreshTrigger: () => void;
   handleCloseTaskModale: () => void;
 }) => {
   const { token, authFetch } = useAuth();
@@ -156,6 +158,7 @@ const KanbanColumnItem = ({
       }
 
       fetchBoard();
+      setRefreshTrigger((prev) => prev + 1);
       handleCloseTaskModale();
       setValidationMessage("Tâche supprimée !");
     } catch (error) {
@@ -694,6 +697,7 @@ export default function BoardDetails() {
               <KanbanColumnItem
                 kanbanColumn={kanbanColumn}
                 refreshTrigger={refreshTrigger}
+                setRefreshTrigger={setRefreshTrigger}
                 onUpdateTaskCount={handleUpdateCount}
                 onTaskClick={handleShowTaskModale}
                 fetchBoard={fetchBoard}
