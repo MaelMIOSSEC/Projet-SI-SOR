@@ -1,5 +1,3 @@
-import { SQLOutputValue } from "node:sqlite";
-
 /**
  * Interface représentant l'entité KanbanColumn (Côté Client/Frontend)
  */
