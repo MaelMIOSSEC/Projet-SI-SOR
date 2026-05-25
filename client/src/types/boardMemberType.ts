@@ -1,5 +1,3 @@
-import { SQLOutputValue } from "node:sqlite";
-
 /**
  * Interface pour les détails de l'utilisateur (UserDto)
  */
