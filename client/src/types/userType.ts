@@ -1,5 +1,3 @@
-import { SQLOutputValue } from "node:sqlite";
-
 export interface User {
     id: string;
     username: string;
