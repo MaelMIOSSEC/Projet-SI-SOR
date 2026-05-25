@@ -1,4 +1,3 @@
-import { SQLOutputValue } from "node:sqlite";
 import { KanbanColumn } from "./kanbanColumnType.ts";
 import { BoardMember } from "./boardMemberType.ts";
 
