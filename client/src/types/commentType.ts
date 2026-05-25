@@ -1,5 +1,3 @@
-import { SQLOutputValue } from "node:sqlite";
-
 export interface Comment {
   id: string;
   content: string;
